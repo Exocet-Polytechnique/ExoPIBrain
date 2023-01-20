@@ -3,9 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Venv
+Scripts
+pyvenv.cfg
+
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 build/
