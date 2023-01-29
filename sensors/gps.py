@@ -1,7 +1,6 @@
 import serial
 from serial.serialutil import SerialException
 from data_readers.stream_reader import StreamReader
-
 class GPS(StreamReader):
     '''
     GPS Interfacing with Raspberry Pi using Pyhton
@@ -14,6 +13,7 @@ class GPS(StreamReader):
         self.long_deg = 0
         self.nmea_time = 0
         self.speed_knots = 0
+        self.course_angle = 0
 
     def _convert_to_degrees(self, raw_value):
         decimal_value = raw_value/100.00
@@ -26,16 +26,18 @@ class GPS(StreamReader):
     def _read_raw_data(self):
         try:
             received_data = (str)(self.ser.readline())
-            gpgga_data_available = received_data.find("$GPGGA,")   #check for NMEA GPGGA string    
-            if (gpgga_data_available > 0):
-                gpgga_buffer = received_data.split("$GPGGA,",1)[1]  #store data coming after "$GPGGA," string 
-                nmea_buff = gpgga_buffer.split(",")
-
-                self.nmea_time = nmea_buff[0]
-                self.lat_deg = self._convert_to_degrees(float(nmea_buff[1]))
-                self.long_deg = self._convert_to_degrees(float(nmea_buff[3]))
+            gprmc_data_available = received_data.find("$GPRMC,")   #check for NMEA GPGGA string    
+            if (gprmc_data_available > 0):
+                sentence = received_data.split("$GPRMC,", 1)[1]
+                nmea_buff = sentence.split(",")
+                print(nmea_buff)
+                self.nmea_time = float(nmea_buff[0])
+                self.speed_knots = float(nmea_buff[6])
+                self.course_angle = 0.0 if nmea_buff[7] == '' else float(nmea_buff[7])
+                self.lat_deg = self._convert_to_degrees(float(nmea_buff[2]))
+                self.long_deg = self._convert_to_degrees(float(nmea_buff[4]))
         except SerialException:
-            pass
+            print("GPS fucked")
 
-        return self.lat_deg, self.long_deg, self.nmea_time, self.speed_knots
+        return self.nmea_time, self.speed_knots, self.course_angle, self.lat_deg, self.long_deg
 
