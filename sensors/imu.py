@@ -1,6 +1,7 @@
 from adxl345 import ADXL345
+from data_readers.stream_reader import StreamReader
 
-class IMU:
+class IMU(StreamReader):
     def __init__(self) -> None:
         self.accelerometer = ADXL345()
         self.temperature = None
@@ -16,4 +17,8 @@ class IMU:
     def read_temperature(self):
         pass
 
-    
+    def read(self):
+        pass
+
+    def alert(self, imu_temp):
+        pass
