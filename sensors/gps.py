@@ -23,14 +23,13 @@ class GPS(StreamReader):
         position = "%.4f" % position
         return position
 
-    def _read_raw_data(self):
+    def read_raw_data(self):
         try:
             received_data = (str)(self.ser.readline())
             gprmc_data_available = received_data.find("$GPRMC,")   #check for NMEA GPGGA string    
             if (gprmc_data_available > 0):
                 sentence = received_data.split("$GPRMC,", 1)[1]
                 nmea_buff = sentence.split(",")
-                print(nmea_buff)
                 self.nmea_time = float(nmea_buff[0])
                 self.speed_knots = float(nmea_buff[6])
                 self.course_angle = 0.0 if nmea_buff[7] == '' else float(nmea_buff[7])
