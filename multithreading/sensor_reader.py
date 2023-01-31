@@ -2,6 +2,7 @@ import threading
 import time
 import logging
 
+
 class MessagePrinter(threading.Thread):
     def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self)

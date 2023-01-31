@@ -1,75 +1,90 @@
-import math
-from imu_sensor import IMUSensor
+from sensors.imu.imu_sensor import IMUSensor
+import time
 
-class HMC5883l(IMUSensor):
-    MEASURE = 0x00
-    MEASUREMENT = 0x00
-    BW_15Hz = 0x70
-    SCALE = 0x01
-    CONTINUOUS = 0x02
 
-    __scales = {
-        0.88: [0, 0.73],
-        1.30: [1, 0.92],
-        1.90: [2, 1.22],
-        2.50: [3, 1.52],
-        4.00: [4, 2.27],
-        4.70: [5, 2.56],
-        5.60: [6, 3.03],
-        8.10: [7, 4.35],
-    }
+class QMC5883l(IMUSensor):
+    RANGE_2G = 0x00
+    BW_10Hz = 0x00
+    OS_512 = 0x00
+    MODE_CONT = 0x01
+    REG_CONTROL_1 = 0x09  # Control Register #1.
+    REG_CONTROL_2 = 0x0A  # Control Register #2.
+    REG_XOUT_LSB = 0x00  # Output Data Registers for magnetic sensor.
+    REG_XOUT_MSB = 0x01
+    REG_YOUT_LSB = 0x02
+    REG_YOUT_MSB = 0x03
+    REG_ZOUT_LSB = 0x04
+    REG_ZOUT_MSB = 0x05
+    SOFT_RST = 0b10000000  # Soft Reset.
+    INT_ENB = 0b00000001  # Interrupt Pin Enabling.
+    REG_STATUS_1 = 0x06  # Status Register.
+    REG_RST_PERIOD = 0x0b   # SET/RESET Period Register.
 
-    def __init__(self, bus, gauss=1.3, declination=(0, 0)):
-        super().__init__(bus, address=0x1E)
-        degrees, minutes = declination
-        self.declination = degrees + minutes / 60
-        (reg, self.__scale) = self.__scales[gauss]
-        self.bus.write_byte_data(
-            self.address, self.MEASURE, self.BW_15Hz
-        )  # 8 Average, 15 Hz, normal measurement
-        self.bus.write_byte_data(self.address, self.SCALE, reg << 5)  # Scale
-        self.bus.write_byte_data(
-            self.address, self.CONTINUOUS, self.MEASUREMENT
-        )  # Continuous measurement
+    # Flags for Status Register #1.
+    STAT_DRDY = 0b00000001  # Data Ready.
+    STAT_OVL = 0b00000010  # Overflow flag.
+    STAT_DOR = 0b00000100  # Data skipped for reading.
 
-    def __twos_complement(self, val, length):
-        # Convert twos compliment to integer
-        if val & (1 << length - 1):
-            val = val - (1 << length)
+    def __init__(self, bus, declination=0.0):
+        super().__init__(bus, address=0x0C)
+        self.declination = declination
+        self._calibration = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+        self.write_byte(self.REG_CONTROL_2, self.SOFT_RST)
+        self.write_byte(self.REG_CONTROL_2, self.INT_ENB)
+        self.write_byte(self.REG_RST_PERIOD, 0x01)
+        self.write_byte(self.REG_CONTROL_1, self.MODE_CONT)
+        chip_id = self.read_byte(0x0d)
+        if chip_id != 0xff:
+            print(chip_id)
+
+
+    def _read_word(self, registry):
+        """Read a two bytes value stored as LSB and MSB."""
+        low = self.read_byte(registry)
+        high = self.read_byte(registry + 1)
+        val = (high << 8) + low
         return val
 
-    def __convert(self, data, offset):
-        val = self.__twos_complement(data[offset] << 8 | data[offset + 1], 16)
-        if val == -4096:
-            return None
-        return round(val * self.__scale, 4)
+    def _read_word_2c(self, registry):
+        """Calculate the 2's complement of a two bytes value."""
+        val = self._read_word(registry)
+        if val >= 0x8000:  # 32768
+            return val - 0x10000  # 65536
+        else:
+            return val
 
-    def axes(self):
-        data = self.bus.read_i2c_block_data(self.address, 0x00)
-        # print map(hex, data)
-        x = self.__convert(data, 3)
-        y = self.__convert(data, 7)
-        z = self.__convert(data, 5)
-        return (x, y, z)
+    def set_calibration(self, value):
+        """Set the 3x3 matrix for horizontal (x, y) magnetic vector calibration."""
+        c = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+        for i in range(0, 3):
+            for j in range(0, 3):
+                c[i][j] = float(value[i][j])
+        self._calibration = c
 
-    def read(self):
-        (x, y, _) = self.axes()
-        heading_rad = math.atan2(y, x)
-        heading_rad += self.declination
 
-        # Correct for reversed heading
-        if heading_rad < 0:
-            heading_rad += 2 * math.pi
-
-        # Check for wrap and compensate
-        elif heading_rad > 2 * math.pi:
-            heading_rad -= 2 * math.pi
-
-        # Convert to degrees from radians
-        heading_deg = heading_rad * 180 / math.pi
-        return heading_deg
-
-    def degrees(self, heading_deg):
-        degrees = math.floor(heading_deg)
-        minutes = round((heading_deg - degrees) * 60)
-        return (degrees, minutes)
+    def get_data(self):
+        """Read data from magnetic and temperature data registers."""
+        i = 0
+        [x, y, z] = [None, None, None]
+        while i < 20:  # Timeout after about 0.20 seconds.
+            status = self.read_byte(self.REG_STATUS_1)
+            print(status)
+            if status & 0b00000010:   # Overflow flag.
+                print("overflow!!")
+            if status & self.STAT_DOR:
+                # Previous measure was read partially, sensor in Data Lock.
+                x = self._read_word_2c(self.REG_XOUT_LSB)
+                y = self._read_word_2c(self.REG_YOUT_LSB)
+                z = self._read_word_2c(self.REG_ZOUT_LSB)
+                continue
+            if status & self.STAT_DRDY:
+                # Data is ready to read.
+                x = self._read_word_2c(self.REG_XOUT_LSB)
+                y = self._read_word_2c(self.REG_YOUT_LSB)
+                z = self._read_word_2c(self.REG_ZOUT_LSB)
+                break
+            else:
+                # Waiting for DRDY.
+                time.sleep(0.01)
+                i += 1
+        return [x, y, z]

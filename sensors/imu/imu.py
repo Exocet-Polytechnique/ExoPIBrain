@@ -3,6 +3,7 @@ from hmc5883l import HMC5883l
 from itg3205 import ITG3205
 from data_readers.stream_reader import StreamReader
 
+
 class IMU(StreamReader):
     def __init__(self):
         super().__init__()
