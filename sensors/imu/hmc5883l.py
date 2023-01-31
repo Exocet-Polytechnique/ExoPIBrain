@@ -7,17 +7,11 @@ class QMC5883l(IMUSensor):
     BW_10Hz = 0x00
     OS_512 = 0x00
     MODE_CONT = 0x01
-    REG_CONTROL_1 = 0x09  # Control Register #1.
+    REG_CONTROL_1 = 0x0B  # Control Register #1.
     REG_CONTROL_2 = 0x0A  # Control Register #2.
     REG_XOUT_LSB = 0x00  # Output Data Registers for magnetic sensor.
-    REG_XOUT_MSB = 0x01
     REG_YOUT_LSB = 0x02
-    REG_YOUT_MSB = 0x03
     REG_ZOUT_LSB = 0x04
-    REG_ZOUT_MSB = 0x05
-    SOFT_RST = 0b10000000  # Soft Reset.
-    INT_ENB = 0b00000001  # Interrupt Pin Enabling.
-    REG_STATUS_1 = 0x06  # Status Register.
     REG_RST_PERIOD = 0x0b   # SET/RESET Period Register.
 
     # Flags for Status Register #1.
@@ -29,13 +23,8 @@ class QMC5883l(IMUSensor):
         super().__init__(bus, address=0x0C)
         self.declination = declination
         self._calibration = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
-        self.write_byte(self.REG_CONTROL_2, self.SOFT_RST)
-        self.write_byte(self.REG_CONTROL_2, self.INT_ENB)
-        self.write_byte(self.REG_RST_PERIOD, 0x01)
-        self.write_byte(self.REG_CONTROL_1, self.MODE_CONT)
-        chip_id = self.read_byte(0x0d)
-        if chip_id != 0xff:
-            print(chip_id)
+        self.write_byte(self.REG_CONTROL_1, 0x00)
+        self.write_byte(self.REG_CONTROL_2, 0x4D)
 
 
     def _read_word(self, registry):
@@ -66,25 +55,9 @@ class QMC5883l(IMUSensor):
         """Read data from magnetic and temperature data registers."""
         i = 0
         [x, y, z] = [None, None, None]
-        while i < 20:  # Timeout after about 0.20 seconds.
-            status = self.read_byte(self.REG_STATUS_1)
-            print(status)
-            if status & 0b00000010:   # Overflow flag.
-                print("overflow!!")
-            if status & self.STAT_DOR:
-                # Previous measure was read partially, sensor in Data Lock.
-                x = self._read_word_2c(self.REG_XOUT_LSB)
-                y = self._read_word_2c(self.REG_YOUT_LSB)
-                z = self._read_word_2c(self.REG_ZOUT_LSB)
-                continue
-            if status & self.STAT_DRDY:
-                # Data is ready to read.
-                x = self._read_word_2c(self.REG_XOUT_LSB)
-                y = self._read_word_2c(self.REG_YOUT_LSB)
-                z = self._read_word_2c(self.REG_ZOUT_LSB)
-                break
-            else:
-                # Waiting for DRDY.
-                time.sleep(0.01)
-                i += 1
+        
+        x = self._read_word_2c(self.REG_XOUT_LSB)
+        y = self._read_word_2c(self.REG_YOUT_LSB)
+        z = self._read_word_2c(self.REG_ZOUT_LSB)
+        
         return [x, y, z]
