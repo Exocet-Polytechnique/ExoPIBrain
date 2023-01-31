@@ -39,5 +39,5 @@ class GPS(StreamReader):
         except SerialException:
             print("GPS fucked")
 
-        return self.nmea_time, self.speed_knots, self.course_angle, self.lat_deg, self.long_deg
+        return {"nmea_time": self.nmea_time, "speed_knots": self.speed_knots, "course_angle": self.course_angle, "lat_deg": self.lat_deg, "long_deg": self.long_deg}
 
