@@ -11,7 +11,6 @@ class IMU(StreamReader):
         self.magnetometer = HMC5883l(self.bus)
         self.gyroscope = ITG3205(self.bus)
 
-
     def read_raw_data(self):
         self.accelerometer.read()
         self.magnetometer.read()

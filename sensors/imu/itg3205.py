@@ -7,5 +7,6 @@ class ITG3205(IMUSensor):
     def __init__(self, bus):
         super().__init__(bus, address=0x68)
     
-    def read(self, *args, **kwargs):
-        return {"pitch": 0, "roll": 0, "yaw": 0}
+    def read(self):
+        # pitch, roll, yaw
+        return 0,0,0

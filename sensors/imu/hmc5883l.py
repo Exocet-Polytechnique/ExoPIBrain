@@ -52,7 +52,7 @@ class HMC5883l(IMUSensor):
         z = self.__convert(data, 5)
         return (x, y, z)
 
-    def read(self, *args, **kwargs):
+    def read(self):
         (x, y, _) = self.axes()
         heading_rad = math.atan2(y, x)
         heading_rad += self.declination
@@ -67,7 +67,7 @@ class HMC5883l(IMUSensor):
 
         # Convert to degrees from radians
         heading_deg = heading_rad * 180 / math.pi
-        return {"course_angle": heading_deg}
+        return heading_deg
 
     def degrees(self, heading_deg):
         degrees = math.floor(heading_deg)

@@ -3,5 +3,5 @@ class IMUSensor:
         self.bus = bus
         self.address = address
 
-    def read(self, *args, **kwargs):
+    def read(self):
         raise NotImplementedError()

@@ -65,4 +65,4 @@ class ADXL345(IMUSensor):
             y = y * self.EARTH_GRAVITY_MS2
             z = z * self.EARTH_GRAVITY_MS2
 
-        return {"x": round(x, 4), "y": round(y, 4), "z": round(z, 4)}
+        return x, y, z
