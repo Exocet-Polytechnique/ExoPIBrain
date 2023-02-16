@@ -2,7 +2,6 @@ import serial
 from serial.serialutil import SerialException
 from data_readers.stream_reader import StreamReader
 
-
 class GPS(StreamReader):
     """
     GPS Interfacing with Raspberry Pi using Pyhton
@@ -38,7 +37,7 @@ class GPS(StreamReader):
                 self.speed_knots = float(nmea_buff[6])
                 self.course_angle = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
                 self.lat_deg = self._convert_to_degrees(float(nmea_buff[2]))
-                self.long_deg = self._convert_to_degrees(float(nmea_buff[4]))
+                self.long_deg = self._convert_to_degrees(float(nmea_buff[4])) * -1
         except SerialException:
             print("GPS fucked")
 
