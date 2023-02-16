@@ -14,3 +14,6 @@ class IMUSensor:
 
     def read_byte(self, register):
         return self.bus.read_byte_data(self.address, register)
+    
+    def read_block(self, register, length):
+        return self.bus.read_i2c_block_data(self.address, register, length)
