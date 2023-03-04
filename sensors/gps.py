@@ -2,14 +2,15 @@ import serial
 from serial.serialutil import SerialException
 from multithreading.stream_reader import StreamReader
 
+READ_INTERVAL = 1
 class GPS(StreamReader):
     """
-    GPS Interfacing with Raspberry Pi using Pyhton
+    GPS Interfacing with Raspberry Pi using Python
     http://www.electronicwings.com
     """
 
-    def __init__(self, thread_id, lock, with_checks=False) -> None:
-        super().__init__(thread_id, lock, with_checks)
+    def __init__(self, priority, lock, queue) -> None:
+        super().__init__(priority, lock, queue, READ_INTERVAL, False)
         self.ser = serial.Serial("/dev/ttyS0")  # Open port with baud rate
         self.lat_deg = 0
         self.long_deg = 0
@@ -42,7 +43,7 @@ class GPS(StreamReader):
         except SerialException:
             print("GPS fucked")
 
-        return {
+        return 'GPS', {
             "nmea_time": self.nmea_time,
             "speed_knots": self.speed_knots,
             "course_angle": self.course_angle,
