@@ -1,6 +1,6 @@
 import serial
 from serial.serialutil import SerialException
-from data_readers.stream_reader import StreamReader
+from multithreading.stream_reader import StreamReader
 
 class GPS(StreamReader):
     """
@@ -8,7 +8,8 @@ class GPS(StreamReader):
     http://www.electronicwings.com
     """
 
-    def __init__(self) -> None:
+    def __init__(self, thread_id, lock, with_checks=False) -> None:
+        super().__init__(thread_id, lock, with_checks)
         self.ser = serial.Serial("/dev/ttyS0")  # Open port with baud rate
         self.lat_deg = 0
         self.long_deg = 0
