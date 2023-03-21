@@ -3,12 +3,13 @@ from sensors.imu import IMU
 from sensors.rpmonitor import RPCPUTemperature
 from fuel_cell.fuel_cell import FuelCell
 import threading
-from queue import PriorityQueue
-from multithreading.consumers import DataConsumer
+from queue import PriorityQueue, Queue
+from multithreading.consumers import DataConsumer, LogConsumer
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 
-queue = PriorityQueue(maxsize=100)
+data_queue = PriorityQueue(maxsize=100)
+log_queue = Queue(maxsize=100)
 lock=threading.Lock()
 
 if __name__ == "__main__":
@@ -19,18 +20,19 @@ if __name__ == "__main__":
     # https://stackoverflow.com/questions/25904537/how-do-i-send-data-to-a-running-python-thread
 
     # Start the fuel cells - must include a start procedure before getting data!
-    fc_a = FuelCell(0, lock, queue, 1, "/dev/ttyS0")  # Some random serial ports for now
-    fc_b = FuelCell(0, lock, queue, 1, "/dev/ttyS0")
+    fc_a = FuelCell(0, lock, data_queue, log_queue, "/dev/ttyS0")  # Some random serial ports for now
+    fc_b = FuelCell(0, lock, data_queue, log_queue, "/dev/ttyS0")
 
     # Start the sensors
-    cputemp = RPCPUTemperature(1, lock, queue, "/dev/ttyS0")
+    cputemp = RPCPUTemperature(1, lock, data_queue, log_queue, "/dev/ttyS0")
 
-    gps = GPS(2, lock, queue)
-    imu = IMU(2, lock, queue)
+    gps = GPS(2, lock, data_queue, log_queue, "/dev/ttyS0")
+    imu = IMU(2, lock, data_queue, log_queue)
 
 
     # Start the consumers
-    data_cons = DataConsumer(lock, queue)
+    data_cons = DataConsumer(lock, data_queue)
+    log_cons = LogConsumer(lock, log_queue, "/dev/ttyS0")
 
     # Threads
     fc_a.start()
@@ -38,6 +40,7 @@ if __name__ == "__main__":
     cputemp.start()
     gps.start()
     data_cons.start()
+    log_cons.start()
     
 
     # TODO: Shutdown sequence

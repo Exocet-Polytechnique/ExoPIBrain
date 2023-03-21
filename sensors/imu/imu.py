@@ -5,8 +5,8 @@ from data_readers.stream_reader import StreamReader
 
 READ_INTERVAL = 1
 class IMU(StreamReader):
-    def __init__(self, priority, lock, queue):
-        super().__init__(priority, lock, queue, READ_INTERVAL)
+    def __init__(self, priority, lock, data_queue, log_queue):
+        super().__init__(priority, lock, data_queue, log_queue, READ_INTERVAL)
         self.bus = None  # TODO
         self.accelerometer = ADXL345(self.bus)
         self.magnetometer = HMC5883l(self.bus)
