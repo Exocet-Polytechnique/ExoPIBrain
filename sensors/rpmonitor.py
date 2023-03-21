@@ -8,7 +8,7 @@ READ_INTERVAL = 5
 
 class RPCPUTemperature(StreamReader):
     def __init__(self, priority, lock, queue) -> None:
-        super().__init__(priority, lock, queue, READ_INTERVAL, True)
+        super().__init__(priority, lock, queue, READ_INTERVAL)
         self.monitor = CPUTemperature()
 
     def read_raw_data(self):

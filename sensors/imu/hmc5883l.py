@@ -51,13 +51,12 @@ class QMC5883l(IMUSensor):
         self._calibration = c
 
 
-    def get_data(self):
+    def read(self):
         """Read data from magnetic and temperature data registers."""
-        i = 0
-        [x, y, z] = [None, None, None]
+        x, y, z = None, None, None
         
         x = self._read_word_2c(self.REG_XOUT_LSB)
         y = self._read_word_2c(self.REG_YOUT_LSB)
         z = self._read_word_2c(self.REG_ZOUT_LSB)
         
-        return [x, y, z]
+        return x, y, z

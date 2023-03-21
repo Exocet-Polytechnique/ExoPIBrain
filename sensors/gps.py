@@ -9,8 +9,8 @@ class GPS(StreamReader):
     http://www.electronicwings.com
     """
 
-    def __init__(self, priority, lock, queue, serial_port="/dev/ttyS0") -> None:
-        super().__init__(priority, lock, queue, READ_INTERVAL, False)
+    def __init__(self, priority, lock, queue, serial_port) -> None:
+        super().__init__(priority, lock, queue, READ_INTERVAL)
         self.serial_port = serial_port
         self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
 

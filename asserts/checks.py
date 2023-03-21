@@ -9,9 +9,13 @@ def cpu_temp_check(temperature):
     if temperature > CPU_MAX_TEMP_ALERT:
         raise CriticalError(msg)
 
+def fuel_cell_check(data):
+    pass
 
 CHECKS = {
-    "CPU_t": cpu_temp_check
+    "CPU_t": cpu_temp_check,
+    "FuelCell": fuel_cell_check,
+    
 }
 
 def get_check(key):

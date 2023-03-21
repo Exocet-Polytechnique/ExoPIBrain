@@ -5,8 +5,8 @@ from serial.serialutil import SerialException
 
 READ_INTERVAL = 1
 class FuelCell(StreamReader):
-    def __init__(self, priority, lock, queue, read_interval, with_checks, serial_port):
-        super().__init__(priority, lock, queue, read_interval, with_checks)
+    def __init__(self, priority, lock, queue, read_interval, serial_port):
+        super().__init__(priority, lock, queue, read_interval)
         self.serial_port = serial_port
         self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
         units = ["V", "C", "B", "A", "W", "Wh"]
@@ -30,4 +30,4 @@ class FuelCell(StreamReader):
         except SerialException:
             print(f"Fuel cell {self.serial_port} fucked")
         
-        return 'FuelCell', fuel_cell_data
+        return 'FUELCELL', fuel_cell_data
