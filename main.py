@@ -1,10 +1,10 @@
 from sensors.gps import GPS
-
+from sensors.imu import IMU
 from sensors.rpmonitor import RPCPUTemperature
 from fuel_cell.fuel_cell import FuelCell
 import threading
 from queue import PriorityQueue
-from multithreading.consumers import Consumer
+from multithreading.consumers import DataConsumer
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 
@@ -30,19 +30,21 @@ if __name__ == "__main__":
 
 
     # Start the consumers
-    cons = Consumer(lock, queue)
+    data_cons = DataConsumer(lock, queue)
 
     # Threads
     fc_a.start()
     fc_b.start()
     cputemp.start()
     gps.start()
-    cons.start()
+    data_cons.start()
     
 
     # TODO: Shutdown sequence
+    fc_a.join()
+    fc_b.join()
     cputemp.join()
     gps.join()
-    cons.join()
+    data_cons.join()
     
     
