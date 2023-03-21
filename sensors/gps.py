@@ -9,14 +9,10 @@ class GPS(StreamReader):
     http://www.electronicwings.com
     """
 
-    def __init__(self, priority, lock, queue) -> None:
+    def __init__(self, priority, lock, queue, serial_port="/dev/ttyS0") -> None:
         super().__init__(priority, lock, queue, READ_INTERVAL, False)
-        self.ser = serial.Serial("/dev/ttyS0")  # Open port with baud rate
-        self.lat_deg = 0
-        self.long_deg = 0
-        self.nmea_time = 0
-        self.speed_knots = 0
-        self.course_angle = 0
+        self.serial_port = serial_port
+        self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
 
     def _convert_to_degrees(self, raw_value):
         decimal_value = raw_value / 100.00
@@ -27,6 +23,7 @@ class GPS(StreamReader):
         return position
 
     def read_raw_data(self):
+        gps_data = {}
         try:
             received_data = (str)(self.ser.readline())
             gprmc_data_available = received_data.find(
@@ -35,18 +32,12 @@ class GPS(StreamReader):
             if gprmc_data_available > 0:
                 sentence = received_data.split("$GPRMC,", 1)[1]
                 nmea_buff = sentence.split(",")
-                self.nmea_time = float(nmea_buff[0])
-                self.speed_knots = float(nmea_buff[6])
-                self.course_angle = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
-                self.lat_deg = self._convert_to_degrees(float(nmea_buff[2]))
-                self.long_deg = self._convert_to_degrees(float(nmea_buff[4])) * -1
+                gps_data["nmea_time"] = float(nmea_buff[0])
+                gps_data["speed_knots"] = float(nmea_buff[6])
+                gps_data["course_angle"] = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
+                gps_data["lat_deg"] = self._convert_to_degrees(float(nmea_buff[2]))
+                gps_data["long_deg"] = self._convert_to_degrees(float(nmea_buff[4])) * -1
         except SerialException:
             print("GPS fucked")
 
-        return 'GPS', {
-            "nmea_time": self.nmea_time,
-            "speed_knots": self.speed_knots,
-            "course_angle": self.course_angle,
-            "lat_deg": self.lat_deg,
-            "long_deg": self.long_deg,
-        }
+        return 'GPS', gps_data
