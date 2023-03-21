@@ -9,9 +9,9 @@ class GPS(StreamReader):
     http://www.electronicwings.com
     """
 
-    def __init__(self, priority, lock, queue, serial_port) -> None:
-        super().__init__(priority, lock, queue, READ_INTERVAL)
-        self.serial_port = serial_port
+    def __init__(self, lock, data_queue, log_queue, config) -> None:
+        super().__init__(config['priority'], lock, data_queue, log_queue, config['read_interval'])
+        self.serial_port = config['serial_port']
         self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
 
     def _convert_to_degrees(self, raw_value):

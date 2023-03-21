@@ -11,10 +11,9 @@ class Consumer(threading.Thread):
     def run(self):
         pass
 class DataConsumer(Consumer):
-    def __init__(self,lock, queue, serial_port):
+    def __init__(self,lock, queue):
         super().__init__(lock, queue)
-        
-
+    
     def run(self):
         while True:
             name, data = self.queue.get()[1]
