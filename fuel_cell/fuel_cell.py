@@ -15,6 +15,10 @@ class FuelCell(StreamReader):
     def start_fuel_cell(self):
         # TODO: Start procedure, write to cell
         self.started = True
+        
+
+    def shutdown_fuel_cell(self):
+        self.started = False
 
     def read_raw_data(self):
         fuel_cell_data = {}
@@ -24,7 +28,9 @@ class FuelCell(StreamReader):
             received_data = "|FC_V : 71.17 V |   FCT1:  30.90 C   |   H2P1  :  0.61 B |   DCDCV: 30.5 V   |FC_A  : 10.21 A |   FCT2:  28.46 C   |   H2P2  :  0.59 B |   DCDCA: 12.8 A   |FC_W  : 726.6 W |   FAN :    89 %    |   Tank-P: 117.0 B |   DCDCW: 1234.5 W |Energy:   298 Wh|   BLW :    21 %    |   Tank-T: 25.08 C |   BattV:  23.49 V ||                    |                   |                   !"
             received_data = re.sub(regexp, r'\1', received_data.replace(" ", "")).split("|")
             for d in received_data:
-                if d != "" and d != "!":
+                if d == "!":
+                    break
+                if d != "":
                     measure, value = d.split(":")
                     if value[-1] == "%":
                         value = float(value[:-1]) / 100
