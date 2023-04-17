@@ -1,0 +1,18 @@
+{
+  "cpu": {
+    "fqbn": "arduino:samd:mkrnb1500",
+    "name": "Arduino MKR NB 1500",
+    "type": "serial"
+  },
+  "secrets": [
+    {
+      "name": "SECRET_OPTIONAL_PASSWORD",
+      "value": ""
+    },
+    {
+      "name": "SECRET_OPTIONAL_USERNAME",
+      "value": ""
+    }
+  ],
+  "included_libs": []
+}
