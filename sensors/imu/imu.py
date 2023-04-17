@@ -3,10 +3,11 @@ from hmc5883l import HMC5883l
 from itg3205 import ITG3205
 from data_readers.stream_reader import StreamReader
 
-READ_INTERVAL = 1
+
+
 class IMU(StreamReader):
-    def __init__(self, priority, lock, data_queue, log_queue):
-        super().__init__(priority, lock, data_queue, log_queue, READ_INTERVAL)
+    def __init__(self, priority, lock, data_queue, log_queue, config):
+        super().__init__(priority, lock, data_queue, log_queue, config)
         self.bus = None  # TODO
         self.accelerometer = ADXL345(self.bus)
         self.magnetometer = HMC5883l(self.bus)
@@ -26,5 +27,5 @@ class IMU(StreamReader):
         imu_data["x_gyro"] = x_gyro
         imu_data["y_gyro"] = y_gyro
         imu_data["z_gyro"] = z_gyro
-        return "IMU", imu_data
+        return imu_data
 

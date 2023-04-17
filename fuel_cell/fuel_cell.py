@@ -7,7 +7,7 @@ from serial.serialutil import SerialException
 regexp = re.compile(r'(\d+)\s*(%s)\b' % '|'.join(["V", "C", "B", "A", "W", "Wh"]))
 class FuelCell(StreamReader):
     def __init__(self, lock, data_queue, log_queue, config):
-        super().__init__(config['priority'], lock, data_queue, log_queue, config['read_interval'])
+        super().__init__(lock, data_queue, log_queue, config)
         self.serial_port = config['serial_port']
         self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
         self.started = False
@@ -40,4 +40,4 @@ class FuelCell(StreamReader):
         except SerialException:
             print(f"Fuel cell {self.serial_port} fucked")
         
-        return 'FUELCELL', fuel_cell_data
+        return fuel_cell_data

@@ -12,4 +12,4 @@ class RPCPUTemperature(StreamReader):
         self.monitor = CPUTemperature()
 
     def read_raw_data(self):
-        return "CPU_t", self.monitor.temperature
+        return self.monitor.temperature

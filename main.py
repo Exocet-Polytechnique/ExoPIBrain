@@ -37,6 +37,8 @@ if __name__ == "__main__":
     fc_a.start_fuel_cell()
     fc_b.start_fuel_cell()
 
+    # Thermocouple
+
     # Start the sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
 
@@ -67,7 +69,6 @@ if __name__ == "__main__":
     fc_a.shutdown_fuel_cell()
     fc_b.shutdown_fuel_cell()
 
-    
     fc_a.join()
     fc_b.join()
     cputemp.join()

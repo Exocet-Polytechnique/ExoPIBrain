@@ -10,7 +10,7 @@ class GPS(StreamReader):
     """
 
     def __init__(self, lock, data_queue, log_queue, config) -> None:
-        super().__init__(config['priority'], lock, data_queue, log_queue, config['read_interval'])
+        super().__init__(lock, data_queue, log_queue, config)
         self.serial_port = config['serial_port']
         self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
 
@@ -40,4 +40,4 @@ class GPS(StreamReader):
         except SerialException:
             print("GPS fucked")
 
-        return 'GPS', gps_data
+        return gps_data

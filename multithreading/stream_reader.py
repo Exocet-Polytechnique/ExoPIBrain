@@ -2,23 +2,32 @@ import threading
 import time
 
 class StreamReader(threading.Thread):
-    def __init__(self, priority, lock, data_queue, log_queue, read_interval):
+    """
+    This class is used to read a stream of data from a sensor and put it in a queue
+    on a new thread. The data is read at a specified interval on a new thread.
+    It is a data producer.
+    """
+    def __init__(self, lock, data_queue, log_queue, config):
         threading.Thread.__init__(self)
-        self.priority = priority
+        self.config = config
+        self.priority = self.config["priority"]
         self.lock = lock
-        self.read_interval = read_interval
+        self.read_interval = self.config["read_interval"]
         self.data_queue = data_queue
         self.log_queue = log_queue
 
     def read_raw_data(self):
-        return "None", 0
-
+        # Should be overriden by child class
+        return 0
+    
+    def read(self):
+        return self.config["name"], self.read_raw_data()
 
     def run(self):
         while True:
             if self.lock:
                 self.lock.acquire()
-            data = self.read_raw_data()
+            data = self.read()
             self.data_queue.put((self.priority, data))
             self.log_queue.put(data)
             print("in queue", data)
