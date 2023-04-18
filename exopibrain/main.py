@@ -1,5 +1,4 @@
 from sensors.gps import GPS
-from sensors.imu import IMU
 from sensors.rpmonitor import RPCPUTemperature
 from fuel_cell.fuel_cell import FuelCell
 import threading
@@ -42,19 +41,18 @@ if __name__ == "__main__":
     # Start the sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
 
-    gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
-    imu = IMU(lock, data_queue, log_queue, CONFIG["IMU"])
+    #gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
 
     # Start the consumers
     data_cons = DataConsumer(lock, data_queue)  
-    log_cons = LogConsumer(lock, log_queue, "/dev/ttyS0") # Random port form now
+    log_cons = LogConsumer(lock, log_queue, "/dev/ttyAMA0") # Random port form now
 
     # Threads
     fc_a.start()
     fc_b.start()
     cputemp.start()
-    gps.start()
+    #gps.start()
     data_cons.start()
     log_cons.start()
     
@@ -72,7 +70,7 @@ if __name__ == "__main__":
     fc_a.join()
     fc_b.join()
     cputemp.join()
-    gps.join()
+    #gps.join()
     data_cons.join()
     
     

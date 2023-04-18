@@ -70,7 +70,7 @@ void updateVariables(String serialData) {
     
   }
 }
-
+// Monitor from RP with screen /dev/port_name 9600
 
 void loop() {
   ArduinoCloud.update();

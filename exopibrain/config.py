@@ -1,12 +1,12 @@
 CONFIG = {
     "FUELCELL_A": {
-        "serial_port": "/dev/ttyUSB0",
+        "serial_port": "/dev/ttyAMA0",
         "priority": 0,
         "read_interval": 1,
         "name": "FUELCELL_A"
     },
     "FUELCELL_B": {
-        "serial_port": "/dev/ttyUSB1",
+        "serial_port": "/dev/ttyAMA0",
         "priority": 0,
         "read_interval": 1,
         "name": "FUELCELL_B"
