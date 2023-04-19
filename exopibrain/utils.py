@@ -1,7 +1,7 @@
 
 import json
 
-def stringify_data(name, data_dict, start_char="", end_char="!"):
+def stringify_data(name, data_dict, start_char="", end_char=""):
     """
     Stringifies data dicts for logging.
     i.e. for fuel cell a:
