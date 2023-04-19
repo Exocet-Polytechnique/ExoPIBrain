@@ -22,4 +22,6 @@ CHECKS = {
 }
 
 def get_check(key):
-    return CHECKS[key]
+    if key in CHECKS.keys():
+        return CHECKS[key]
+    return lambda data: None

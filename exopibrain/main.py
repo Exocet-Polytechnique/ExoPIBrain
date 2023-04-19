@@ -41,8 +41,7 @@ if __name__ == "__main__":
     # Start the sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
 
-    #gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
-
+    gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
     # Start the consumers
     data_cons = DataConsumer(lock, data_queue)  
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     fc_a.start()
     fc_b.start()
     cputemp.start()
-    #gps.start()
+    gps.start()
     data_cons.start()
     log_cons.start()
     
@@ -70,7 +69,7 @@ if __name__ == "__main__":
     fc_a.join()
     fc_b.join()
     cputemp.join()
-    #gps.join()
+    gps.join()
     data_cons.join()
     
     
