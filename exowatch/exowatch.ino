@@ -15,7 +15,7 @@
 */
 
 #include "thingProperties.h"
-
+#include <ArduinoJson.h>
 
 void setup() {
   // Initialize serial and wait for port to open:
@@ -24,10 +24,10 @@ void setup() {
   delay(1500); 
 
   // Defined in thingProperties.h
-  initProperties();
+  // initProperties();
 
   // Connect to Arduino IoT Cloud
-  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  //ArduinoCloud.begin(ArduinoIoTPreferredConnection);
   
   /*
      The following function allows you to obtain more information
@@ -37,7 +37,7 @@ void setup() {
      Maximum is 4
  */
   setDebugMessageLevel(2);
-  ArduinoCloud.printDebugInfo();
+  //ArduinoCloud.printDebugInfo();
 }
 
 String readSerial() {
@@ -56,10 +56,22 @@ String readSerial() {
   return serialData;
 }
 
+
 void updateVariables(String serialData) {
-  String name = serialData.substring(0, serialData.indexOf(' '));
+  int separator_index = serialData.indexOf(' ');
+  String name = serialData.substring(0, separator_index);
+  String jsonString = serialData.substring(separator_index);
+  if (jsonString == "{}") {
+    return;
+  }
+
+  StaticJsonDocument<512> doc;
+  deserializeJson(doc, jsonString);
+  Serial.println(name);
   if (name == "GPS") {
-    
+    const char* world = doc["nmea_time"];
+    Serial.println(world);
+
   } else if (name == "FUELCELL_A") {
 
   } else if (name == "FUELCELL_B") {
@@ -73,10 +85,12 @@ void updateVariables(String serialData) {
 
 
 void loop() {
-  ArduinoCloud.update();
+ // ArduinoCloud.update();
   // Your code here 
   String serialData = readSerial();
+  Serial.println(serialData);
   updateVariables(serialData);
+  delay(1000);
   
 }
 
