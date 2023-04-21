@@ -14,7 +14,7 @@ CONFIG = {
     "GPS": {
         "serial_port": "/dev/ttyS0",
         "priority": 1,
-        "read_interval": 1,
+        "read_interval": 3,
         "name": "GPS"
     },
     "RP_CPU_TEMP": {

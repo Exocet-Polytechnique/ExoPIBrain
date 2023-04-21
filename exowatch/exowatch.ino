@@ -40,9 +40,9 @@ void setup() {
   ArduinoCloud.printDebugInfo();
 }
 
-String gps_str = "GPS {'nmea_time': 24519.0, 'speed_knots': 0.09, 'course_angle': 0.0, 'lat_deg': 45.52552, 'long_deg': -73.78947}"
-String fuelcell_str = "{'FC_V': 71.17, 'FCT1': 30.9, 'H2P1': 0.61, 'DCDCV': 30.5, 'FC_A': 10.21, 'FCT2': 28.46, 'H2P2': 0.59, 'DCDCA': 12.8, 'FC_W': 726.6, 'FAN': 0.89, 'Tank-P': 117.0, 'DCDCW': 1234.5, 'Energy': 298.0, 'BLW': 0.21, 'Tank-T': 25.08, 'BattV': 23.49}"
-
+String gps_str = "GPS {'nmea_time': 24519.0, 'speed_knots': 0.09, 'course_angle': 0.0, 'lat_deg': 45.52552, 'long_deg': -73.78947}";
+String fuelcell_str = "FUELCELL_A {'FC_V': 71.17, 'FCT1': 30.9, 'H2P1': 0.61, 'DCDCV': 30.5, 'FC_A': 10.21, 'FCT2': 28.46, 'H2P2': 0.59, 'DCDCA': 12.8, 'FC_W': 726.6, 'FAN': 0.89, 'Tank-P': 117.0, 'DCDCW': 1234.5, 'Energy': 298.0, 'BLW': 0.21, 'Tank-T': 25.08, 'BattV': 23.49}";
+String rp_temp_str = "RP_CPU_TEMP {'temperature': 51.121}";
 String readSerial() {
   /*
   Read serial line until stop char is met
@@ -68,8 +68,10 @@ void updateVariables(String serialData) {
   } else if (name == "FUELCELL_B") {
 
   } else if (name == "IMU") {
+
+ 
     
-  } else {
+  } else if (name == ) {
     
   }
 }
