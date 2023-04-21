@@ -21,7 +21,7 @@ class DataConsumer(Consumer):
         while True:
             name, data = self.queue.get()[1]
             get_check(name)(data)
-            #print(data)
+            print(data)
             self.queue.task_done()
            
 

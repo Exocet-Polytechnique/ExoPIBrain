@@ -24,18 +24,21 @@ class GPS(StreamReader):
 
     def read_raw_data(self):
         gps_data = {}
-        if self.ser.in_waiting:
-            received_data = (str)(self.ser.readline())
-            gprmc_data_available = received_data.find(
-                "$GPRMC,"
-            )  # check for NMEA GPGGA string
-            if gprmc_data_available > 0:
-                sentence = received_data.split("$GPRMC,", 1)[1]
-                nmea_buff = sentence.split(",")
-                gps_data["nmea_time"] = float(nmea_buff[0])
-                gps_data["speed_knots"] = float(nmea_buff[6])
-                gps_data["course_angle"] = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
-                gps_data["lat_deg"] = self._convert_to_degrees(float(nmea_buff[2]))
-                gps_data["long_deg"] = self._convert_to_degrees(float(nmea_buff[4])) * -1        
+        try:
+            if self.ser.in_waiting:
+                received_data = (str)(self.ser.readline())
+                gprmc_data_available = received_data.find(
+                    "$GPRMC,"
+                )  # check for NMEA GPGGA string
+                if gprmc_data_available > 0:
+                    sentence = received_data.split("$GPRMC,", 1)[1]
+                    nmea_buff = sentence.split(",")
+                    gps_data["nmea_time"] = float(nmea_buff[0])
+                    gps_data["speed_knots"] = float(nmea_buff[6])
+                    gps_data["course_angle"] = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
+                    gps_data["lat_deg"] = self._convert_to_degrees(float(nmea_buff[2]))
+                    gps_data["long_deg"] = self._convert_to_degrees(float(nmea_buff[4])) * -1        
+        except Exception:
+            pass
 
         return gps_data

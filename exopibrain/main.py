@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     # Start the consumers
     data_cons = DataConsumer(lock, data_queue)  
-    log_cons = LogConsumer(lock, log_queue, "/dev/ttyACM0") # Random port form now
+    #log_cons = LogConsumer(lock, log_queue, "/dev/ttyACM0") # Random port form now
 
     # Threads
     fc_a.start()
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     cputemp.start()
     gps.start()
     data_cons.start()
-    log_cons.start()
+    #log_cons.start()
     
 
     # TODO: Shutdown sequence
@@ -71,5 +71,6 @@ if __name__ == "__main__":
     cputemp.join()
     gps.join()
     data_cons.join()
+    #log_cons.join()
     
     
