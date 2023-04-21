@@ -30,7 +30,6 @@ class StreamReader(threading.Thread):
             data = self.read()
             self.data_queue.put((self.priority, data))
             self.log_queue.put(data)
-            print("in queue", data)
             if self.lock:
                 self.lock.release()
             time.sleep(self.read_interval)
