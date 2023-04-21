@@ -17,6 +17,8 @@
 #include "thingProperties.h"
 #include <ArduinoJson.h>
 
+#define END_CHAR "!"
+
 void setup() {
   // Initialize serial and wait for port to open:
   Serial.begin(9600);
@@ -24,10 +26,10 @@ void setup() {
   delay(1500); 
 
   // Defined in thingProperties.h
-  // initProperties();
+  initProperties();
 
   // Connect to Arduino IoT Cloud
-  //ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
   
   /*
      The following function allows you to obtain more information
@@ -37,12 +39,13 @@ void setup() {
      Maximum is 4
  */
   setDebugMessageLevel(2);
-  //ArduinoCloud.printDebugInfo();
+  ArduinoCloud.printDebugInfo();
 }
 
 String gps_str = "GPS {'nmea_time': 24519.0, 'speed_knots': 0.09, 'course_angle': 0.0, 'lat_deg': 45.52552, 'long_deg': -73.78947}";
 String fuelcell_str = "FUELCELL_A {'FC_V': 71.17, 'FCT1': 30.9, 'H2P1': 0.61, 'DCDCV': 30.5, 'FC_A': 10.21, 'FCT2': 28.46, 'H2P2': 0.59, 'DCDCA': 12.8, 'FC_W': 726.6, 'FAN': 0.89, 'Tank-P': 117.0, 'DCDCW': 1234.5, 'Energy': 298.0, 'BLW': 0.21, 'Tank-T': 25.08, 'BattV': 23.49}";
 String rp_temp_str = "RP_CPU_TEMP {'temperature': 51.121}";
+
 String readSerial() {
   /*
   Read serial line until stop char is met
@@ -69,29 +72,33 @@ void updateVariables(String serialData) {
   }
 
   StaticJsonDocument<512> doc;
-  deserializeJson(doc, jsonString);
-  Serial.println(name);
+  DeserializationError code = deserializeJson(doc, jsonString);
   if (name == "GPS") {
-    const char* world = doc["nmea_time"];
-    Serial.println(world);
+
+    float nmea_time = doc["nmea_time"];
+    Serial.println(nmea_time);
+
+    boatSpeed = doc["speed_knots"].as<float>();
+    boatHeading = doc["course_angle"].as<float>();
+    boatLocation = {doc["lat_deg"].as<double>(), doc["long_deg"].as<double>()};
+    
 
   } else if (name == "FUELCELL_A") {
+
 
   } else if (name == "FUELCELL_B") {
 
   } else if (name == "IMU") {
 
- 
     
-  } else if (name == ) {
-    
+  } else if (name == "RP_CPU_TEMP") {
+    cpuTemp = doc["temperature"].as<float>();
   }
 }
 // Monitor from RP with screen /dev/port_name 9600
 
 void loop() {
- // ArduinoCloud.update();
-  // Your code here 
+  ArduinoCloud.update();
   String serialData = readSerial();
   Serial.println(serialData);
   updateVariables(serialData);
