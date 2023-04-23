@@ -22,21 +22,24 @@ class FuelCell(StreamReader):
         temp_ok = False
         pressure_ok = False
         while not temp_ok or not pressure_ok:
-            received_data = self.ser.readline()
-            if ANODE_SUPPLY_PRESSURE_OK in received_data:
-                pressure_ok = True
-            if TEMPERATURE_OK in received_data:
-                temp_ok = True
-        time.sleep(1)
+            if self.ser.in_waiting > 0:
+                received_data = self.ser.readline()
+                if ANODE_SUPPLY_PRESSURE_OK in received_data:
+                    pressure_ok = True
+                if TEMPERATURE_OK in received_data:
+                    temp_ok = True
+            time.sleep(0.2)
         self.started = True
         
     def shutdown_fuel_cell(self):
         self.ser.write("end")
         system_off = False
         while not system_off:
-            received_data = self.ser.readline()
-            if SYSTEM_OFF in received_data:
-                system_off = True
+            if self.ser.in_waiting > 0:
+                received_data = self.ser.readline()
+                if SYSTEM_OFF in received_data:
+                    system_off = True
+            time.sleep(0.2)
         self.started = False
 
     def read_raw_data(self):
