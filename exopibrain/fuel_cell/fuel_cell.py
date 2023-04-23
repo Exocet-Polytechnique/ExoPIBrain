@@ -1,23 +1,42 @@
 from multithreading.stream_reader import StreamReader
 import re
+import time
 import serial
 from serial.serialutil import SerialException
 
+ANODE_SUPPLY_PRESSURE_OK = "Anode Supply Pressure OK"
+TEMPERATURE_OK = "Temperature Check OK"
+SYSTEM_OFF = "System Off"
 
 regexp = re.compile(r'(\d+)\s*(%s)\b' % '|'.join(["V", "C", "B", "A", "W", "Wh"]))
 class FuelCell(StreamReader):
     def __init__(self, lock, data_queue, log_queue, config):
         super().__init__(lock, data_queue, log_queue, config)
         self.serial_port = config['serial_port']
-        self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
+        self.ser = serial.Serial(self.serial_port, 57600)  # Open port with baud rate
         self.started = False
 
     def start_fuel_cell(self):
         # TODO: Start procedure, write to cell
+        self.ser.write("start")
+        temp_ok = False
+        pressure_ok = False
+        while not temp_ok or not pressure_ok:
+            received_data = self.ser.readline()
+            if ANODE_SUPPLY_PRESSURE_OK in received_data:
+                pressure_ok = True
+            if TEMPERATURE_OK in received_data:
+                temp_ok = True
+        time.sleep(1)
         self.started = True
         
-
     def shutdown_fuel_cell(self):
+        self.ser.write("end")
+        system_off = False
+        while not system_off:
+            received_data = self.ser.readline()
+            if SYSTEM_OFF in received_data:
+                system_off = True
         self.started = False
 
     def read_raw_data(self):
