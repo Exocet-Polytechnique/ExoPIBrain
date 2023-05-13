@@ -1,43 +1,54 @@
 import sys
 from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
+class DataWidget(QtWidgets.QLabel):
+    def __init__(self, text):
+        super().__init__(text=text)
+        self.setFont(QtGui.QFont("Arial", 50))
 
-class MyWidget(QtWidgets.QWidget):
+class TimeWidget(QtWidgets.QLabel):
+    def __init__(self, qtime):
+        super().__init__(text=qtime.toString())
+        self.setFont(QtGui.QFont("Arial", 100))
+    
+class MyWidget(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.time = TimeWidget(QtCore.QTime.currentTime())
+
+        self.speed = DataWidget("Vitesse")
+
+        self.temp = DataWidget("Temperature")
+
+        self.autonomy = DataWidget("Autonomie")
+
+        self.pressure = DataWidget("Pression")
+
+        self.consummation = DataWidget("Consommation")
         
-        currentTime = QtCore.QTime.currentTime()
-
-        self.time = QtWidgets.QLabel(currentTime.toString())
-        self.time.setFont(QtGui.QFont('Arial', 100))
-
-        self.speed = QtWidgets.QLabel("Vitesse")
-        self.speed.setFont(QtGui.QFont('Arial', 50))
-
-        self.temp = QtWidgets.QLabel("Température")
-        self.temp.setFont(QtGui.QFont('Arial', 50))
-
-        self.autonomy = QtWidgets.QLabel("Autonomie")
-        self.autonomy.setFont(QtGui.QFont('Arial', 50))
-
-        self.pressure = QtWidgets.QLabel("Pression")
-        self.pressure.setFont(QtGui.QFont('Arial', 50))
-
-        self.consummation = QtWidgets.QLabel("Consommation")
-        self.consummation.setFont(QtGui.QFont('Arial', 50))
+        self.tank = DataWidget("H2 restant")
         
-        self.tank = QtWidgets.QLabel("H2 restant")
-        self.tank.setFont(QtGui.QFont('Arial', 50))
-        
+        layout1 = QGridLayout()
+        layout2 = QHBoxLayout()
+        layout3 = QHBoxLayout()
+        layout1.setContentsMargins(0,0,0,0)
+        layout1.setSpacing(20)
 
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.layout.addWidget(self.time)
-        self.layout.addWidget(self.speed)
-        self.layout.addWidget(self.temp)
-        self.layout.addWidget(self.autonomy)
-        self.layout.addWidget(self.pressure)
-        self.layout.addWidget(self.consummation)
-        self.layout.addWidget(self.tank)
-        
+        layout1.addWidget(self.time, 0, 0, 1, 3)
+
+        layout2.addWidget(self.speed)
+        layout2.addWidget(self.temp)
+        layout2.addWidget(self.autonomy)
+        layout1.addLayout(layout2, 1,0)
+        layout3.addWidget(self.pressure)
+        layout3.addWidget(self.consummation)
+        layout3.addWidget(self.tank)
+        layout1.addLayout(layout3,2,0)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout1)
+        self.setCentralWidget(widget)
 
 
 
