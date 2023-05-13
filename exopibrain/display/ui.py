@@ -1,21 +1,36 @@
 import sys
+import qtawesome as qta
+
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
 class DataWidget(QtWidgets.QLabel):
     def __init__(self, text):
         super().__init__(text=text)
         self.setFont(QtGui.QFont("Arial", 50))
+    
 
 class TimeWidget(QtWidgets.QLabel):
-    def __init__(self, qtime):
-        super().__init__(text=qtime.toString())
+    """
+    https://www.geeksforgeeks.org/pyqt5-create-a-digital-clock/
+    """
+    def __init__(self):
+        super().__init__()
         self.setFont(QtGui.QFont("Arial", 100))
-    
+        timer = QtCore.QTimer(self)
+        timer.timeout.connect(self.show_time)
+        timer.start(1000)
+    def show_time(self):
+        # getting current time
+        current_time = QtCore.QTime.currentTime()
+        # converting QTime object to string
+        label_time = current_time.toString('hh:mm:ss')
+        # showing it to the label
+        self.setText(label_time)
 class MyWidget(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.time = TimeWidget(QtCore.QTime.currentTime())
+        self.time = TimeWidget()
 
         self.speed = DataWidget("Vitesse")
 
@@ -58,5 +73,4 @@ if __name__ == "__main__":
     widget = MyWidget()
     widget.resize(800, 600)
     widget.show()
-
     sys.exit(app.exec())
