@@ -1,0 +1,2 @@
+class Contactors(object):
+    pass

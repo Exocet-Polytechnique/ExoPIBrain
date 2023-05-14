@@ -1,0 +1,2 @@
+class Precharge(object):
+    pass
