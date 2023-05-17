@@ -1,10 +1,8 @@
 import sys
+import threading
 import qtawesome as qta
-
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
-
-    
 
 class TimeWidget(QtWidgets.QLabel):
     """
@@ -37,7 +35,7 @@ class DataWidget(QtWidgets.QWidget):
         self.unit = unit
         self.data_labels = []
         font = 50 / len(self.values)
-        self.setFont(QtGui.QFont("Arial", font))
+        self.setFont(QtGui.QFont("Arial", int(font)))
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -103,12 +101,21 @@ class MyWidget(QtWidgets.QMainWindow):
         widget.setLayout(layout1)
         self.setCentralWidget(widget)
 
+class GUI(object):
+    """
+    https://stackoverflow.com/questions/49971584/updating-pyqt5-gui-with-live-data
+    """
+    def __init__(self):
+        self.app = QtWidgets.QApplication([])
+        self.widget = MyWidget()
+        self.widget.resize(800, 600)
+        self.widget.show()
+
+    def run(self):
+        sys.exit(self.app.exec())
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-
-    widget = MyWidget()
-    widget.resize(800, 600)
-    widget.show()
-    sys.exit(app.exec())
+    gui = GUI()
+    gui.run()
+    #gui.join()
