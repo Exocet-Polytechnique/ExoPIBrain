@@ -29,13 +29,15 @@ class DataWidget(QtWidgets.QWidget):
     IconSize = QtCore.QSize(96, 96)
     HorizontalSpacing = 2
 
-
-    def __init__(self, qta_id, value=0, unit="", final_stretch=True):
+    def __init__(self, qta_id, values=[0], prefixes=[""], unit="", final_stretch=True):
         super(QtWidgets.QWidget, self).__init__()
         self.qta_id = qta_id
-        self.value = value
+        self.values = values
+        self.prefixes = prefixes
         self.unit = unit
-        self.setFont(QtGui.QFont("Arial", 50))
+        self.data_labels = []
+        font = 50 / len(self.values)
+        self.setFont(QtGui.QFont("Arial", font))
 
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -46,23 +48,22 @@ class DataWidget(QtWidgets.QWidget):
 
         layout.addWidget(icon)
         layout.addSpacing(self.HorizontalSpacing)
-        self.data_label = QtWidgets.QLabel(f"{value} {unit}")
-        layout.addWidget(self.data_label)
+
+        v_layout = QVBoxLayout()
+        for i, value in enumerate(self.values):
+            data_label = QtWidgets.QLabel(f"{prefixes[i]} {value} {unit}")
+            self.data_labels.append(data_label)
+            v_layout.addWidget(data_label)
+        layout.addLayout(v_layout)
 
         if final_stretch:
             layout.addStretch()
 
-    def update(self, new_value):
-        self.value = new_value
-        self.data_label.setText(f"{self.value} {self.unit}")
+    def update(self, new_values):
+        self.values = new_values
+        for i, v in new_values:
+            self.data_labels[i].setText(f"{self.prefixes[i]} {v} {self.unit}")
 
-class TemperatureWidget(DataWidget):
-    def __init__(self, qta_id, value=0, unit="", final_stretch=True):
-        super().__init__(qta_id, value, unit, final_stretch)
-
-    def update(self, new_value):
-        self.value = new_value
-        self.data_label.setText(f"{self.value} {self.unit}")
 class MyWidget(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -71,7 +72,7 @@ class MyWidget(QtWidgets.QMainWindow):
 
         self.speed = DataWidget("fa5s.tachometer-alt", unit="km/h")
 
-        self.temp = DataWidget("fa5s.thermometer-half", unit="°C")
+        self.temp = DataWidget("fa5s.thermometer-half", values=[0,0,0], prefixes=["fc_a", "fc_b", "batt"], unit="°C")
 
         self.autonomy = DataWidget("fa5s.battery-half", unit="km")
 
