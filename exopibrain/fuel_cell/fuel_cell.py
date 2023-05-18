@@ -15,10 +15,15 @@ class FuelCell(StreamReader):
         self.serial_port = config['serial_port']
         self.ser = serial.Serial(self.serial_port, 57600)  # Open port with baud rate
         self.started = False
+    
+    def write(self, command_str):
+        for c in command_str:
+            self.ser.write(c)
+            time.sleep(0.1)
 
     def start_fuel_cell(self):
         # TODO: Start procedure, write to cell
-        self.ser.write("start")
+        self.write(b"start")
         temp_ok = False
         pressure_ok = False
         while not temp_ok or not pressure_ok:
@@ -32,7 +37,7 @@ class FuelCell(StreamReader):
         self.started = True
         
     def shutdown_fuel_cell(self):
-        self.ser.write("end")
+        self.write(b"end")
         system_off = False
         while not system_off:
             if self.ser.in_waiting > 0:
@@ -63,3 +68,4 @@ class FuelCell(StreamReader):
             print(f"Fuel cell {self.serial_port} fucked")
         
         return fuel_cell_data
+    

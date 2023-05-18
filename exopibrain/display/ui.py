@@ -74,11 +74,11 @@ class MyWidget(QtWidgets.QMainWindow):
 
         self.autonomy = DataWidget("fa5s.battery-half", unit="km")
 
-        self.pressure = DataWidget("fa5s.tachometer-alt", unit="bar")
+        self.pressure = DataWidget("fa5s.compress-arrows-alt", unit="bar")
 
-        self.consumption = DataWidget("fa5s.tachometer-alt", unit="L")
+        self.power = DataWidget("fa5s.bolt", unit="W")
         
-        self.tank = DataWidget("fa5s.tachometer-alt", unit="L")
+        self.tank = DataWidget("fa5s.spray-can", unit="L")
 
         layout1 = QGridLayout()
         layout2 = QHBoxLayout()
@@ -93,7 +93,7 @@ class MyWidget(QtWidgets.QMainWindow):
         layout2.addWidget(self.autonomy)
         layout1.addLayout(layout2, 1,0)
         layout3.addWidget(self.pressure)
-        layout3.addWidget(self.consumption)
+        layout3.addWidget(self.power)
         layout3.addWidget(self.tank)
         layout1.addLayout(layout3,2,0)
 
