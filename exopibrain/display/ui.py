@@ -11,9 +11,7 @@ class TimeWidget(QtWidgets.QLabel):
     def __init__(self):
         super().__init__()
         self.setFont(QtGui.QFont("Arial", 100))
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.show_time)
-        timer.start(1000)
+
     def show_time(self):
         # getting current time
         current_time = QtCore.QTime.currentTime()
@@ -59,7 +57,7 @@ class DataWidget(QtWidgets.QWidget):
 
     def update(self, new_values):
         self.values = new_values
-        for i, v in new_values:
+        for i, v in enumerate(new_values):
             self.data_labels[i].setText(f"{self.prefixes[i]} {v} {self.unit}")
 
 class MyWidget(QtWidgets.QMainWindow):
@@ -110,7 +108,24 @@ class GUI(object):
         self.widget = MyWidget()
         self.widget.resize(800, 600)
         self.widget.show()
+        self.current_data = {"batt_temp": 0.0, "fca_temp": 0.0, "fcb_temp": 0.0, "speed": 0.0, "total_power": 0.0, "est_auto": 0.0, "total_tank": 0.0, "pressure": 0.0} 
+        timer = QtCore.QTimer(self.widget)
+        timer.timeout.connect(self.update_widget)
+        timer.start(1000)
 
+    def update_data(self, **kwargs):
+        self.current_data = {**self.current_data, **kwargs}
+
+    def update_widget(self):
+        self.widget.time.show_time()
+        self.widget.speed.update([self.current_data["speed"]])
+        self.widget.temp.update([self.current_data["fca_temp"], self.current_data["fcb_temp"], self.current_data["batt_temp"]])
+        self.widget.pressure.update([self.current_data["pressure"]])
+        self.widget.power.update([self.current_data["total_power"]])
+        self.widget.tank.update([self.current_data["total_tank"]])
+        self.widget.autonomy.update([self.current_data["est_auto"]])
+        
+    
     def run(self):
         sys.exit(self.app.exec())
 
@@ -118,4 +133,3 @@ class GUI(object):
 if __name__ == "__main__":
     gui = GUI()
     gui.run()
-    #gui.join()
