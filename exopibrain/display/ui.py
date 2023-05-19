@@ -4,6 +4,11 @@ import qtawesome as qta
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
 
+ALERT_COLOR = "red"
+WARNING_COLOR = "yellow"
+BG_COLOR= "white"
+ASSERT_LIFETIME = 2
+
 class TimeWidget(QtWidgets.QLabel):
     """
     https://www.geeksforgeeks.org/pyqt5-create-a-digital-clock/
@@ -61,31 +66,27 @@ class DataWidget(QtWidgets.QWidget):
             self.data_labels[i].setText(f"{self.prefixes[i]} {v} {self.unit}")
 
 class MyWidget(QtWidgets.QMainWindow):
+    assert_signal = QtCore.pyqtSignal(str)
     def __init__(self):
         super().__init__()
 
         self.time = TimeWidget()
-
         self.speed = DataWidget("fa5s.tachometer-alt", unit="km/h")
-
         self.temp = DataWidget("fa5s.thermometer-half", values=[0,0,0], prefixes=["fc_a", "fc_b", "batt"], unit="°C")
-
         self.autonomy = DataWidget("fa5s.battery-half", unit="km")
-
         self.pressure = DataWidget("fa5s.compress-arrows-alt", unit="bar")
-
         self.power = DataWidget("fa5s.bolt", unit="W")
-        
-        self.tank = DataWidget("fa5s.spray-can", unit="L")
+        self.tank = DataWidget("fa5s.spray-can", unit="L")        
 
+        self.assert_signal.connect(self.handle_alert)
+
+        self.setStyleSheet(f"background-color: {BG_COLOR};")
         layout1 = QGridLayout()
         layout2 = QHBoxLayout()
         layout3 = QHBoxLayout()
         layout1.setContentsMargins(0,0,0,0)
         layout1.setSpacing(20)
-
         layout1.addWidget(self.time, 0, 0, 1, 3)
-
         layout2.addWidget(self.speed)
         layout2.addWidget(self.temp)
         layout2.addWidget(self.autonomy)
@@ -99,19 +100,33 @@ class MyWidget(QtWidgets.QMainWindow):
         widget.setLayout(layout1)
         self.setCentralWidget(widget)
 
+    def handle_alert(self, assert_type=None):
+        if assert_type == "alert":
+            self.setStyleSheet(f"background-color: {ALERT_COLOR};")
+        elif assert_type == "warning":
+            self.setStyleSheet(f"background-color: {WARNING_COLOR};")            
+        
+
 class GUI(object):
     """
     https://stackoverflow.com/questions/49971584/updating-pyqt5-gui-with-live-data
     """
+    
     def __init__(self):
         self.app = QtWidgets.QApplication([])
         self.widget = MyWidget()
+        
         self.widget.resize(800, 600)
         self.widget.show()
+
+        self.in_assert = False
+        self.assert_counter = 0
+
         self.current_data = {"batt_temp": 0.0, "fca_temp": 0.0, "fcb_temp": 0.0, "speed": 0.0, "total_power": 0.0, "est_auto": 0.0, "total_tank": 0.0, "pressure": 0.0} 
         timer = QtCore.QTimer(self.widget)
         timer.timeout.connect(self.update_widget)
         timer.start(1000)
+
 
     def update_data(self, **kwargs):
         self.current_data = {**self.current_data, **kwargs}
@@ -124,12 +139,27 @@ class GUI(object):
         self.widget.power.update([self.current_data["total_power"]])
         self.widget.tank.update([self.current_data["total_tank"]])
         self.widget.autonomy.update([self.current_data["est_auto"]])
+
+        if self.in_assert:
+            self.assert_counter += 1
+
+        if self.assert_counter >= ASSERT_LIFETIME:
+            self.assert_counter = 0
+            self.in_assert = False
+            self.widget.setStyleSheet(f"background-color: {BG_COLOR};")
+
         
-    
+    def dispatch_alert(self, alert_type):
+        self.in_assert = True
+        self.widget.assert_signal.emit(alert_type)
+        
+
+
     def run(self):
         sys.exit(self.app.exec())
 
 
 if __name__ == "__main__":
     gui = GUI()
+    gui.dispatch_alert("alert") # For now
     gui.run()
