@@ -1,5 +1,5 @@
+import os
 import sys
-import threading
 import qtawesome as qta
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
@@ -27,7 +27,7 @@ class TimeWidget(QtWidgets.QLabel):
 
 class DataWidget(QtWidgets.QWidget):
 
-    IconSize = QtCore.QSize(96, 96)
+    IconSize = QtCore.QSize(196, 196)
     HorizontalSpacing = 2
 
     def __init__(self, qta_id, values=[0], prefixes=[""], unit="", final_stretch=True):
@@ -37,9 +37,6 @@ class DataWidget(QtWidgets.QWidget):
         self.prefixes = prefixes
         self.unit = unit
         self.data_labels = []
-        font = 50 / len(self.values)
-        self.setFont(QtGui.QFont("Arial", int(font)))
-
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
@@ -69,7 +66,6 @@ class MyWidget(QtWidgets.QMainWindow):
     assert_signal = QtCore.pyqtSignal(str)
     def __init__(self):
         super().__init__()
-
         self.time = TimeWidget()
         self.speed = DataWidget("fa5s.tachometer-alt", unit="km/h")
         self.temp = DataWidget("fa5s.thermometer-half", values=[0,0,0], prefixes=["fc_a", "fc_b", "batt"], unit="°C")
@@ -114,9 +110,10 @@ class GUI(object):
     
     def __init__(self):
         self.app = QtWidgets.QApplication([])
+        self.app.setFont(QtGui.QFont("Arial", 76))
         self.widget = MyWidget()
         
-        self.widget.resize(800, 600)
+        self.widget.resize(1920, 1080)
         self.widget.show()
 
         self.in_assert = False
