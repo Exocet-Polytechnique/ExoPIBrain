@@ -50,6 +50,7 @@ class DataWidget(QtWidgets.QWidget):
         v_layout = QVBoxLayout()
         for i, value in enumerate(self.values):
             data_label = QtWidgets.QLabel(f"{prefixes[i]} {value} {unit}")
+            data_label.setFont(QtGui.QFont("Arial", int(75/len(self.values))))
             self.data_labels.append(data_label)
             v_layout.addWidget(data_label)
         layout.addLayout(v_layout)
@@ -110,7 +111,7 @@ class GUI(object):
     
     def __init__(self):
         self.app = QtWidgets.QApplication([])
-        self.app.setFont(QtGui.QFont("Arial", 76))
+        #self.app.setFont(QtGui.QFont("Arial", 76))
         self.widget = MyWidget()
         
         self.widget.resize(1920, 1080)
