@@ -1,13 +1,7 @@
-import os
 import sys
 import qtawesome as qta
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
-
-ALERT_COLOR = "red"
-WARNING_COLOR = "yellow"
-BG_COLOR= "white"
-ASSERT_LIFETIME = 2
 
 class TimeWidget(QtWidgets.QLabel):
     """
@@ -25,6 +19,8 @@ class TimeWidget(QtWidgets.QLabel):
         # showing it to the label
         self.setText(label_time)
 
+
+    
 class DataWidget(QtWidgets.QWidget):
 
     IconSize = QtCore.QSize(196, 196)
@@ -41,16 +37,17 @@ class DataWidget(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        icon = QtWidgets.QLabel()
-        icon.setPixmap(qta.icon(self.qta_id).pixmap(self.IconSize))
+        self.icon = QtWidgets.QLabel()
+        self.icon.setPixmap(qta.icon(self.qta_id).pixmap(self.IconSize))
 
-        layout.addWidget(icon)
+        layout.addWidget(self.icon)
         layout.addSpacing(self.HorizontalSpacing)
 
         v_layout = QVBoxLayout()
+        font_size = 50 if len(self.values) == 1 else 30
         for i, value in enumerate(self.values):
             data_label = QtWidgets.QLabel(f"{prefixes[i]} {value} {unit}")
-            data_label.setFont(QtGui.QFont("Arial", int(75/len(self.values))))
+            data_label.setFont(QtGui.QFont("Arial", font_size))
             self.data_labels.append(data_label)
             v_layout.addWidget(data_label)
         layout.addLayout(v_layout)
@@ -61,29 +58,52 @@ class DataWidget(QtWidgets.QWidget):
     def update(self, new_values):
         self.values = new_values
         for i, v in enumerate(new_values):
-            self.data_labels[i].setText(f"{self.prefixes[i]} {v} {self.unit}")
+            self.data_labels[i].setText(f"{self.prefixes[i]} {v:.1f} {self.unit}")
+
+class EfficiencyWidget(DataWidget):
+    ICON_NAME = "fa5s.leaf"
+    EFFICIENCY_TOLERANCE = 0.1
+    def __init__(self, value, final_stretch=False):
+        super().__init__("fa5s.leaf", values=[value], unit="%", final_stretch=final_stretch) 
+
+    def update(self, new_value):
+        self.values = [new_value]
+        sign = '+' if new_value > 0 else ''
+        self.data_labels[0].setText(f"{sign}{new_value:.1f} {self.unit}")
+        if -self.EFFICIENCY_TOLERANCE < new_value < self.EFFICIENCY_TOLERANCE:
+            new_color = "green"
+        else:
+            new_color = "red"
+        self.icon.setPixmap(qta.icon(self.qta_id, color=new_color).pixmap(self.IconSize))
+        
 
 class MyWidget(QtWidgets.QMainWindow):
+    ALERT_COLOR = "red"
+    WARNING_COLOR = "yellow"
+    BG_COLOR= "white"
     assert_signal = QtCore.pyqtSignal(str)
     def __init__(self):
         super().__init__()
         self.time = TimeWidget()
+        self.eff_widget = EfficiencyWidget(0.0)
         self.speed = DataWidget("fa5s.tachometer-alt", unit="km/h")
         self.temp = DataWidget("fa5s.thermometer-half", values=[0,0,0], prefixes=["fc_a", "fc_b", "batt"], unit="°C")
         self.autonomy = DataWidget("fa5s.battery-half", unit="km")
         self.pressure = DataWidget("fa5s.compress-arrows-alt", unit="bar")
         self.power = DataWidget("fa5s.bolt", unit="W")
-        self.tank = DataWidget("fa5s.spray-can", unit="L")        
+        self.tank = DataWidget("fa5s.spray-can", unit="L")
 
         self.assert_signal.connect(self.handle_alert)
 
-        self.setStyleSheet(f"background-color: {BG_COLOR};")
+        self.setStyleSheet(f"background-color: {self.BG_COLOR};")
         layout1 = QGridLayout()
         layout2 = QHBoxLayout()
         layout3 = QHBoxLayout()
+        top_layout = QHBoxLayout()
         layout1.setContentsMargins(0,0,0,0)
-        layout1.setSpacing(20)
-        layout1.addWidget(self.time, 0, 0, 1, 3)
+        top_layout.addWidget(self.time)
+        top_layout.addWidget(self.eff_widget)
+        layout1.addLayout(top_layout, 0,0)
         layout2.addWidget(self.speed)
         layout2.addWidget(self.temp)
         layout2.addWidget(self.autonomy)
@@ -99,16 +119,17 @@ class MyWidget(QtWidgets.QMainWindow):
 
     def handle_alert(self, assert_type=None):
         if assert_type == "alert":
-            self.setStyleSheet(f"background-color: {ALERT_COLOR};")
+            self.setStyleSheet(f"background-color: {self.ALERT_COLOR};")
         elif assert_type == "warning":
-            self.setStyleSheet(f"background-color: {WARNING_COLOR};")            
+            self.setStyleSheet(f"background-color: {self.WARNING_COLOR};")            
         
 
 class GUI(object):
     """
     https://stackoverflow.com/questions/49971584/updating-pyqt5-gui-with-live-data
     """
-    
+    ASSERT_LIFETIME = 2
+
     def __init__(self):
         self.app = QtWidgets.QApplication([])
         #self.app.setFont(QtGui.QFont("Arial", 76))
@@ -120,7 +141,7 @@ class GUI(object):
         self.in_assert = False
         self.assert_counter = 0
 
-        self.current_data = {"batt_temp": 0.0, "fca_temp": 0.0, "fcb_temp": 0.0, "speed": 0.0, "total_power": 0.0, "est_auto": 0.0, "total_tank": 0.0, "pressure": 0.0} 
+        self.current_data = {"batt_temp": 0.0, "fca_temp": 0.0, "fcb_temp": 0.0, "speed": 0.0, "total_power": 0.0, "est_auto": 0.0, "total_tank": 0.0, "pressure": 0.0, "efficiency": 0.0} 
         timer = QtCore.QTimer(self.widget)
         timer.timeout.connect(self.update_widget)
         timer.start(1000)
@@ -131,6 +152,7 @@ class GUI(object):
 
     def update_widget(self):
         self.widget.time.show_time()
+        self.widget.eff_widget.update(self.current_data["efficiency"])
         self.widget.speed.update([self.current_data["speed"]])
         self.widget.temp.update([self.current_data["fca_temp"], self.current_data["fcb_temp"], self.current_data["batt_temp"]])
         self.widget.pressure.update([self.current_data["pressure"]])
@@ -141,7 +163,7 @@ class GUI(object):
         if self.in_assert:
             self.assert_counter += 1
 
-        if self.assert_counter >= ASSERT_LIFETIME:
+        if self.assert_counter >= self.ASSERT_LIFETIME:
             self.assert_counter = 0
             self.in_assert = False
             self.widget.setStyleSheet(f"background-color: {BG_COLOR};")
@@ -159,5 +181,4 @@ class GUI(object):
 
 if __name__ == "__main__":
     gui = GUI()
-    gui.dispatch_alert("alert") # For now
     gui.run()
