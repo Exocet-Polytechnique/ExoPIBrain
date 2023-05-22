@@ -17,13 +17,11 @@ class FuelCell(StreamReader):
         self.started = False
     
     def write(self, command_str):
-        for c in command_str:
-            self.ser.write(c)
-            time.sleep(0.1)
+        self.ser.write(command_str)
+        self.ser.write(b"\r")
 
     def start_fuel_cell(self):
-        # TODO: Start procedure, write to cell
-        self.write(b"start")
+        self.write("start")
         temp_ok = False
         pressure_ok = False
         while not temp_ok or not pressure_ok:
@@ -37,7 +35,7 @@ class FuelCell(StreamReader):
         self.started = True
         
     def shutdown_fuel_cell(self):
-        self.write(b"end")
+        self.write("end")
         system_off = False
         while not system_off:
             if self.ser.in_waiting > 0:

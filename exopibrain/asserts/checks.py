@@ -1,4 +1,4 @@
-from asserts.asserts import AlertError, CriticalError
+from asserts.asserts import WarningError, CriticalError
 from config import CONFIG
 
 CPU_MAX_TEMP_WARN = 80
@@ -8,7 +8,7 @@ def cpu_temp_check(data):
     temperature = data["temperature"]
     msg = f"CPUTemp: {temperature}"
     if CPU_MAX_TEMP_WARN <= temperature < CPU_MAX_TEMP_ALERT:
-        raise AlertError(msg)
+        raise WarningError(msg)
     if temperature > CPU_MAX_TEMP_ALERT:
         raise CriticalError(msg)
 
