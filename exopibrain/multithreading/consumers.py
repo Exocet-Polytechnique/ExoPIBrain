@@ -4,16 +4,15 @@ import serial
 from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
 from asserts.asserts import WarningError, CriticalError
-
-class Consumer(threading.Thread):
+from multithreading.thread import ExoBrainThread
+class Consumer(ExoBrainThread):
     """
     This class is a base class for consumers. Consumers are threads that consume data from a queue.
     """
     def __init__(self,lock, queue):
-        threading.Thread.__init__(self)
         self.lock = lock
         self.queue = queue
-    
+
     def run(self):
         pass
 
@@ -26,7 +25,7 @@ class DataConsumer(Consumer):
         self.gui = gui
 
     def run(self):
-        while True:
+        while not self.st:
             name, data = self.queue.get()[1]
             try:
                 get_check(name)(data)

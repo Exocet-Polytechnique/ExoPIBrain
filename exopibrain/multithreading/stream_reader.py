@@ -1,14 +1,14 @@
 import threading
 import time
+from multithreading.thread import ExoBrainThread
 
-class StreamReader(threading.Thread):
+class StreamReader(ExoBrainThread):
     """
     This class is used to read a stream of data from a sensor and put it in a queue
     on a new thread. The data is read at a specified interval on a new thread.
     It is a data producer.
     """
     def __init__(self, lock, data_queue, log_queue, config):
-        threading.Thread.__init__(self)
         self.config = config
         self.priority = self.config["priority"]
         self.lock = lock
@@ -24,7 +24,7 @@ class StreamReader(threading.Thread):
         return self.config["name"], self.read_raw_data()
 
     def run(self):
-        while True:
+        while not self.stopped():
             if self.lock:
                 self.lock.acquire()
             data = self.read()
