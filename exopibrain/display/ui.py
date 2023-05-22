@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QGridLayout
 
 class TimeWidget(QtWidgets.QLabel):
     """
+    Simple widget to display current time, based on
     https://www.geeksforgeeks.org/pyqt5-create-a-digital-clock/
     """
     def __init__(self):
@@ -20,13 +21,19 @@ class TimeWidget(QtWidgets.QLabel):
         self.setText(label_time)
 
 
-    
 class DataWidget(QtWidgets.QWidget):
 
     IconSize = QtCore.QSize(196, 196)
     HorizontalSpacing = 2
 
     def __init__(self, qta_id, values=[0], prefixes=[""], unit="", final_stretch=True):
+        """
+        qta_id (str): The id of the icon to display.
+        values (list): The values to display.
+        prefixes (list): The prefixes to display before each value.
+        unit (str): The unit to display after each value.
+        final_stretch (bool): Whether to add a stretch at the end of the layout.
+        """
         super(QtWidgets.QWidget, self).__init__()
         self.qta_id = qta_id
         self.values = values
@@ -56,6 +63,9 @@ class DataWidget(QtWidgets.QWidget):
             layout.addStretch()
 
     def update(self, new_values):
+        """
+        new_values (list): The new values to display.
+        """
         self.values = new_values
         for i, v in enumerate(new_values):
             self.data_labels[i].setText(f"{self.prefixes[i]} {v:.1f} {self.unit}")
@@ -64,9 +74,18 @@ class EfficiencyWidget(DataWidget):
     ICON_NAME = "fa5s.leaf"
     EFFICIENCY_TOLERANCE = 0.1
     def __init__(self, value, final_stretch=False):
+        """
+        Displays the efficiency of the fuel cell to guide the throttle
+        value (float): The initial value to display.
+        final_stretch (bool): Whether to add a stretch at the end of the layout.
+        """
         super().__init__("fa5s.leaf", values=[value], unit="%", final_stretch=final_stretch) 
 
     def update(self, new_value):
+        """
+        Updates the displayed efficiency.
+        new_value (float): The new value to display.
+        """
         self.values = [new_value]
         sign = '+' if new_value > 0 else ''
         self.data_labels[0].setText(f"{sign}{new_value:.1f} {self.unit}")
@@ -83,6 +102,9 @@ class MyWidget(QtWidgets.QMainWindow):
     BG_COLOR= "white"
     assert_signal = QtCore.pyqtSignal(str)
     def __init__(self):
+        """
+        This class is the main window of the GUI.
+        """
         super().__init__()
         self.time = TimeWidget()
         self.eff_widget = EfficiencyWidget(0.0)
@@ -118,6 +140,10 @@ class MyWidget(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 
     def handle_alert(self, assert_type=None):
+        """
+        When an alert is received, this method changes the background color of the GUI.
+        assert_type (str): The type of alert to display.
+        """
         if assert_type == "alert":
             self.setStyleSheet(f"background-color: {self.ALERT_COLOR};")
         elif assert_type == "warning":
@@ -131,8 +157,10 @@ class GUI(object):
     ASSERT_LIFETIME = 2
 
     def __init__(self):
+        """
+        This class is the main class of the GUI.
+        """
         self.app = QtWidgets.QApplication([])
-        #self.app.setFont(QtGui.QFont("Arial", 76))
         self.widget = MyWidget()
         
         self.widget.resize(1920, 1080)
@@ -148,6 +176,10 @@ class GUI(object):
 
 
     def update_data(self, **kwargs):
+        """
+        Updates the data to display.
+        **kwargs (dict): The data to display.
+        """
         self.current_data = {**self.current_data, **kwargs}
 
     def update_widget(self):
@@ -166,15 +198,17 @@ class GUI(object):
         if self.assert_counter >= self.ASSERT_LIFETIME:
             self.assert_counter = 0
             self.in_assert = False
-            self.widget.setStyleSheet(f"background-color: {BG_COLOR};")
+            self.widget.setStyleSheet(f"background-color: {self.BG_COLOR};")
 
         
     def dispatch_alert(self, alert_type):
+        """
+        Dispatches an alert to the GUI. 
+        alert_type (str): The type of alert to display.
+        """
         self.in_assert = True
         self.widget.assert_signal.emit(alert_type)
         
-
-
     def run(self):
         sys.exit(self.app.exec())
 
