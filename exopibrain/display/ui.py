@@ -198,7 +198,7 @@ class GUI(object):
         if self.assert_counter >= self.ASSERT_LIFETIME:
             self.assert_counter = 0
             self.in_assert = False
-            self.widget.setStyleSheet(f"background-color: {self.BG_COLOR};")
+            self.widget.setStyleSheet(f"background-color: {self.widget.BG_COLOR};")
 
         
     def dispatch_alert(self, alert_type):

@@ -5,6 +5,8 @@ import threading
 from queue import PriorityQueue, Queue
 from multithreading.consumers import DataConsumer, LogConsumer
 from config import CONFIG
+from display import GUI
+from asserts.asserts import WarningError, CriticalError
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 
@@ -13,11 +15,7 @@ log_queue = Queue(maxsize=100)
 lock=threading.Lock()
 
 if __name__ == "__main__":
-    # TODO: Start procedure
-    
-    # TODO: Sensor/telemetry loop (multithreaded)
-    # https://stackoverflow.com/questions/25155267/how-to-send-a-signal-to-the-main-thread-in-python-without-using-join
-    # https://stackoverflow.com/questions/25904537/how-do-i-send-data-to-a-running-python-thread
+    gui = GUI()
 
     # Start the fuel cells - must include a start procedure before getting data!
 
@@ -34,8 +32,8 @@ if __name__ == "__main__":
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
     # Start the consumers
-    data_cons = DataConsumer(lock, data_queue)  
-    #log_cons = LogConsumer(lock, log_queue, "/dev/ttyACM0") # Random port form now
+    data_cons = DataConsumer(lock, data_queue)
+    log_cons = LogConsumer(lock, log_queue, gui, "/dev/ttyACM0") # Random port form now
 
     # Threads
     fc_a.start()
@@ -43,7 +41,9 @@ if __name__ == "__main__":
     cputemp.start()
     gps.start()
     data_cons.start()
-    #log_cons.start()
+    log_cons.start()
+    gui.run()
+
     
 
     # TODO: Shutdown sequence
@@ -56,6 +56,6 @@ if __name__ == "__main__":
     cputemp.join()
     gps.join()
     data_cons.join()
-    #log_cons.join()
+    log_cons.join()
     
     
