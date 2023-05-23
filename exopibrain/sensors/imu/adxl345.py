@@ -7,8 +7,7 @@
 # the Adafruit Triple Axis ADXL345 breakout board:
 # http://shop.pimoroni.com/products/adafruit-triple-axis-accelerometer
 
-from sensors.imu.imu_sensor import IMUSensor
-
+from imu.imu_sensor import IMUSensor
 
 class ADXL345(IMUSensor):
     # ADXL345 constants

@@ -1,18 +1,27 @@
 CONFIG = {
     "FUELCELL_A": {
-        "serial_port": "/dev/ttyAMA0",
+        "serial": {
+            "serial_port": "/dev/ttyAMA0",
+            "baudrate": 57600
+        },
         "priority": 0,
         "read_interval": 1,
         "name": "FUELCELL_A"
     },
     "FUELCELL_B": {
-        "serial_port": "/dev/ttyAMA0",
+        "serial": {
+            "serial_port": "/dev/ttyAMA0",
+            "baudrate": 57600
+        },
         "priority": 0,
         "read_interval": 1,
         "name": "FUELCELL_B"
     },
     "GPS": {
-        "serial_port": "/dev/ttyS0",
+        "serial": {
+            "serial_port": "/dev/ttyAMA0",
+            "baudrate": 9600
+        },
         "priority": 1,
         "read_interval": 3,
         "name": "GPS"

@@ -1,11 +1,9 @@
-import threading
 from asserts.checks import get_check
-import serial
 from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
 from asserts.asserts import WarningError, CriticalError
-from multithreading.thread import ExoBrainThread
-class Consumer(ExoBrainThread):
+from multithreading.thread import LoopingThread
+class Consumer(LoopingThread):
     """
     This class is a base class for consumers. Consumers are threads that consume data from a queue.
     """

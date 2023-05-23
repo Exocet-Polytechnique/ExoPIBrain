@@ -32,7 +32,7 @@ if __name__ == "__main__":
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
     # Start the consumers
-    data_cons = DataConsumer(lock, data_queue)
+    data_cons = DataConsumer(lock, data_queue, gui)
     log_cons = LogConsumer(lock, log_queue, gui, "/dev/ttyACM0") # Random port form now
 
     # Threads

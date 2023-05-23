@@ -1,9 +1,8 @@
 import serial
 from serial.serialutil import SerialException
-from multithreading.stream_reader import StreamReader
+from multithreading.stream_reader import SerialStreamReader
 
-
-class GPS(StreamReader):
+class GPS(SerialStreamReader):
     """
     GPS Interfacing with Raspberry Pi using Python
     http://www.electronicwings.com
@@ -38,7 +37,7 @@ class GPS(StreamReader):
                     gps_data["course_angle"] = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
                     gps_data["lat_deg"] = self._convert_to_degrees(float(nmea_buff[2]))
                     gps_data["long_deg"] = self._convert_to_degrees(float(nmea_buff[4])) * -1        
-        except Exception:
+        except SerialException:
             pass
 
         return gps_data
