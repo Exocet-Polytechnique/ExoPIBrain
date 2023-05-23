@@ -10,8 +10,6 @@ class GPS(SerialStreamReader):
 
     def __init__(self, lock, data_queue, log_queue, config) -> None:
         super().__init__(lock, data_queue, log_queue, config)
-        self.serial_port = config['serial_port']
-        self.ser = serial.Serial(self.serial_port)  # Open port with baud rate
 
     def _convert_to_degrees(self, raw_value):
         decimal_value = raw_value / 100.00
