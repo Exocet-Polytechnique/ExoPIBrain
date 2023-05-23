@@ -21,9 +21,18 @@ class StreamReader(LoopingThread):
         return 0
     
     def read(self):
+        """
+        Reads the data from the sensor with name
+
+        Returns:
+            tuple: The name of the sensor and the data from the sensor.
+        """
         return self.config["name"], self.read_raw_data()
 
     def run(self):
+        """
+        Reads the data from the sensor and puts it in the queue.
+        """
         while not self.stopped():
             if self.lock:
                 self.lock.acquire()
@@ -49,5 +58,8 @@ class SerialStreamReader(StreamReader):
         self.ser = serial.Serial(**config['serial'])
     
     def join(self):
+        """
+        Join the thread and close the serial port.
+        """
         super().join()
         self.ser.close()

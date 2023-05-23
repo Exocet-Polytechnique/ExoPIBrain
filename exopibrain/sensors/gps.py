@@ -1,4 +1,3 @@
-import serial
 from serial.serialutil import SerialException
 from multithreading.stream_reader import SerialStreamReader
 
@@ -9,9 +8,25 @@ class GPS(SerialStreamReader):
     """
 
     def __init__(self, lock, data_queue, log_queue, config) -> None:
+        """
+        Args:
+            lock (threading.Lock): The lock used to synchronize access to the queue.
+            data_queue (queue.PriorityQueue): The queue to put the data in.
+            log_queue (queue.Queue): The queue to put the data in.
+            config (dict): The configuration for the sensor (serial port).
+        """
         super().__init__(lock, data_queue, log_queue, config)
 
     def _convert_to_degrees(self, raw_value):
+        """
+        Converts raw gps value into decimal degrees
+
+        Args:
+            raw_value (float): The raw value from the GPS sensor.
+        
+        Returns:
+            float: The converted value in decimal degrees.
+        """
         decimal_value = raw_value / 100.00
         degrees = int(decimal_value)
         mm_mmmm = (decimal_value - int(decimal_value)) / 0.6
@@ -20,6 +35,12 @@ class GPS(SerialStreamReader):
         return position
 
     def read_raw_data(self):
+        """
+        Reads the raw data from the GPS sensor.
+
+        Returns:
+            dict: The raw data from the GPS sensor.
+        """
         gps_data = {}
         try:
             if self.ser.in_waiting:

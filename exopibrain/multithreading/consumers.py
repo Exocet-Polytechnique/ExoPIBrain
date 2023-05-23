@@ -3,6 +3,7 @@ from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
 from asserts.asserts import WarningError, CriticalError
 from multithreading.thread import LoopingThread
+
 class Consumer(LoopingThread):
     """
     This class is a base class for consumers. Consumers are threads that consume data from a queue.
@@ -23,7 +24,14 @@ class DataConsumer(Consumer):
         self.gui = gui
 
     def run(self):
-        while not self.st:
+        """
+        Reads the data from the queue and does the appropriate checks on it.
+
+        Raises:
+            CriticalError: If the data is critical.
+            WarningError: If the data is a warning.
+        """
+        while not self.stopped():
             name, data = self.queue.get()[1]
             try:
                 get_check(name)(data)
@@ -49,6 +57,7 @@ class LogConsumer(Consumer):
         self.serial_port = serial_port
         self.gui = gui
         #self.serial = serial.Serial(self.serial_port, timeout=1, write_timeout=10)
+
     def efficiency_report(self, data):
         pass
 
@@ -67,7 +76,10 @@ class LogConsumer(Consumer):
         self.gui.update(data)
 
     def run(self):
-        while True:
+        """
+        Reads the data from the queue and writes it to the MKR1500 and the screen.
+        """
+        while not self.stopped():
             try:
                 name, data = self.queue.get()
                 self.write_telemetry(name, data)
