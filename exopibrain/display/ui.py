@@ -183,6 +183,9 @@ class GUI(object):
         self.current_data = {**self.current_data, **kwargs}
 
     def update_widget(self):
+        """
+        Updates the widget with the current data.
+        """
         self.widget.time.show_time()
         self.widget.eff_widget.update(self.current_data["efficiency"])
         self.widget.speed.update([self.current_data["speed"]])
