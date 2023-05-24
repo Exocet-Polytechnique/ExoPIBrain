@@ -43,6 +43,8 @@ class FuelCell(SerialStreamReader):
             time.sleep(0.2)
         self.started = False
 
+    def purge(self):
+        self.write('p')
 
     def read_raw_data(self):
         fuel_cell_data = {}
