@@ -8,13 +8,14 @@ TEMPERATURE_OK = "Temperature Check OK"
 SYSTEM_OFF = "System Off"
 
 regexp = re.compile(r'(\d+)\s*(%s)\b' % '|'.join(["V", "C", "B", "A", "W", "Wh"]))
+
 class FuelCell(SerialStreamReader):
     def __init__(self, lock, data_queue, log_queue, config):
         super().__init__(lock, data_queue, log_queue, config)
         self.started = False
     
     def write(self, command_str):
-        self.ser.write(command_str)
+        self.ser.write(command_str.encode())
         self.ser.write(b"\r")
 
     def start_fuel_cell(self):
@@ -42,9 +43,6 @@ class FuelCell(SerialStreamReader):
             time.sleep(0.2)
         self.started = False
 
-    def join(self):
-        super().join()
-        self.ser.close()
 
     def read_raw_data(self):
         fuel_cell_data = {}

@@ -1,5 +1,5 @@
 import time
-from thread import LoopingThread
+from multithreading.thread import LoopingThread
 import serial
 
 class StreamReader(LoopingThread):
@@ -9,6 +9,7 @@ class StreamReader(LoopingThread):
     It is a data producer.
     """
     def __init__(self, lock, data_queue, log_queue, config):
+        super(StreamReader, self).__init__()
         self.config = config
         self.priority = self.config["priority"]
         self.lock = lock

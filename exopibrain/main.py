@@ -5,7 +5,7 @@ import threading
 from queue import PriorityQueue, Queue
 from multithreading.consumers import DataConsumer, LogConsumer
 from config import CONFIG
-from display import GUI
+from display.ui import GUI
 from asserts.asserts import WarningError, CriticalError
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     fc_a = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_A"])  # Some random serial ports for now
     fc_b = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_B"])
-    fc_a.start_fuel_cell()
-    fc_b.start_fuel_cell()
+    #fc_a.start_fuel_cell()
+    #fc_b.start_fuel_cell()
 
     # Thermocouple
 
@@ -42,6 +42,7 @@ if __name__ == "__main__":
     gps.start()
     data_cons.start()
     log_cons.start()
+    print("STARTING GUI...")
     gui.run()
 
     

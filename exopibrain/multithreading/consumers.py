@@ -9,6 +9,7 @@ class Consumer(LoopingThread):
     This class is a base class for consumers. Consumers are threads that consume data from a queue.
     """
     def __init__(self,lock, queue):
+        super(Consumer, self).__init__()
         self.lock = lock
         self.queue = queue
 
