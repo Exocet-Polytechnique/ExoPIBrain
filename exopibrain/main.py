@@ -6,7 +6,8 @@ from queue import PriorityQueue, Queue
 from multithreading.consumers import DataConsumer, LogConsumer
 from config import CONFIG
 from display.ui import GUI
-from asserts.asserts import WarningError, CriticalError
+from procedures.shutdown import BoatStopper
+from procedures.start import BoatStarter
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 
@@ -14,7 +15,7 @@ data_queue = PriorityQueue(maxsize=100)
 log_queue = Queue(maxsize=100)
 lock=threading.Lock()
 
-if __name__ == "__main__":
+def main():
     gui = GUI()
 
     # Start the fuel cells - must include a start procedure before getting data!
@@ -42,21 +43,11 @@ if __name__ == "__main__":
     gps.start()
     data_cons.start()
     log_cons.start()
+
+    #BoatStopper()
     print("STARTING GUI...")
     gui.run()
 
-    
 
-    # TODO: Shutdown sequence
-    
-    fc_a.shutdown_fuel_cell()
-    fc_b.shutdown_fuel_cell()
-
-    fc_a.join()
-    fc_b.join()
-    cputemp.join()
-    gps.join()
-    data_cons.join()
-    log_cons.join()
-    
-    
+if __name__ == "__main__":
+    main()
