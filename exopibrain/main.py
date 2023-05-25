@@ -11,11 +11,13 @@ from procedures.start import BoatStarter
 
 #arduino_serial = serial.Serial("/dev/ttyACM0", 9600, timeout=1)
 
-data_queue = PriorityQueue(maxsize=100)
-log_queue = Queue(maxsize=100)
-lock=threading.Lock()
+
 
 def main():
+    data_queue = PriorityQueue(maxsize=100)
+    log_queue = Queue(maxsize=100)
+    lock=threading.Lock()
+    
     gui = GUI()
 
     # Start the fuel cells - must include a start procedure before getting data!
