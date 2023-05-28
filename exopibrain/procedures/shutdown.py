@@ -11,9 +11,14 @@ class BoatStopper:
         self.in_v = in_v
         self.out_v = out_v
         self.he_v = he_v
-        self.btn.when_pressed = self.normal_shutdown()
+        self.btn.when_pressed = self.normal_shutdown
         self.shutdown_success = False
-
+        self.threads = []
+    
+    def set_threads(self, *args):
+        for th in args:
+            if isinstance(th, LoopingThread):
+                self.threads.append(th)
 
     def normal_shutdown(self):
         """
@@ -30,6 +35,7 @@ class BoatStopper:
             self.shutdown_success = True
         except Exception:
             pass
+        self.stop_threads()
 
     def purge_h2(self):
         """
@@ -56,9 +62,10 @@ class BoatStopper:
 
         except Exception:
             pass
+        self.stop_threads()
     
-    def stop_threads(self, *args):
-        for th in args:
+    def stop_threads(self):
+        for th in self.threads:
             if isinstance(th, LoopingThread):
                 th.stop()
             th.join()

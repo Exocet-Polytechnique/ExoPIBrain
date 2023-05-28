@@ -1,4 +1,5 @@
 from sensors.gps import GPS
+from sensors.temperature import Thermocouple
 from sensors.rpmonitor import RPCPUTemperature
 from fuel_cell.fuel_cell import FuelCell
 import threading
@@ -28,6 +29,7 @@ def main():
     #fc_b.start_fuel_cell()
 
     # Thermocouple
+    #batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["BATT_TEMP"])
 
     # Start the sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
@@ -39,14 +41,18 @@ def main():
     log_cons = LogConsumer(lock, log_queue, gui, "/dev/ttyACM0") # Random port form now
 
     # Threads
+    starter = BoatStarter(10, fc_a, fc_b, None, None, None)
+    starter.wait_for_press()
+    starter.startup_procedure()
+
+    stopper = BoatStopper(10, fc_a, fc_b, None, None, None)
     fc_a.start()
     fc_b.start()
     cputemp.start()
     gps.start()
     data_cons.start()
     log_cons.start()
-
-    #BoatStopper()
+    stopper.set_threads(fc_a, fc_b, cputemp, gps, data_cons, log_cons)
     print("STARTING GUI...")
     gui.run()
 

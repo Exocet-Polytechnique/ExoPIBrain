@@ -12,7 +12,7 @@ class BoatStarter:
         self.out_mano = out_mano
         self.in_v = in_v
         self.start_success = False
-    
+
     def startup_procedure(self):
         try:
             #inlet_pressure = inlet.get_pressure()
@@ -27,8 +27,5 @@ class BoatStarter:
         except Exception:
             pass
 
-    def wait_start(self):
-        # Should be a blocking method
-        self.btn.when_pressed = self.startup_procedure()
-
-    
+    def wait_for_press(self):
+        self.btn.wait_for_press()
