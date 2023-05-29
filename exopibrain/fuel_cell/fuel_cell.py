@@ -7,6 +7,7 @@ from serial.serialutil import SerialException
 ANODE_SUPPLY_PRESSURE_OK = "Anode Supply Pressure OK"
 TEMPERATURE_OK = "Temperature Check OK"
 SYSTEM_OFF = "System Off"
+KEYS = ["FC_V", "FCT1", "H2P1", "FC_A", "FCT2", "H2P2", "FC_W", "Energy"]
 
 regexp = re.compile(r'(\d+)\s*(%s)\b' % '|'.join(["V", "C", "B", "A", "W", "Wh"]))
 
@@ -70,7 +71,8 @@ class FuelCell(SerialStreamReader):
                     if value[-1] == "%":
                         value = float(value[:-1]) / 100
                     value = float(value)
-                    fuel_cell_data[measure] = value
+                    if measure in KEYS:
+                        fuel_cell_data[measure] = value
 
         except SerialException:
             print(f"Fuel cell {self.serial_port} fucked")

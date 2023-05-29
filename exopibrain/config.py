@@ -1,7 +1,7 @@
 CONFIG = {
     "FUELCELL_A": {
         "serial": {
-            "port": "/dev/ttyAMA0",
+            "port": "/dev/tty_FCA",
             "baudrate": 57600
         },
         "priority": 0,
@@ -10,7 +10,7 @@ CONFIG = {
     },
     "FUELCELL_B": {
         "serial": {
-            "port": "/dev/ttyAMA0",
+            "port": "/dev/tty_FCB",
             "baudrate": 57600
         },
         "priority": 0,
@@ -37,4 +37,9 @@ CONFIG = {
         "name": "IMU"
     },
 
+    "BATT_TEMP": {
+        "priority": 0,
+        "read_interval": 1,
+        "name": "BATT_TEMP"
+    },
 }
