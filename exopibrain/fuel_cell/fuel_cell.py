@@ -1,6 +1,7 @@
 from multithreading.stream_reader import SerialStreamReader
 import re
 import time
+import csv
 from serial.serialutil import SerialException
 
 ANODE_SUPPLY_PRESSURE_OK = "Anode Supply Pressure OK"
@@ -13,6 +14,10 @@ class FuelCell(SerialStreamReader):
     def __init__(self, lock, data_queue, log_queue, config):
         super().__init__(lock, data_queue, log_queue, config)
         self.started = False
+        with open("../data/eff_curves.csv", "r") as f:
+            reader = csv.reader(f, delimiter=' ')
+            self.eff_curves = {row[0]: row[1:] for row in reader}
+
     
     def write(self, command_str):
         self.ser.write(command_str.encode())
@@ -46,6 +51,10 @@ class FuelCell(SerialStreamReader):
     def purge(self):
         self.write('p')
 
+    def compute_efficiency(self, data):
+        pass
+
+
     def read_raw_data(self):
         fuel_cell_data = {}
         try:
@@ -68,3 +77,9 @@ class FuelCell(SerialStreamReader):
         
         return fuel_cell_data
     
+if __name__ == "__main__":
+    from ..config import CONFIG
+    fc = FuelCell(None, None, None, CONFIG['FUELCELL_A'])
+    fc.start_fuel_cell()
+    while True:
+        print(fc.read_raw_data())
