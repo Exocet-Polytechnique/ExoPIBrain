@@ -57,7 +57,7 @@ class BoatStopper:
             self.fc_a.shutdown_fuel_cell()
             self.fc_b.shutdown_fuel_cell()
             self.out_v.close_valve()
-            self.he_v.close_valve()
+            # self.he_v.close_valve()
             self.shutdown_success = True
 
         except Exception:
@@ -69,3 +69,9 @@ class BoatStopper:
             if isinstance(th, LoopingThread):
                 th.stop()
             th.join()
+
+if __name__ == "__main__":
+    from ..config import CONFIG
+    fc_a = FuelCell(None, None, None, CONFIG['FUELCELL_A'])
+    fc_b = FuelCell(None, None, None, CONFIG['FUELCELL_B'])
+    BoatStopper(10, fc_a, fc_b, None, None, None).normal_shutdown()

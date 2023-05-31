@@ -1,14 +1,16 @@
+import smbus
 from adxl345 import ADXL345
 from hmc5883l import HMC5883l
 from itg3205 import ITG3205
-from data_readers.stream_reader import StreamReader
+from multithreading.stream_reader import StreamReader
 
 
 
 class IMU(StreamReader):
-    def __init__(self, priority, lock, data_queue, log_queue, config):
-        super().__init__(priority, lock, data_queue, log_queue, config)
-        self.bus = None  # TODO
+    def __init__(self, lock, data_queue, log_queue, config):
+        super().__init__(lock, data_queue, log_queue, config)
+        revision = ([l[12:-1] for l in open('/proc/cpuinfo','r').readlines() if l[:8]=="Revision"]+['0000'])[0]
+        self.bus = smbus.SMBus(1 if int(revision, 16) >= 4 else 0)
         self.accelerometer = ADXL345(self.bus)
         self.magnetometer = HMC5883l(self.bus)
         self.gyroscope = ITG3205(self.bus)
@@ -29,3 +31,10 @@ class IMU(StreamReader):
         imu_data["z_gyro"] = z_gyro
         return imu_data
 
+if __name__ == "__main__":
+    import time
+    from ...config import CONFIG
+    imu = IMU(None, None, None, None, CONFIG['IMU'])
+    while True:
+        print(imu.read_raw_data())
+        time.sleep(1)

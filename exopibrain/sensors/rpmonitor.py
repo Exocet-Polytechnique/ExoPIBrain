@@ -23,3 +23,11 @@ class RPCPUTemperature(StreamReader):
             dict: The raw data from the sensor.
         """
         return {"temperature": self.monitor.temperature}
+
+if __name__ == "__main__":
+    import time
+    from ..config import CONFIG
+    cpu_temp = RPCPUTemperature(None, None, None, CONFIG['RP_CPU_TEMP'])
+    while True:
+        print(cpu_temp.read_raw_data())
+        time.sleep(0.5)

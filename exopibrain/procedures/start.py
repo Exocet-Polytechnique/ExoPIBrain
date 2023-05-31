@@ -29,3 +29,15 @@ class BoatStarter:
 
     def wait_for_press(self):
         self.btn.wait_for_press()
+
+if __name__ == "__main__":
+    from ..config import CONFIG
+    fc_a = FuelCell(None, None, None, CONFIG['FUELCELL_A'])
+    fc_b = FuelCell(None, None, None, CONFIG['FUELCELL_B'])
+    in_mano = None
+    out_mano = None
+    in_v = Actuator(None, None, None, None)
+    START_PIN = 10
+    starter = BoatStarter(START_PIN, fc_a, fc_b, in_mano, out_mano, in_v)
+    starter.wait_for_press()
+    starter.startup_procedure()
