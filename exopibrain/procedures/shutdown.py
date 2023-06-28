@@ -1,16 +1,16 @@
 from fuel_cell.fuel_cell import FuelCell
 from fuel_cell.actuators import Actuator
 from gpiozero import Button
+from asserts.asserts import ShutDownError
 from multithreading.thread import LoopingThread
 
 class BoatStopper:
-    def __init__(self, btn_stop_pin, fc_a: FuelCell, fc_b: FuelCell, in_v: Actuator, out_v: Actuator, he_v: Actuator):
+    def __init__(self, btn_stop_pin, fc_a: FuelCell, fc_b: FuelCell, in_v: Actuator, out_v: Actuator):
         self.btn = Button(btn_stop_pin)
         self.fc_a = fc_a
         self.fc_b = fc_b
         self.in_v = in_v
         self.out_v = out_v
-        self.he_v = he_v
         self.btn.when_pressed = self.normal_shutdown
         self.shutdown_success = False
         self.threads = []
@@ -34,7 +34,7 @@ class BoatStopper:
             self.out_v.close_valve()
             self.shutdown_success = True
         except Exception:
-            pass
+            raise ShutDownError()
         self.stop_threads()
 
     def purge_h2(self):
@@ -57,7 +57,6 @@ class BoatStopper:
             self.fc_a.shutdown_fuel_cell()
             self.fc_b.shutdown_fuel_cell()
             self.out_v.close_valve()
-            # self.he_v.close_valve()
             self.shutdown_success = True
 
         except Exception:

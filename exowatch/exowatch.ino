@@ -82,13 +82,14 @@ void updateVariables(String serialData) {
     boatHeading = doc["course_angle"].as<float>();
     boatLocation = {doc["lat_deg"].as<double>(), doc["long_deg"].as<double>()};
     
-
   } else if (name == "FUELCELL_A") {
-
+    // All variables to log are listed here and in thingProperties.h
 
   } else if (name == "FUELCELL_B") {
+    // Same as above
 
   } else if (name == "IMU") {
+    // Same as above
 
     
   } else if (name == "RP_CPU_TEMP") {

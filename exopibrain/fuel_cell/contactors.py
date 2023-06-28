@@ -1,2 +1,0 @@
-class Contactors(object):
-    pass

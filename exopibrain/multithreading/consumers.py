@@ -3,6 +3,7 @@ from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
 from asserts.asserts import WarningError, CriticalError
 from multithreading.thread import LoopingThread
+import serial
 
 class Consumer(LoopingThread):
     """
@@ -57,7 +58,7 @@ class LogConsumer(Consumer):
         super().__init__(lock, log_queue)
         self.serial_port = serial_port
         self.gui = gui
-        #self.serial = serial.Serial(self.serial_port, timeout=1, write_timeout=10)
+        self.serial = serial.Serial(self.serial_port, timeout=1, write_timeout=10)
 
     def efficiency_report(self, data):
         pass
@@ -70,10 +71,9 @@ class LogConsumer(Consumer):
         """
         data_str = stringify_data(name, data)
         data_str = data_str.encode('utf-8')
-        #self.serial.write(data_str)
+        self.serial.write(data_str)
 
     def write_screen(self, data):
-        # TODO: GIVE THE DATA WITH THE CORRECT FORMAT TO THE GUI
         self.gui.update(data)
 
     def run(self):
@@ -88,5 +88,3 @@ class LogConsumer(Consumer):
                 self.queue.task_done()
             except SerialTimeoutException:
                 print("Writing timeout. You may want to check the connection.")
-            
-

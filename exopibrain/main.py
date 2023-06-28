@@ -5,7 +5,7 @@ from fuel_cell.fuel_cell import FuelCell
 import threading
 from queue import PriorityQueue, Queue
 from multithreading.consumers import DataConsumer, LogConsumer
-from config import CONFIG
+from config import CONFIG, TELE_CONFIG
 from display.ui import GUI
 from procedures.shutdown import BoatStopper
 from procedures.start import BoatStarter
@@ -18,22 +18,22 @@ def main():
     
     gui = GUI()
 
-    fc_a = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_A"])  # Some random serial ports for now
+    fc_a = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_A"])
     fc_b = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_B"])
 
     # Thermocouple
-    #batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["BATT_TEMP"])
+    batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["BATT_TEMP"])
     # Sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
     # Build the consumers
     data_cons = DataConsumer(lock, data_queue, gui)
-    log_cons = LogConsumer(lock, log_queue, gui, "/dev/ttyACM0") # Random port for now
+    log_cons = LogConsumer(lock, log_queue, gui, TELE_CONFIG["serial_port"])
 
     # Threads
     starter = BoatStarter(10, fc_a, fc_b, None, None, None)
-    stopper = BoatStopper(10, fc_a, fc_b, None, None, None)
+    stopper = BoatStopper(10, fc_a, fc_b, None, None)
     stopper.set_threads(fc_a, fc_b, cputemp, gps, data_cons, log_cons)
 
     starter.wait_for_press()
@@ -43,6 +43,7 @@ def main():
     fc_b.start()
     cputemp.start()
     gps.start()
+    batt_temp.start()
     data_cons.start()
     log_cons.start()
     print("STARTING GUI...")

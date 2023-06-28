@@ -4,6 +4,9 @@ import glob
 from multithreading.stream_reader import StreamReader
 
 class Thermocouple(StreamReader):
+    """
+    Reads temperature data from the DS18B20 thermocouple
+    """
     def __init__(self, lock, data_queue, log_queue, config):
         super(Thermocouple, self).__init__(lock, data_queue, log_queue, config)
 
@@ -15,12 +18,25 @@ class Thermocouple(StreamReader):
         self.device_file = device_folder + '/w1_slave'
 
     def _read_lines(self):
+        """
+        Reads the lines from the thermocouple file.
+
+        Returns:
+            list: The lines from the thermocouple file.
+        """
         f = open(self.device_file, 'r')
         lines = f.readlines()
         f.close()
         return lines
 
     def read_raw_data(self):
+        """
+        Reads the raw data from the thermocouple with
+        correct formatting.
+
+        Returns:
+            float: The raw temperature data from the thermocouple.
+        """
         temp_c = None
         lines = self._read_lines()
         while lines[0].strip()[-3:] != 'YES':

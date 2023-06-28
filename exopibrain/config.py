@@ -1,7 +1,7 @@
 CONFIG = {
     "FUELCELL_A": {
         "serial": {
-            "port": "/dev/tty_FCA",
+            "port": "/dev/tty_FCA", # Ports on the RP have been renamed to tty_FCA and tty_FCB
             "baudrate": 57600
         },
         "priority": 0,
@@ -41,5 +41,10 @@ CONFIG = {
         "priority": 0,
         "read_interval": 1,
         "name": "BATT_TEMP"
-    },
+    }
+}
+
+# Config for telemetry
+TELE_CONFIG = {
+    "serial_port": "/dev/ttyACM0",
 }
