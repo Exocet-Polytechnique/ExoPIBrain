@@ -1,11 +1,10 @@
-from fuel_cell.fuel_cell import FuelCell
-from fuel_cell.actuators import Actuator
+
 from time import sleep
 from asserts.asserts import StartUpError
 from gpiozero import Button
 
 class BoatStarter:
-    def __init__(self, start_btn_pin, fc_a, fc_b, in_mano, out_mano, in_v: Actuator):
+    def __init__(self, start_btn_pin, fc_a, fc_b, in_mano, out_mano, in_v):
         self.btn = Button(start_btn_pin)
         self.fc_a = fc_a
         self.fc_b = fc_b
@@ -37,13 +36,10 @@ class BoatStarter:
         self.btn.wait_for_press()
 
 if __name__ == "__main__":
-    from ..config import CONFIG
-    fc_a = FuelCell(None, None, None, CONFIG['FUELCELL_A'])
-    fc_b = FuelCell(None, None, None, CONFIG['FUELCELL_B'])
-    in_mano = None
-    out_mano = None
-    in_v = Actuator(None, None, None, None)
-    START_PIN = 10
-    starter = BoatStarter(START_PIN, fc_a, fc_b, in_mano, out_mano, in_v)
+    from config import CONFIG
+    START_GPIO = 27
+    starter = BoatStarter(START_GPIO, None, None, None, None, None)
+    print("Waiting for press...")
     starter.wait_for_press()
-    starter.startup_procedure()
+    print("Button pressed")
+    
