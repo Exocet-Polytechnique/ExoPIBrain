@@ -52,10 +52,6 @@ class FuelCell(SerialStreamReader):
     def purge(self):
         self.write('p')
 
-    def compute_efficiency(self, data):
-        pass
-
-
     def read_raw_data(self):
         fuel_cell_data = {}
         try:
