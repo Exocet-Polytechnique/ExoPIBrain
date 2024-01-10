@@ -1,4 +1,4 @@
-from imu_sensor import IMUSensor
+from sensors.imu.imu_sensor import IMUSensor
 
 
 class ITG3205(IMUSensor):

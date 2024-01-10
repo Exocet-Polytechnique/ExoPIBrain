@@ -1,7 +1,7 @@
 import smbus
-from adxl345 import ADXL345
-from hmc5883l import HMC5883l
-from itg3205 import ITG3205
+from sensors.imu.adxl345 import ADXL345
+from sensors.imu.hmc5883l import QMC5883l
+from sensors.imu.itg3205 import ITG3205
 from multithreading.stream_reader import StreamReader
 
 
@@ -12,7 +12,7 @@ class IMU(StreamReader):
         revision = ([l[12:-1] for l in open('/proc/cpuinfo','r').readlines() if l[:8]=="Revision"]+['0000'])[0]
         self.bus = smbus.SMBus(1 if int(revision, 16) >= 4 else 0)
         self.accelerometer = ADXL345(self.bus)
-        self.magnetometer = HMC5883l(self.bus)
+        self.magnetometer = QMC5883l(self.bus)
         self.gyroscope = ITG3205(self.bus)
 
     def read_raw_data(self):
@@ -20,9 +20,9 @@ class IMU(StreamReader):
         x_acc, y_acc, z_acc = self.accelerometer.read()
         x_mag, y_mag, z_mag = self.magnetometer.read()
         x_gyro, y_gyro, z_gyro = self.gyroscope.read()
-        imu_data["x_acc"] = x_acc
-        imu_data["y_acc"] = y_acc
-        imu_data["z_acc"] = z_acc
+        imu_data["x_acc"] = "{:04f}".format(x_acc)
+        imu_data["y_acc"] = "{:04f}".format(y_acc)
+        imu_data["z_acc"] = "{:04f}".format(z_acc)
         imu_data["x_mag"] = x_mag
         imu_data["y_mag"] = y_mag
         imu_data["z_mag"] = z_mag
@@ -33,8 +33,8 @@ class IMU(StreamReader):
 
 if __name__ == "__main__":
     import time
-    from ...config import CONFIG
-    imu = IMU(None, None, None, None, CONFIG['IMU'])
+    from config import CONFIG
+    imu = IMU(None, None, None, CONFIG['IMU'])
     while True:
         print(imu.read_raw_data())
         time.sleep(1)
