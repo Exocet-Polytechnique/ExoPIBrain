@@ -34,7 +34,10 @@ class DataConsumer(Consumer):
             WarningError: If the data is a warning.
         """
         while not self.stopped():
-            name, data = self.queue.get()[1]
+            self.lock.acquire()
+            name, data = self.queue.get()
+            self.lock.release()
+
             try:
                 get_check(name)(data)
             except Exception as e:
@@ -82,7 +85,9 @@ class LogConsumer(Consumer):
         """
         while not self.stopped():
             try:
+                self.lock.acquire()
                 name, data = self.queue.get()
+                self.lock.release()
                 self.write_telemetry(name, data)
                 self.write_screen(data)
                 self.queue.task_done()
