@@ -35,9 +35,9 @@ class StreamReader(LoopingThread):
         Reads the data from the sensor and puts it in the queue.
         """
         while not self.stopped():
+            data = self.read()
             if self.lock:
                 self.lock.acquire()
-            data = self.read()
             self.data_queue.put((self.priority, data))
             self.log_queue.put(data)
             if self.lock:
