@@ -23,9 +23,19 @@ class ADXL345(IMUSensor):
 
     def __init__(self, bus):
         super().__init__(bus, address=0x53)
-        self.write_byte(self.BW_RATE, self.BW_RATE_100HZ)
-        self.set_range(self.RANGE_2G)
-        self.write_byte(self.POWER_CTL, self.MEASURE)
+
+    def connect(self, bus):
+        # no need to add this to __init__ since the stream_reader class has its is_connected member to False
+        # by default and will attempt to connect via the imu class
+        try:
+            self.write_byte(self.BW_RATE, self.BW_RATE_100HZ)
+            self.set_range(self.RANGE_2G)
+            self.write_byte(self.POWER_CTL, self.MEASURE)
+        except:
+            # failed to connect
+            return False
+
+        return True
 
     def set_range(self, range_flag):
         value = self.bus.read_byte_data(self.address, self.DATA_FORMAT)

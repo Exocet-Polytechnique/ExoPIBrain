@@ -34,7 +34,9 @@ CONFIG = {
     "IMU": {
         "priority": 1,
         "read_interval": 1,
-        "name": "IMU"
+        "name": "IMU",
+        "new_rev_i2c_id": 1,
+        "old_rev_i2c_id": 0,
     },
 
     "BATT_TEMP": {

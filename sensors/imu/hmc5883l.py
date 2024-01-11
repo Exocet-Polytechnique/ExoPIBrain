@@ -1,8 +1,7 @@
 from sensors.imu.imu_sensor import IMUSensor
-import time
 
 
-class QMC5883l(IMUSensor):
+class QMC5883(IMUSensor):
     RANGE_2G = 0x00
     BW_10Hz = 0x00
     OS_512 = 0x00
@@ -23,8 +22,17 @@ class QMC5883l(IMUSensor):
         super().__init__(bus, address=0x0C)
         self.declination = declination
         self._calibration = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
-        self.write_byte(self.REG_CONTROL_1, 0x00)
-        self.write_byte(self.REG_CONTROL_2, 0x4D)
+
+    def connect(self):
+        # no need to add this to __init__ since the stream_reader class has its is_connected member to False
+        # by default and will attempt to connect via the imu class
+        try:
+            self.write_byte(self.REG_CONTROL_1, 0x00)
+            self.write_byte(self.REG_CONTROL_2, 0x4D)
+        except:
+            return False
+
+        return True
 
 
     def _read_word(self, registry):

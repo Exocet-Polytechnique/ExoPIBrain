@@ -13,8 +13,14 @@ class ITG3205(IMUSensor):
 
     def __init__(self, bus):
         super().__init__(bus, address=0x68)
-        self.write_byte(self.POWER_MANAGEMENT, self.PLL_X_GYRO)
-        self.write_byte(self.DLPF_FS, self.DLPF_256_8)
+
+    def connect(self):
+        try:
+            self.write_byte(self.POWER_MANAGEMENT, self.PLL_X_GYRO)
+            self.write_byte(self.DLPF_FS, self.DLPF_256_8)
+        except:
+            return False
+        return True
 
     def read(self):
         data = self.read_block(self.DATA_REG, 6)

@@ -2,7 +2,7 @@ class SensorError(Exception):
     """Base class for all sensor errors"""
     pass
 
-class ConnectionError(SensorError):
+class SensorConnectionError(SensorError):
     """No connection to the sensor"""
     pass 
 

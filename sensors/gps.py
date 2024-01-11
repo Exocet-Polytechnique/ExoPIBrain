@@ -1,5 +1,6 @@
+from multithreading.protocols.serial_stream_reader import SerialStreamReader
+from sensors.sensor_error import InvalidDataError
 from serial.serialutil import SerialException
-from multithreading.stream_reader import SerialStreamReader
 
 class GPS(SerialStreamReader):
     """
@@ -56,8 +57,8 @@ class GPS(SerialStreamReader):
                     gps_data["course_angle"] = 0.0 if nmea_buff[7] == "" else float(nmea_buff[7])
                     gps_data["lat_deg"] = self._convert_to_degrees(float(nmea_buff[2]))
                     gps_data["long_deg"] = self._convert_to_degrees(float(nmea_buff[4])) * -1        
-        except SerialException:
-            pass
+        except SerialException or ValueError:
+            raise InvalidDataError
 
         return gps_data
 

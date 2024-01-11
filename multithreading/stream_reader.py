@@ -1,6 +1,6 @@
-import time
 from multithreading.thread import LoopingThread
-import serial
+from sensors.sensor_error import *
+import time
 
 class StreamReader(LoopingThread):
     """
@@ -17,9 +17,8 @@ class StreamReader(LoopingThread):
         self.data_queue = data_queue
         self.log_queue = log_queue
 
-    def read_raw_data(self):
-        # Should be overriden by child class
-        return 0
+        # connection status
+        self.is_connected = False
     
     def read(self):
         """
@@ -32,35 +31,34 @@ class StreamReader(LoopingThread):
 
     def run(self):
         """
-        Reads the data from the sensor and puts it in the queue.
+        Reads the data from the sensor (if connected) and puts it in the queue.
         """
         while not self.stopped():
-            data = self.read()
-            if self.lock:
-                self.lock.acquire()
-            self.data_queue.put((self.priority, data))
-            self.log_queue.put(data)
-            if self.lock:
-                self.lock.release()
+            if not self.is_connected:
+                self.is_connected = self.try_connect()
+                continue
+
+            try:
+                data = self.read()
+
+                if self.lock:
+                    self.lock.acquire()
+                self.data_queue.put((self.priority, data))
+                self.log_queue.put(data)
+                if self.lock:
+                    self.lock.release()
+            except SensorConnectionError:
+                self.is_connected = False
+            except InvalidDataError:
+                pass
+
             time.sleep(self.read_interval)
 
-class SerialStreamReader(StreamReader):
-    def __init__(self, lock, data_queue, log_queue, config):
-        """
-        This class is used to read a stream of data from a serial port and put it in a queue
+    def read_raw_data(self):
+        # Should be overriden by child class
+        return 0
 
-        Args:
-            lock (threading.Lock): The lock used to synchronize access to the queue.
-            data_queue (queue.PriorityQueue): The queue to put the data in.
-            log_queue (queue.Queue): The queue to put the data in.
-            config (dict): The configuration for the sensor (serial port).
-        """
-        super().__init__(lock, data_queue, log_queue, config)
-        self.ser = serial.Serial(**config['serial'])
-    
-    def join(self):
-        """
-        Join the thread and close the serial port.
-        """
-        super().join()
-        self.ser.close()
+    def try_connect(self):
+        # To be overriden by child class which need some form of connection with the
+        # sensor. Returns True by default (always connected)
+        return True
