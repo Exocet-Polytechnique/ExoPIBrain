@@ -60,10 +60,10 @@ _CHECKS = {
     CONFIG["FUELCELL_B"]["name"]: fuel_cell_check,
 }
 
-def get_check(key):
+def perform_check(name, data):
     """
-    Returns the check function for the given key.
+    Check a sensor for any problems. This function will raise a `WarningError` or `CriticalError`
+    if a problem is detected.
     """
-    if key in _CHECKS.keys():
-        return _CHECKS[key]
-    return lambda data: None
+    if name in _CHECKS.keys():
+        _CHECKS[name](data)

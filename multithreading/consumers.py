@@ -1,19 +1,18 @@
-import abc
-import serial
-
-from asserts.checks import get_check
+from asserts.checks import perform_check
 from asserts.asserts import WarningError, CriticalError
 from multithreading.thread import LoopingThread
 from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
-
+import abc
+import serial
 
 
 class Consumer(LoopingThread):
     """
     This class is a base class for consumers. Consumers are threads that consume data from a queue.
     """
-    def __init__(self,lock, queue):
+
+    def __init__(self, lock, queue):
         super(Consumer, self).__init__()
         self.lock = lock
         self.queue = queue
@@ -21,11 +20,13 @@ class Consumer(LoopingThread):
     def run(self):
         pass
 
+
 class DataConsumer(Consumer):
     """
     The DataConsumer class consumes data from the queue and does the appropriate checks on it during each iteration.
     """
-    def __init__(self,lock, queue, gui):
+
+    def __init__(self, lock, queue, gui):
         super().__init__(lock, queue)
         self.gui = gui
 
@@ -43,25 +44,27 @@ class DataConsumer(Consumer):
             self.lock.release()
 
             try:
-                get_check(name)(data)
+                perform_check(name)(data)
+            except CriticalError as e:
+               self.gui.dispatch_alert("alert")
+               raise e  # this will cause emergency shutdown.
+            except WarningError as e:
+                self.gui.dispatch_alert("warning")
+                print(e)
             except Exception as e:
-                if isinstance(e, CriticalError):
-                   self.gui.dispatch_alert("alert")
-                   raise e  # This will cause emergency shutdown
-                elif isinstance(e, WarningError):
-                    self.gui.dispatch_alert("warning")
-            else:
                 print(e)
                 print(data)
+
             self.queue.task_done()
            
 
 class LogConsumer(Consumer):
     """
-    The LogConsumer class consumes data from the queue and displays it on the screen / 
+    The LogConsumer class consumes data from the queue and displays it on the screen /
     writes to IOT cloud by sending it to the MKR1500.
     """
-    def __init__(self,lock, log_queue, gui, serial_port):
+
+    def __init__(self, lock, log_queue, gui, serial_port):
         super().__init__(lock, log_queue)
         self.serial_port = serial_port
         self.gui = gui
@@ -77,7 +80,7 @@ class LogConsumer(Consumer):
         data (dict): The value of the telemetry data.
         """
         data_str = stringify_data(name, data)
-        data_str = data_str.encode('utf-8')
+        data_str = data_str.encode("utf-8")
         self.serial.write(data_str)
 
     def write_screen(self, data):
