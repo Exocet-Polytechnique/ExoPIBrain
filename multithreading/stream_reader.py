@@ -1,8 +1,12 @@
-import time
-from multithreading.thread import LoopingThread
+import abc
 import serial
+import time
 
-class StreamReader(LoopingThread):
+from multithreading.thread import LoopingThread
+
+
+
+class StreamReader(LoopingThread, abc.ABC):
     """
     This class is used to read a stream of data from a sensor and put it in a queue
     on a new thread. The data is read at a specified interval on a new thread.
@@ -17,6 +21,7 @@ class StreamReader(LoopingThread):
         self.data_queue = data_queue
         self.log_queue = log_queue
 
+    @abc.abstractmethod
     def read_raw_data(self):
         # Should be overriden by child class
         return 0
@@ -44,7 +49,7 @@ class StreamReader(LoopingThread):
                 self.lock.release()
             time.sleep(self.read_interval)
 
-class SerialStreamReader(StreamReader):
+class SerialStreamReader(StreamReader, abc.ABC):
     def __init__(self, lock, data_queue, log_queue, config):
         """
         This class is used to read a stream of data from a serial port and put it in a queue

@@ -1,6 +1,9 @@
+import abc
 import threading
 
-class LoopingThread(threading.Thread):
+
+
+class LoopingThread(threading.Thread, abc.ABC):
     """
     A simple abstraction over a thread that can be stopped
     with thread events. Useful for threads that use an infinite loop like consumers

@@ -1,9 +1,13 @@
+import abc
+import serial
+
 from asserts.checks import get_check
-from serial.serialutil import SerialTimeoutException
-from utils import stringify_data
 from asserts.asserts import WarningError, CriticalError
 from multithreading.thread import LoopingThread
-import serial
+from serial.serialutil import SerialTimeoutException
+from utils import stringify_data
+
+
 
 class Consumer(LoopingThread):
     """
@@ -14,6 +18,7 @@ class Consumer(LoopingThread):
         self.lock = lock
         self.queue = queue
 
+    @abc.abstractmethod
     def run(self):
         pass
 
