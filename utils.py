@@ -1,5 +1,9 @@
+"""
+Utility functions.
+"""
 
 import json
+
 
 def stringify_data(name, data_dict, start_char="", end_char=""):
     """
@@ -9,5 +13,7 @@ def stringify_data(name, data_dict, start_char="", end_char=""):
 
     start_char and end_char must be implemented for arduino (exowatch) as well
     """
-    data_str = f"{start_char}{name} {json.dumps(data_dict)}{end_char}" # Name and json dict separated by space
+
+    # Name and json string separated by space
+    data_str = f"{start_char}{name} {json.dumps(data_dict)}{end_char}"
     return data_str
