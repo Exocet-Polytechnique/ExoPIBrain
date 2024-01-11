@@ -18,7 +18,6 @@ class Consumer(LoopingThread):
         self.lock = lock
         self.queue = queue
 
-    @abc.abstractmethod
     def run(self):
         pass
 

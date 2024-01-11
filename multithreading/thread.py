@@ -3,7 +3,7 @@ import threading
 
 
 
-class LoopingThread(threading.Thread, abc.ABC):
+class LoopingThread(threading.Thread):
     """
     A simple abstraction over a thread that can be stopped
     with thread events. Useful for threads that use an infinite loop like consumers
