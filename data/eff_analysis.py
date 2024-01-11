@@ -1,49 +1,44 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.interpolate import CubicSpline
 import csv
 
-if __name__ == "__main__":
-    load = []
-    values = {}
+def get_data(file_path):
+    x_data = []
+    y_data = []
 
-    with open("./eff_curves.csv", "r", encoding="utf-8") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         reader = csv.reader(file)
-        # the first row contains data about the electric load
-        # but we want to remove the label ('e_load')
-        load = [float(v) for v in next(reader)[1:]]
+        x_data = [float(v) for v in next(reader)[1:]] # the name of the first column is weird when loading the file
         for row in reader:
-            values[row[0]] = [float(v) for v in row[1:]]
-
-    for name, data in values.items():
-        if name == "fc_efficiency":
-            plt.plot(load, data)
-
-    def get_approx_value(value, name):
-        # 1. find range in which the value lies
-        # start_index will be zero if the value comes before the given data
-        start_i = 0
-        # end_index will be the max point if the values lies beyond the given data
-        end_i = len(load) - 1
-
-        for i in range(1, len(load) - 1):
-            if load[i] >= value:
-                end_i = i
+            if row[0] == "fc_efficiency":
+                y_data = [float(v) for v in row[1:]]
                 break
 
-            start_i = i
+    return x_data, y_data
 
-        # 2. determine the parameters of a linear function to map the values
-        # this is similar to linear interpolation
-        def linearize_func(x):
-            data = values[name]
-            m = (data[end_i] - data[start_i]) / (load[end_i] - load[start_i])
-            b = data[start_i] - m * load[start_i]
-            return m * x + b
+def compute_best_polynomial(x_data, y_data, degree):
+    coefficients = np.polyfit(x_data, y_data, degree)
+    def polynomial(x):
+        return np.polyval(coefficients, x)
 
-        return linearize_func(value)
+    return polynomial
 
-    x_vals = np.linspace(0, 5600, 40)
-    y_vals = [get_approx_value(v, "fc_efficiency") for v in x_vals]
-    plt.scatter(x_vals, y_vals)
+
+if __name__ == "__main__":
+    # run this script from the exopibrain directory
+    x_data, y_data = get_data("./data/eff_curves.csv")
+    cs = CubicSpline(x_data, y_data)
+    polynomial = compute_best_polynomial(x_data, y_data, len(x_data))
+
+    plt.scatter(x_data, y_data, label="data")
+
+    test_px = np.linspace(0, 5500, 100)
+    test_py = polynomial(test_px)
+    plt.plot(test_px, test_py, label="polynomial")
+
+    test_cx = np.linspace(0, 5500, 100)
+    test_cy = cs(test_cx)
+    plt.plot(test_cx, test_cy, label="cubic spline")
 
     plt.show()
