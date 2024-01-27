@@ -64,7 +64,7 @@ class GPS(SerialStreamReader):
 
 if __name__ == "__main__":
     import time
-    from ..config import CONFIG
+    from config import CONFIG
     gps = GPS(None, None, None, CONFIG['GPS'])
     while True:
         print(gps.read_raw_data())
