@@ -50,6 +50,11 @@ CONFIG = {
         "read_interval": 5,
         "name": "RP_CPU_TEMP",
     },
+    "PRECHARGE" : {
+        "contacteur1" : 22,
+        "contacteur2" : 27,
+        "contacteur3" : 17,
+    }
 
 }
 
