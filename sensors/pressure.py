@@ -24,3 +24,10 @@ class Manometer(StreamReader):
 
     def read_raw_data(self):
         return self._convert_to_pressure(self.chan.value)
+
+if __name__ == "__main__":
+    import time
+    manometer = Manometer(None, None, None, None)
+    while (True):
+        print(manometer.read_raw_data())
+        time.sleep(1)
