@@ -27,7 +27,8 @@ class Manometer(StreamReader):
 
 if __name__ == "__main__":
     import time
-    manometer = Manometer(None, None, None, None)
+    from config import CONFIG
+    manometer = Manometer(None, None, None, CONFIG["MANOMETERS"])
     while (True):
         print(manometer.read_raw_data())
         time.sleep(1)
