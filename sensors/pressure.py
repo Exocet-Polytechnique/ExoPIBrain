@@ -16,14 +16,14 @@ class Manometer(StreamReader):
         self.spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
         self.cs = digitalio.DigitalInOut(board.D25)
         self.mcp = MCP.MCP3008(self.spi, self.cs)
-        self.chan = AnalogIn(self.mcp, MCP.P0)
+        self.channels = [AnalogIn(self.mcp, MCP.P0)]
 
-    def _convert_to_pressure(channel_value):
+    def _convert_to_pressure(self, channel_value):
         # TODO
         return channel_value
 
     def read_raw_data(self):
-        return self._convert_to_pressure(self.chan.value)
+        return self._convert_to_pressure(self.channels[0].value)
 
 if __name__ == "__main__":
     import time
