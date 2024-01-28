@@ -28,6 +28,7 @@ CONFIG = {
         "priority": 0,
         "read_interval": 1,
         "name": "MANOMETERS",
+        "sensors": {"M0": (0, 400)},
     },
     "BATT_TEMP": {
         "priority": 0,
