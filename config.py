@@ -24,10 +24,15 @@ CONFIG = {
         "read_interval": 1,
         "name": "FUELCELL_B",
     },
+    "MANOMETERS": {
+        "priority": 0,
+        "read_interval": 1,
+        "name": "MANOMETERS",
+    },
     "BATT_TEMP": {
         "priority": 0,
         "read_interval": 1,
-        "name": "BATT_TEMP"
+        "name": "BATT_TEMP",
     },
     "IMU": {
         "priority": 1,
