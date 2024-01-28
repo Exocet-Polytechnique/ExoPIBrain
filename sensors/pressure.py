@@ -25,7 +25,7 @@ class Manometers(StreamReader):
         self.sensors = config["sensors"]
         self.channels = []
         for i in range(len(self.sensors)):
-            self.channels.append(possible_channels[i])
+            self.channels.append(AnalogIn(self.mcp, possible_channels[i]))
 
     def _convert_to_pressure(self, channel_value, min, max):
         ratio = (channel_value - Manometers.MIN_ANALOG_VALUE) / (Manometers.MAX_ANALOG_VALUE - Manometers.MIN_ANALOG_VALUE)
@@ -34,7 +34,7 @@ class Manometers(StreamReader):
     def read_raw_data(self):
         output = {}
         for i, (name, (min, max)) in enumerate(self.sensors.items()):
-            output[name] = self._convert_to_pressure(self.channels[i], min, max)
+            output[name] = self._convert_to_pressure(self.channels[i].value, min, max)
 
         return output
 
