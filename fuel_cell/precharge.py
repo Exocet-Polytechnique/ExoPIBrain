@@ -4,4 +4,4 @@ class Precharge(object):
     be implemented once we recieve and install the 
     appropriate components.    
     """
-    pass
+    #commentaire : au démarage / GPIO22, GPIO27 / après 2s / GPIO22 GPIO17

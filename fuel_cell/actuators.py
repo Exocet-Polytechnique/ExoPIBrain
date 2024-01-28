@@ -16,3 +16,21 @@ class Actuator():
     
     def close_valve(self):
         GPIO.output(self.pinNumber, GPIO.LOW) # puts a 1 in the pin, witch close the valve
+
+if __name__ == "__main__":
+    import time
+    actuator1 = Actuator(12)
+    actuator2 = Actuator(19)
+    while(True):
+        print("on allume le 1")
+        actuator1.open_valve()
+        time.sleep(2)
+        print("on allume le 2")
+        actuator2.open_valve()
+        time.sleep(2)
+        print("on ferme le 2")
+        actuator2.close_valve()
+        time.sleep(2)
+        print("on ferme le 1")
+        actuator1.close_valve()
+        time.sleep(4)
