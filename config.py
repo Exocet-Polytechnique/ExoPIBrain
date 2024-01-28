@@ -104,7 +104,6 @@ CONFIG = {
         "contacteur2" : 27,
         "contacteur3" : 17,
     }
-
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
