@@ -1,17 +1,15 @@
 from fuel_cell.fuel_cell import FuelCell
 from fuel_cell.actuators import Actuator
-from gpiozero import Button
 from asserts.asserts import ShutDownError
 from multithreading.thread import LoopingThread
+import RPi.GPIO as GPIO
 
 class BoatStopper:
-    def __init__(self, btn_stop_pin, fc_a: FuelCell, fc_b: FuelCell, in_v: Actuator, out_v: Actuator):
-        self.btn = Button(btn_stop_pin)
+    def __init__(self, fc_a: FuelCell, fc_b: FuelCell, in_v: Actuator, out_v: Actuator):
         self.fc_a = fc_a
         self.fc_b = fc_b
         self.in_v = in_v
         self.out_v = out_v
-        self.btn.when_pressed = self.normal_shutdown
         self.shutdown_success = False
         self.threads = []
     
@@ -32,6 +30,7 @@ class BoatStopper:
             self.fc_b.shutdown_fuel_cell()
             self.in_v.close_valve()
             self.out_v.close_valve()
+            GPIO.cleanup()
             self.shutdown_success = True
         except Exception:
             raise ShutDownError()
