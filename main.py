@@ -50,6 +50,9 @@ def main():
     # Start button
     start_button = StartButton(CONFIG["START_BUTTON"])
 
+    # Start button
+    start_button = StartButton(CONFIG["START_BUTTON"])
+
     # Build the consumers
     data_cons = DataConsumer(lock, data_queue, gui)
     log_cons = LogConsumer(lock, log_queue, gui, TELE_CONFIG["serial_port"])
