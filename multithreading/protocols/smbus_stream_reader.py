@@ -1,4 +1,3 @@
-
 from multithreading.stream_reader import StreamReader
 import smbus
 
