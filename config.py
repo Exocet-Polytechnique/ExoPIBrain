@@ -99,6 +99,9 @@ CONFIG = {
     "START_BUTTON": {
         "pin": 27,
     },
+    "START_BUTTON": {
+        "pin": 27,
+    },
     "PRECHARGE" : {
         "main_contactor" : 22,
         "stage1_contactor" : 27,
