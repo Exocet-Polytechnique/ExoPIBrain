@@ -56,7 +56,9 @@ CONFIG = {
         "read_interval": 5,
         "name": "RP_CPU_TEMP",
     },
-
+    "START_BUTTON": {
+        "pin": 27,
+    },
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
