@@ -56,6 +56,9 @@ CONFIG = {
         "read_interval": 5,
         "name": "RP_CPU_TEMP",
     },
+    "START_BUTTON": {
+        "pin": 27,
+    },
     "PRECHARGE" : {
         "contacteur1" : 22,
         "contacteur2" : 27,
