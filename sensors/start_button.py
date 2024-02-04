@@ -1,16 +1,33 @@
-from multithreading.protocols.digital_stream_reader import DigitalStreamReader
 import RPi.GPIO as GPIO
 
-class StartButton(DigitalStreamReader):
+class StartButton:
     """
-    Class to read the start of the start/stop button
+    Class to read the state of the start/stop button
     """
 
-    def __init__(self, lock, data_queue, log_queue, config):
-        super().__init__(lock, data_queue, log_queue, config)
+    def __init__(self, config):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(config["pin"], GPIO.IN)
 
-    def read_raw_data(self):
-        return GPIO.input(self._pins[0])
+        # Start at high to prevent the boat from automatically starting if the button is
+        # already pressed when the boat is turned on
+        self._last_state = True
+
+    def was_pressed(self):
+        """
+        Check if the button was just pressed.
+
+        This will return True only if the button was not pressed the last time its state was checked and is
+        now pressed.
+        """
+        state = GPIO.input(self._pins[0])
+        if state != self._last_state:
+            # software debounce:
+            time.sleep(0.02)
+            self._last_state = state
+            return state
+
+        return False
 
 if __name__ == "__main__":
     import time
@@ -18,4 +35,4 @@ if __name__ == "__main__":
     start_button = StartButton(None, None, None, CONFIG["START_BUTTON"])
     while (True):
         print(start_button.read_raw_data())
-        time.sleep(1)
+        time.sleep(CONFIG["START_BUTTON"]["read_interval"])
