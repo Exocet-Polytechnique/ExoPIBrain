@@ -4,8 +4,6 @@ from config import CONFIG
 # Maximum temperatures we can reach before the boat is at risk
 CPU_MAX_TEMP_WARN = 80
 CPU_MAX_TEMP_ALERT = 90
-BATT_MAX_TEMP_WARN = 50
-BATT_MAX_TEMP_ALERT = 80
 
 
 def temperature_check(name, temperature, max_temp_warn, max_temp_alert):
@@ -33,17 +31,17 @@ def cpu_temp_check(data):
     )
 
 
-def batt_temp_check(data):
+def temp_check(data):
     """
-    Checks the battery temperature (thermocouple)
+    Check temperature from all thermocouples.
     """
-    temperature = data["temperature"]
-    temperature_check(
-        CONFIG["BATT_TEMP"]["name"],
-        temperature,
-        BATT_MAX_TEMP_WARN,
-        BATT_MAX_TEMP_ALERT
-    )
+    for name, temperature in data.items():
+        temperature_check(
+            name,
+            temperature,
+            CONFIG["TEMPERATURES"]["sensors"][name][0],
+            CONFIG["TEMPERATURES"]["sensors"][name][1]
+        )
 
 def check_battery_levels(data):
     """
@@ -74,7 +72,7 @@ def fuel_cell_check(data):
 # List of sensors we want to check as well as their respective functions
 _CHECKS = {
     CONFIG["RP_CPU_TEMP"]["name"]: cpu_temp_check,
-    CONFIG["BATT_TEMP"]["name"]: batt_temp_check,
+    CONFIG["TEMPERATURES"]["name"]: temp_check,
     CONFIG["FUELCELL_A"]["name"]: fuel_cell_check,
     CONFIG["FUELCELL_B"]["name"]: fuel_cell_check,
     CONFIG["BATT_GAUGES"]["name"]: check_battery_levels,
