@@ -52,7 +52,7 @@ class Thermocouple(StreamReader):
 if __name__ == "__main__":
     import time
     from config import CONFIG
-    thermocouple = Thermocouple(None, None, None, CONFIG['BATT_TEMP'])
+    thermocouple = Thermocouple(None, None, None, CONFIG["TEMPERATURES"])
     while True:
         print(thermocouple.read_raw_data())
         time.sleep(1)
