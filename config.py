@@ -32,10 +32,18 @@ CONFIG = {
             "M0": {"range": (0, 400), "channel": 0},
         },
     },
-    "BATT_TEMP": {
+    "TEMPERATURES": {
         "priority": 0,
-        "read_interval": 1,
-        "name": "BATT_TEMP",
+        "read_interval": 0, # delay already created by the conversion time of the sensors
+        "name": "TEMPERATURES",
+        "sensors": {
+            # (warning_temperature, alert_temperature, max_temperature)
+            "battery_12V": (0, 0, 0),
+            "battery_24V": (50, 80, 0),
+            "fc_controllers": (0, 0, 0),
+            "h2_plate": (0, 0, 0),
+            "h2_tanks": (0, 0, 0),
+        }
     },
     "IMU": {
         "priority": 1,

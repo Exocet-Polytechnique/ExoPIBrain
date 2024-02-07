@@ -35,7 +35,7 @@ def main():
     fc_b = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_B"])
 
     # Thermocouple
-    batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["BATT_TEMP"])
+    batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["TEMPERATURES"])
     # Sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
