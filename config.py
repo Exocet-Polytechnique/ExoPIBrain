@@ -35,12 +35,12 @@ CONFIG = {
         "read_interval": 0, # delay already created by the conversion time of the sensors
         "name": "TEMPERATURES",
         "sensors": {
-            # (warning_temperature, alert_temperature, max_temperature)
-            "battery_12V": (0, 0, 0),
-            "battery_24V": (50, 80, 0),
-            "fc_controllers": (0, 0, 0),
-            "h2_plate": (0, 0, 0),
-            "h2_tanks": (0, 0, 0),
+            # (warning_temperature, alert_temperature, max_temperature, address)
+            "battery_12V": (0, 0, 0, 0x0000000000),
+            "battery_24V": (50, 80, 0, 0x0000000000),
+            "fc_controllers": (0, 0, 0, 0x0000000000),
+            "h2_plate": (0, 0, 0, 0x0000000000),
+            "h2_tanks": (0, 0, 0, 0x0000000000),
         }
     },
     "IMU": {
