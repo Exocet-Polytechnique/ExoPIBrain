@@ -4,6 +4,7 @@ import digitalio
 import board
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
+from config import ADC_ENABLE_PIN
 
 possible_channels = [MCP.P0, MCP.P1, MCP.P2, MCP.P3, MCP.P4, MCP.P5]
 
@@ -20,12 +21,12 @@ class Manometers(StreamReader):
     def __init__(self, lock, data_queue, log_queue, config):
         super().__init__(lock, data_queue, log_queue, config)
         self.spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
-        self.cs = digitalio.DigitalInOut(board.D25)
+        self.cs = digitalio.DigitalInOut(ADC_ENABLE_PIN)
         self.mcp = MCP.MCP3008(self.spi, self.cs)
         self.sensors = config["sensors"]
         self.channels = []
-        for i in range(len(self.sensors)):
-            self.channels.append(AnalogIn(self.mcp, possible_channels[i]))
+        for _, sensor_config in self.sensors.items():
+            self.channels.append(AnalogIn(self.mcp, sensor_config["channel"]))
 
     def _convert_to_pressure(self, channel_value, min, max):
         ratio = (channel_value - Manometers.MIN_ANALOG_VALUE) / (Manometers.MAX_ANALOG_VALUE - Manometers.MIN_ANALOG_VALUE)

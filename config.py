@@ -28,7 +28,9 @@ CONFIG = {
         "priority": 0,
         "read_interval": 1,
         "name": "MANOMETERS",
-        "sensors": {"M0": (0, 400)},
+        "sensors": {
+            "M0": {"range": (0, 400), "channel": 0},
+        },
     },
     "BATT_TEMP": {
         "priority": 0,
@@ -65,4 +67,8 @@ CONFIG = {
 TELE_CONFIG = {
     "serial_port": "/dev/ttyACM0",
 }
+
 BUTTON_DEBOUNCE_S = 0.02
+
+import board
+ADC_ENABLE_PIN = board.D8
