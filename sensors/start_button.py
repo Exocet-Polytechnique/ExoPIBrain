@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+from config import BUTTON_DEBOUNCE_S
 
 class StartButton:
     """
@@ -23,7 +24,7 @@ class StartButton:
         state = GPIO.input(self._pins[0])
         if state != self._last_state:
             # software debounce:
-            time.sleep(0.02)
+            time.sleep(BUTTON_DEBOUNCE_S)
             self._last_state = state
             return state
 

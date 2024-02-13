@@ -9,8 +9,8 @@ possible_channels = [MCP.P0, MCP.P1, MCP.P2, MCP.P3, MCP.P4, MCP.P5]
 
 
 class Manometers(StreamReader):
-    MAX_ANALOG_VALUE = 65535.0
-    MIN_ANALOG_VALUE = 0.0
+    MAX_ANALOG_VALUE = 0xFFFF
+    MIN_ANALOG_VALUE = 0
 
     """
     Manometer class used to read pressure data from H2 supplies.
@@ -44,4 +44,4 @@ if __name__ == "__main__":
     manometers = Manometers(None, None, None, CONFIG["MANOMETERS"])
     while (True):
         print(manometers.read_raw_data())
-        time.sleep(1)
+        time.sleep(CONFIG["MANOMETERS"]["read_interval"])
