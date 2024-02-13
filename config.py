@@ -65,3 +65,4 @@ CONFIG = {
 TELE_CONFIG = {
     "serial_port": "/dev/ttyACM0",
 }
+BUTTON_DEBOUNCE_S = 0.02
