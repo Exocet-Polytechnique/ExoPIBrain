@@ -42,11 +42,13 @@ class StreamReader(LoopingThread):
                 data = self.read()
 
                 if self.lock:
-                    self.lock.acquire()
-                self.data_queue.put((self.priority, data))
-                self.log_queue.put(data)
-                if self.lock:
-                    self.lock.release()
+                    with self.lock:
+                        self.data_queue.put((self.priority, data))
+                        self.log_queue.put(data)
+                else:
+                    self.data_queue.put((self.priority, data))
+                    self.log_queue.put(data)
+
             except SensorConnectionError:
                 self.is_connected = False
             except InvalidDataError:
@@ -60,5 +62,5 @@ class StreamReader(LoopingThread):
 
     def try_connect(self):
         # To be overriden by child class which need some form of connection with the
-        # sensor. Returns True by default (always connected)
+        # sensor. Returns True by default (no connection required in some cases)
         return True

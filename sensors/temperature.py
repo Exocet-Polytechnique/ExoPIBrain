@@ -3,6 +3,8 @@ import time
 import glob
 from multithreading.stream_reader import StreamReader
 
+
+# From: https://randomnerdtutorials.com/raspberry-pi-ds18b20-python/
 class Thermocouple(StreamReader):
     """
     Reads temperature data from the DS18B20 thermocouple
@@ -24,9 +26,8 @@ class Thermocouple(StreamReader):
         Returns:
             list: The lines from the thermocouple file.
         """
-        f = open(self.device_file, 'r')
-        lines = f.readlines()
-        f.close()
+        with open(self.device_file, 'r') as f:
+            lines = f.readlines()
         return lines
 
     def read_raw_data(self):
@@ -50,8 +51,8 @@ class Thermocouple(StreamReader):
 
 if __name__ == "__main__":
     import time
-    from ..config import CONFIG
+    from config import CONFIG
     thermocouple = Thermocouple(None, None, None, CONFIG['BATT_TEMP'])
     while True:
         print(thermocouple.read_raw_data())
-        time.sleep(1)
+        time.sleep(CONFIG['BATT_TEMP']['read_interval'])

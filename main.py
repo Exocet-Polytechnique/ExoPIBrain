@@ -6,6 +6,7 @@ properly. It will also wait for a button press before starting all the procedure
 from sensors.gps import GPS
 from sensors.temperature import Thermocouple
 from sensors.rpmonitor import RPCPUTemperature
+from sensors.start_button import StartButton
 from fuel_cell.fuel_cell import FuelCell
 import threading
 from queue import PriorityQueue, Queue
@@ -14,6 +15,7 @@ from config import CONFIG, TELE_CONFIG
 from display.ui import GUI
 from procedures.shutdown import BoatStopper
 from procedures.start import BoatStarter
+import time
 
 
 def main():
@@ -38,6 +40,9 @@ def main():
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
 
+    # Start button
+    start_button = StartButton(CONFIG["START_BUTTON"])
+
     # Build the consumers
     data_cons = DataConsumer(lock, data_queue, gui)
     log_cons = LogConsumer(lock, log_queue, gui, TELE_CONFIG["serial_port"])
@@ -48,7 +53,9 @@ def main():
     stopper.set_threads(fc_a, fc_b, cputemp, gps, data_cons, log_cons)
 
     # Startup: we wait for a button to be pressed before triggering the startup procedure
-    starter.wait_for_press()
+    while not start_button.was_pressed():
+        pass
+
     starter.startup_procedure()
 
     # Start threads for all systems
@@ -60,10 +67,16 @@ def main():
     data_cons.start()
     log_cons.start()
 
-    # Start the GUI. The `run` method contains a loop which will keep the program running
-    print("STARTING GUI...")
-    gui.run()
+    # Shutdown: we wait for a button to be pressed before triggering the shutdown procedure
+    print("GUI disabled in development")
+    while not start_button.was_pressed():
+        time.sleep(0.2) # give priority to other threads
 
+    stopper.normal_shutdown()
+
+    # Start the GUI. The `run` method contains a loop which will keep the program running
+    # print("STARTING GUI...")
+    # gui.run()
 
 if __name__ == "__main__":
     main()

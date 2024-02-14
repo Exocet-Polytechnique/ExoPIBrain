@@ -24,10 +24,18 @@ CONFIG = {
         "read_interval": 1,
         "name": "FUELCELL_B",
     },
+    "MANOMETERS": {
+        "priority": 0,
+        "read_interval": 1,
+        "name": "MANOMETERS",
+        "sensors": {
+            "M0": {"range": (0, 400), "channel": 0},
+        },
+    },
     "BATT_TEMP": {
         "priority": 0,
         "read_interval": 1,
-        "name": "BATT_TEMP"
+        "name": "BATT_TEMP",
     },
     "IMU": {
         "priority": 1,
@@ -50,10 +58,17 @@ CONFIG = {
         "read_interval": 5,
         "name": "RP_CPU_TEMP",
     },
-
+    "START_BUTTON": {
+        "pin": 27,
+    },
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
 TELE_CONFIG = {
     "serial_port": "/dev/ttyACM0",
 }
+
+BUTTON_DEBOUNCE_S = 0.02
+
+import board
+ADC_ENABLE_PIN = board.D8
