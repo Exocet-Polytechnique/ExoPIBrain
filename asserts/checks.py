@@ -39,8 +39,8 @@ def temp_check(data):
         temperature_check(
             name,
             temperature,
-            CONFIG["TEMPERATURES"]["sensors"][name][0],
-            CONFIG["TEMPERATURES"]["sensors"][name][1]
+            CONFIG["TEMPERATURES"]["sensors"][name]["warn"],
+            CONFIG["TEMPERATURES"]["sensors"][name]["alert"]
         )
 
 def check_battery_levels(data):
