@@ -79,4 +79,4 @@ if __name__ == "__main__":
     thermocouple = Thermocouples(None, None, None, CONFIG["TEMPERATURES"])
     while True:
         print(thermocouple.read_raw_data())
-        time.sleep(CONFIG['BATT_TEMP']['read_interval'])
+        time.sleep(CONFIG["TEMPERATURES"]["read_interval"])
