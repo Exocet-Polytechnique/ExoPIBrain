@@ -6,7 +6,7 @@ CPU_MAX_TEMP_WARN = 80
 CPU_MAX_TEMP_ALERT = 90
 
 
-def temperature_check(name, temperature, max_temp_warn, max_temp_alert):
+def check_device_temperature(name, temperature, max_temp_warn, max_temp_alert):
     """
     Checks the temperature of a sensor.
     """
@@ -18,12 +18,12 @@ def temperature_check(name, temperature, max_temp_warn, max_temp_alert):
         raise CriticalError(msg)
     
 
-def cpu_temp_check(data):
+def check_cpu_temperature(data):
     """
     Checks the CPU temperature.
     """
     temperature = data["temperature"]
-    temperature_check(
+    check_device_temperature(
         CONFIG["RP_CPU_TEMP"]["name"],
         temperature,
         CPU_MAX_TEMP_WARN,
@@ -31,12 +31,12 @@ def cpu_temp_check(data):
     )
 
 
-def temp_check(data):
+def check_temperatures(data):
     """
     Check temperature from all thermocouples.
     """
     for name, temperature in data.items():
-        temperature_check(
+        check_device_temperature(
             name,
             temperature,
             CONFIG["TEMPERATURES"]["sensors"][name]["warn"],
@@ -63,7 +63,7 @@ def check_battery_levels(data):
     if battery_charge_24V >= CONFIG["BATT_GAUGES"]["charge_levels"]["24V"]["warning"]:
         raise WarningError("Warning: 24V battery charge level is low.")
 
-def fuel_cell_check(data):
+def check_fuel_cell(data):
     # TODO: figure out something to check. This function is here for redundency, but the fuel cell
     # controllers should already immplement some security.
     pass
