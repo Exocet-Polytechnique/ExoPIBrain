@@ -2,15 +2,15 @@ from asserts.asserts import WarningError, CriticalError
 from config import CONFIG
 
 
-def check_device_temperature(name, temperature, max_temp_warn, max_temp_alert):
+def check_device_temperature(name, temperature, max_temperature_warn, max_temperature_alert):
     """
     Checks the temperature of a sensor.
     """
     msg = f"{name}: {temperature}."
 
-    if max_temp_warn <= temperature < max_temp_alert:
+    if max_temperature_warn <= temperature < max_temperature_alert:
         raise WarningError(msg)
-    if temperature > max_temp_alert:
+    if temperature > max_temperature_alert:
         raise CriticalError(msg)
     
 
@@ -20,10 +20,10 @@ def check_cpu_temperature(data):
     """
     temperature = data["temperature"]
     check_device_temperature(
-        CONFIG["RP_CPU_TEMP"]["name"],
+        CONFIG["RP_CPU_TEMPERATURE"]["name"],
         temperature,
-        CONFIG["RP_CPU_TEMP"]["warning_temperature"],
-        CONFIG["RP_CPU_TEMP"]["alert_temperature"]
+        CONFIG["RP_CPU_TEMPERATURE"]["warning_temperature"],
+        CONFIG["RP_CPU_TEMPERATURE"]["alert_temperature"]
     )
 
 
@@ -48,7 +48,7 @@ def check_fuel_cell(data):
 
 # List of sensors we want to check as well as their respective functions
 _CHECKS = {
-    CONFIG["RP_CPU_TEMP"]["name"]: check_cpu_temperature,
+    CONFIG["RP_CPU_TEMPERATURE"]["name"]: check_cpu_temperature,
     CONFIG["TEMPERATURES"]["name"]: check_temperatures,
     CONFIG["FUELCELL_A"]["name"]: check_fuel_cell,
     CONFIG["FUELCELL_B"]["name"]: check_fuel_cell,
