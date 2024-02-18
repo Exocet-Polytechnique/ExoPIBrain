@@ -64,6 +64,8 @@ CONFIG = {
         "priority": 2,
         "read_interval": 5,
         "name": "RP_CPU_TEMP",
+        "warning_temperature": 80,
+        "alert_temperature": 90,
     },
     "START_BUTTON": {
         "pin": 27,

@@ -1,10 +1,6 @@
 from asserts.asserts import WarningError, CriticalError
 from config import CONFIG
 
-# Maximum temperatures we can reach before the boat is at risk
-CPU_MAX_TEMP_WARN = 80
-CPU_MAX_TEMP_ALERT = 90
-
 
 def check_device_temperature(name, temperature, max_temp_warn, max_temp_alert):
     """
@@ -26,8 +22,8 @@ def check_cpu_temperature(data):
     check_device_temperature(
         CONFIG["RP_CPU_TEMP"]["name"],
         temperature,
-        CPU_MAX_TEMP_WARN,
-        CPU_MAX_TEMP_ALERT
+        CONFIG["RP_CPU_TEMP"]["warning_temperature"],
+        CONFIG["RP_CPU_TEMP"]["alert_temperature"]
     )
 
 
