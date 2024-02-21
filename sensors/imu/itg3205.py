@@ -1,7 +1,7 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
 
 
-class ITG3205(SMBusStreamReader):
+class Gyroscope(SMBusStreamReader):
     """
     https://github.com/ControlEverythingCommunity/ITG3200/blob/master/Python/ITG_3200.py
     """
@@ -43,3 +43,12 @@ class ITG3205(SMBusStreamReader):
             z -= 65536
         
         return x, y, z
+
+if __name__ == "__main__":
+    import time
+    from config import CONFIG
+    gyroscope = Gyroscope(None, None, None, CONFIG["ITG3205"])
+    gyroscope.try_connect()
+    while True:
+        print(gyroscope.read_raw_data())
+        time.sleep(CONFIG["ITG3205"]["read_interval"])
