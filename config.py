@@ -41,8 +41,6 @@ CONFIG = {
         "priority": 1,
         "read_interval": 1,
         "name": "IMU",
-        "new_rev_i2c_id": 1,
-        "old_rev_i2c_id": 0,
     },
     "GPS": {
         "serial": {
@@ -72,3 +70,6 @@ BUTTON_DEBOUNCE_S = 0.02
 
 import board
 ADC_ENABLE_PIN = board.D8
+
+SMBUS_NEW_ID = 1
+SMBUS_OLD_ID = 0
