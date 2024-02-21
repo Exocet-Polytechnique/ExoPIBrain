@@ -10,7 +10,7 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
 
 
-class ADXL345(SMBusStreamReader):
+class Accelerometer(SMBusStreamReader):
     # ADXL345 constants
     DATA_FORMAT = 0x31
     BW_RATE = 0x2C
@@ -28,17 +28,17 @@ class ADXL345(SMBusStreamReader):
     def try_connect(self):
         # no need to add this to __init__ since the stream_reader class has its is_connected member to False
         # by default and will attempt to connect via the imu class
-        with self.acquire_lock():
-            try:
+        try:
+            with self.acquire_lock():
                 self.write_byte(self.BW_RATE, self.BW_RATE_100HZ)
                 self._set_range(self.RANGE_2G)
                 self.write_byte(self.POWER_CTL, self.MEASURE)
 
-            except:
-                # failed to connect
-                return False
+        except:
+            # failed to connect
+            return False
 
-            return True
+        return True
 
     def _set_range(self, range_flag):
         value = self.read_byte(self.DATA_FORMAT)
@@ -50,10 +50,6 @@ class ADXL345(SMBusStreamReader):
     def read_raw_data(self):
         """
         returns the current reading from the sensor for each axis
-
-        parameter use_gforce_units:
-           False (default): result is returned in m/s^2
-           True     : result is returned in gs
         """
         with self.acquire_lock():
             i2c_bytes = self.read_block(self.AXES_DATA, 6)
@@ -79,3 +75,12 @@ class ADXL345(SMBusStreamReader):
         z = z * self.EARTH_GRAVITY_MS2
 
         return x, y, z
+
+if __name__ == "__main__":
+    import time
+    from config import CONFIG
+    accelerometer = Accelerometer(None, None, None, CONFIG["ADXL345"])
+    accelerometer.try_connect()
+    while True:
+        print(accelerometer.read_raw_data())
+        time.sleep(CONFIG["ADXL345"]["read_interval"])

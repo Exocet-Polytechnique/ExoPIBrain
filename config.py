@@ -49,7 +49,7 @@ CONFIG = {
         "name": "Compass",
         "i2c_address": 0x0C,
     },
-    "ITG3200": {
+    "ITG3205": {
         "priority": 1,
         "read_interval": 1,
         "name": "Gyroscope",

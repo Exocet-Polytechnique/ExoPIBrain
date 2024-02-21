@@ -1,7 +1,7 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
 
 
-class HMC5883L(SMBusStreamReader):
+class Compass(SMBusStreamReader):
     # HMC5883L constants
     RANGE_2G = 0x00
     BW_10Hz = 0x00
@@ -25,15 +25,15 @@ class HMC5883L(SMBusStreamReader):
     def try_connect(self):
         # no need to add this to __init__ since the stream_reader class has its is_connected member to False
         # by default and will attempt to connect via the imu class
-        with self.acquire_lock():
-            try:
+        try:
+            with self.acquire_lock():
                 self.write_byte(self.REG_CONTROL_1, 0x00)
                 self.write_byte(self.REG_CONTROL_2, 0x4D)
 
-            except:
-                return False
+        except:
+            return False
 
-            return True
+        return True
 
 
     def _read_word(self, register):
@@ -60,3 +60,12 @@ class HMC5883L(SMBusStreamReader):
             z = self._read_word_2c(self.REG_ZOUT_LSB)
         
         return x, y, z
+
+if __name__ == "__main__":
+    import time
+    from config import CONFIG
+    compass = Compass(None, None, None, CONFIG["HMC5883L"])
+    compass.try_connect()
+    while True:
+        print(compass.read_raw_data())
+        time.sleep(CONFIG["HMC5883L"]["read_interval"])
