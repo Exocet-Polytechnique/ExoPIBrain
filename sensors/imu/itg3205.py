@@ -16,7 +16,7 @@ class Gyroscope(SMBusStreamReader):
 
     def try_connect(self):
         try:
-            with self.acquire_lock():
+            with self.acquire_bus_lock():
                 self.write_byte(self.POWER_MANAGEMENT, self.PLL_X_GYRO)
                 self.write_byte(self.DLPF_FS, self.DLPF_256_8)
 
@@ -26,7 +26,7 @@ class Gyroscope(SMBusStreamReader):
         return True
 
     def read_raw_data(self):
-        with self.acquire_lock():
+        with self.acquire_bus_lock():
             data = self.read_block(self.DATA_REG, 6)
 
         # Convert the data

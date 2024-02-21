@@ -29,7 +29,7 @@ class Accelerometer(SMBusStreamReader):
         # no need to add this to __init__ since the stream_reader class has its is_connected member to False
         # by default and will attempt to connect via the imu class
         try:
-            with self.acquire_lock():
+            with self.acquire_bus_lock():
                 self.write_byte(self.BW_RATE, self.BW_RATE_100HZ)
                 self._set_range(self.RANGE_2G)
                 self.write_byte(self.POWER_CTL, self.MEASURE)
@@ -51,7 +51,7 @@ class Accelerometer(SMBusStreamReader):
         """
         returns the current reading from the sensor for each axis
         """
-        with self.acquire_lock():
+        with self.acquire_bus_lock():
             i2c_bytes = self.read_block(self.AXES_DATA, 6)
 
         x = i2c_bytes[0] | (i2c_bytes[1] << 8)

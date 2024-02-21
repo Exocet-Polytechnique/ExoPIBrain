@@ -26,7 +26,7 @@ class Compass(SMBusStreamReader):
         # no need to add this to __init__ since the stream_reader class has its is_connected member to False
         # by default and will attempt to connect via the imu class
         try:
-            with self.acquire_lock():
+            with self.acquire_bus_lock():
                 self.write_byte(self.REG_CONTROL_1, 0x00)
                 self.write_byte(self.REG_CONTROL_2, 0x4D)
 
@@ -54,7 +54,7 @@ class Compass(SMBusStreamReader):
 
     def read_raw_data(self):
         """Read data from magnetic and temperature data registers."""
-        with self.acquire_lock():
+        with self.acquire_bus_lock():
             x = self._read_word_2c(self.REG_XOUT_LSB)
             y = self._read_word_2c(self.REG_YOUT_LSB)
             z = self._read_word_2c(self.REG_ZOUT_LSB)
