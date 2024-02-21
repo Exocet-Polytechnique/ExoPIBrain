@@ -28,7 +28,7 @@ class SMBusStreamReader(StreamReader):
         self.address = config["i2c_address"]
         self.__has_lock = False
 
-    def acquire_lock(self):
+    def acquire_bus_lock(self):
         try:
             self.lock.acquire()
             self.__has_lock = True
