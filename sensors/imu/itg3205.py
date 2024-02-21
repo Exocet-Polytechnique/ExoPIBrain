@@ -1,7 +1,7 @@
-from sensors.imu.imu_sensor import IMUSensor
+from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
 
 
-class ITG3205(IMUSensor):
+class ITG3205(SMBusStreamReader):
     """
     https://github.com/ControlEverythingCommunity/ITG3200/blob/master/Python/ITG_3200.py
     """
@@ -11,30 +11,35 @@ class ITG3205(IMUSensor):
     DLPF_256_8 = 0x18
     DATA_REG = 0x1D
 
-    def __init__(self, bus):
-        super().__init__(bus, address=0x68)
+    def __init__(self, lock, data_queue, log_queue, config):
+        super().__init__(lock, data_queue, log_queue, config)
 
-    def connect(self):
+    def try_connect(self):
         try:
-            self.write_byte(self.POWER_MANAGEMENT, self.PLL_X_GYRO)
-            self.write_byte(self.DLPF_FS, self.DLPF_256_8)
+            with self.acquire_lock():
+                self.write_byte(self.POWER_MANAGEMENT, self.PLL_X_GYRO)
+                self.write_byte(self.DLPF_FS, self.DLPF_256_8)
+
         except:
             return False
+
         return True
 
-    def read(self):
-        data = self.read_block(self.DATA_REG, 6)
+    def read_raw_data(self):
+        with self.acquire_lock():
+            data = self.read_block(self.DATA_REG, 6)
+
         # Convert the data
-        x_gyro = data[0] * 256 + data[1]
-        if x_gyro > 32767 :
-            x_gyro -= 65536
+        x = data[0] * 256 + data[1]
+        if x > 32767 :
+            x -= 65536
 
-        y_gyro = data[2] * 256 + data[3]
-        if y_gyro > 32767 :
-            y_gyro -= 65536
+        y = data[2] * 256 + data[3]
+        if y > 32767 :
+            y -= 65536
 
-        z_gyro = data[4] * 256 + data[5]
-        if z_gyro > 32767 :
-            z_gyro -= 65536
+        z = data[4] * 256 + data[5]
+        if z > 32767 :
+            z -= 65536
         
-        return x_gyro, y_gyro, z_gyro
+        return x, y, z
