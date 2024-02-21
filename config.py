@@ -37,10 +37,11 @@ CONFIG = {
         "read_interval": 1,
         "name": "BATT_TEMP",
     },
-    "IMU": {
+    "ADXL345": {
         "priority": 1,
         "read_interval": 1,
-        "name": "IMU",
+        "name": "Accelerometer",
+        "i2c_address": 0x53,
     },
     "GPS": {
         "serial": {
