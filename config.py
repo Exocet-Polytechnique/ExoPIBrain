@@ -43,6 +43,12 @@ CONFIG = {
         "name": "Accelerometer",
         "i2c_address": 0x53,
     },
+    "HMC5883L": {
+        "priority": 1,
+        "read_interval": 1,
+        "name": "Compass",
+        "i2c_address": 0x0C,
+    },
     "GPS": {
         "serial": {
             "port": "/dev/tty0",
