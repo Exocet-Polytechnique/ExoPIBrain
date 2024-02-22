@@ -45,6 +45,25 @@ def batt_temp_check(data):
         BATT_MAX_TEMP_ALERT
     )
 
+def battery_gauges_check(data):
+    """
+    Checks the charge level of the batteries
+    """
+    battery_charge_12V = data["12V"]["charge_level"]
+
+    # This will ultimately be changed when we implement proper error checking and protocols.
+    # We should also check the batteries individually, but this will do for now.
+    if battery_charge_12V >= CONFIG["BATT_GAUGES"]["charge_levels"]["12V"]["alert"]:
+        raise CriticalError("Error: 12V battery charge level is critically low.")
+    if battery_charge_12V >= CONFIG["BATT_GAUGES"]["charge_levels"]["12V"]["warning"]:
+        raise WarningError("Warning: 12V battery charge level is low.")
+
+    battery_charge_24V = data["24V"]["charge_level"]
+
+    if battery_charge_24V >= CONFIG["BATT_GAUGES"]["charge_levels"]["24V"]["alert"]:
+        raise CriticalError("Error: 24V battery charge level is critically low.")
+    if battery_charge_24V >= CONFIG["BATT_GAUGES"]["charge_levels"]["24V"]["warning"]:
+        raise WarningError("Warning: 24V battery charge level is low.")
 
 def fuel_cell_check(data):
     # TODO: figure out something to check. This function is here for redundency, but the fuel cell
@@ -58,6 +77,7 @@ _CHECKS = {
     CONFIG["BATT_TEMP"]["name"]: batt_temp_check,
     CONFIG["FUELCELL_A"]["name"]: fuel_cell_check,
     CONFIG["FUELCELL_B"]["name"]: fuel_cell_check,
+    CONFIG["BATT_GAUGES"]["name"]: battery_gauges_check,
 }
 
 def perform_check(name, data):

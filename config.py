@@ -37,6 +37,24 @@ CONFIG = {
         "read_interval": 1,
         "name": "BATT_TEMP",
     },
+    "BATT_GAUGES": {
+        "priority": 0,
+        "read_interval": 1,
+        "name": "BATT_GAUGES",
+        "i2c_address": 0x64,
+        "select_gpio": 13,
+        "charge_levels" : {
+            # coulomb counter values - these will definitely need to be adjusted
+            "12V": {
+                "warning": 1000,
+                "alert": 1500,
+            },
+            "24V": {
+                "warning": 1000,
+                "alert": 1500,
+            }
+        }
+    },
     "ADXL345": {
         "priority": 1,
         "read_interval": 1,
