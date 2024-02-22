@@ -45,7 +45,7 @@ def batt_temp_check(data):
         BATT_MAX_TEMP_ALERT
     )
 
-def battery_gauges_check(data):
+def check_battery_levels(data):
     """
     Checks the charge level of the batteries
     """
