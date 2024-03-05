@@ -13,6 +13,7 @@ class StartButton:
         # Start at high to prevent the boat from automatically starting if the button is
         # already pressed when the boat is turned on
         self._last_state = True
+        self._pin = config["pin"]
 
     def was_pressed(self):
         """
@@ -21,7 +22,7 @@ class StartButton:
         This will return True only if the button was not pressed the last time its state was checked and is
         now pressed.
         """
-        state = GPIO.input(self._pins[0])
+        state = bool(GPIO.input(self._pin))
         if state != self._last_state:
             # software debounce:
             time.sleep(BUTTON_DEBOUNCE_S)
@@ -33,7 +34,7 @@ class StartButton:
 if __name__ == "__main__":
     import time
     from config import CONFIG
-    start_button = StartButton(None, None, None, CONFIG["START_BUTTON"])
+    start_button = StartButton(CONFIG["START_BUTTON"])
     while (True):
-        print(start_button.read_raw_data())
-        time.sleep(CONFIG["START_BUTTON"]["read_interval"])
+        print(start_button.was_pressed())
+        time.sleep(0.5)
