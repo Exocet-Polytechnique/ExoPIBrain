@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 from config import BUTTON_DEBOUNCE_S
+import time
 
 class StartButton:
     """
@@ -32,7 +33,6 @@ class StartButton:
         return False
 
 if __name__ == "__main__":
-    import time
     from config import CONFIG
     start_button = StartButton(CONFIG["START_BUTTON"])
     while (True):
