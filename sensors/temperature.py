@@ -65,6 +65,9 @@ class Thermocouples(StreamReader):
         Returns:
             float: The raw temperature data from the thermocouple.
         """
+        if self._current_sensor_index >= len(self._device_files):
+            self._current_sensor_index = 0
+
         read_successful = self._read_current_sensor()
         read_counter = 5 # prevent being stuck in an infinite loop
         while not read_successful and read_counter > 0:

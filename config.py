@@ -37,11 +37,11 @@ CONFIG = {
         "read_interval": 0, # delay already created by the conversion time of the sensors
         "name": "TEMPERATURES",
         "sensors": {
-            "battery_12V": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
-            "battery_24V": {"warn": 50, "alert": 80, "max": 0, "address": 0x000000000000},
-            "fc_controllers": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
-            "h2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
-            "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+            "battery_12V": {"warn": 0, "alert": 0, "max": 0, "address": 0x00000dc67e14},
+            "battery_24V": {"warn": 50, "alert": 80, "max": 0, "address": 0x00000e841698},
+            # "fc_controllers": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+            # "h2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+            # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
         }
     },
     "BATT_GAUGES": {
