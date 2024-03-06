@@ -1,52 +1,46 @@
 from asserts.asserts import WarningError, CriticalError
 from config import CONFIG
 
-# Maximum temperatures we can reach before the boat is at risk
-CPU_MAX_TEMP_WARN = 80
-CPU_MAX_TEMP_ALERT = 90
-BATT_MAX_TEMP_WARN = 50
-BATT_MAX_TEMP_ALERT = 80
 
-
-def temperature_check(name, temperature, max_temp_warn, max_temp_alert):
+def check_device_temperature(name, temperature, max_temperature_warn, max_temperature_alert):
     """
     Checks the temperature of a sensor.
     """
     msg = f"{name}: {temperature}."
 
-    if max_temp_warn <= temperature < max_temp_alert:
+    if max_temperature_warn <= temperature < max_temperature_alert:
         raise WarningError(msg)
-    if temperature > max_temp_alert:
+    if temperature > max_temperature_alert:
         raise CriticalError(msg)
     
 
-def cpu_temp_check(data):
+def check_cpu_temperature(data):
     """
     Checks the CPU temperature.
     """
     temperature = data["temperature"]
-    temperature_check(
-        CONFIG["RP_CPU_TEMP"]["name"],
+    check_device_temperature(
+        CONFIG["RPI_CPU_TEMPERATURE"]["name"],
         temperature,
-        CPU_MAX_TEMP_WARN,
-        CPU_MAX_TEMP_ALERT
+        CONFIG["RPI_CPU_TEMPERATURE"]["warning_temperature"],
+        CONFIG["RPI_CPU_TEMPERATURE"]["alert_temperature"]
     )
 
 
-def batt_temp_check(data):
+def check_temperatures(data):
     """
-    Checks the battery temperature (thermocouple)
+    Check temperature from all thermocouples.
     """
-    temperature = data["temperature"]
-    temperature_check(
-        CONFIG["BATT_TEMP"]["name"],
-        temperature,
-        BATT_MAX_TEMP_WARN,
-        BATT_MAX_TEMP_ALERT
-    )
+    for name, temperature in data.items():
+        check_device_temperature(
+            name,
+            temperature,
+            CONFIG["TEMPERATURES"]["sensors"][name]["warn"],
+            CONFIG["TEMPERATURES"]["sensors"][name]["alert"]
+        )
 
 
-def fuel_cell_check(data):
+def check_fuel_cell(data):
     # TODO: figure out something to check. This function is here for redundency, but the fuel cell
     # controllers should already immplement some security.
     pass
@@ -54,10 +48,10 @@ def fuel_cell_check(data):
 
 # List of sensors we want to check as well as their respective functions
 _CHECKS = {
-    CONFIG["RP_CPU_TEMP"]["name"]: cpu_temp_check,
-    CONFIG["BATT_TEMP"]["name"]: batt_temp_check,
-    CONFIG["FUELCELL_A"]["name"]: fuel_cell_check,
-    CONFIG["FUELCELL_B"]["name"]: fuel_cell_check,
+    CONFIG["RPI_CPU_TEMPERATURE"]["name"]: check_cpu_temperature,
+    CONFIG["TEMPERATURES"]["name"]: check_temperatures,
+    CONFIG["FUELCELL_A"]["name"]: check_fuel_cell,
+    CONFIG["FUELCELL_B"]["name"]: check_fuel_cell,
 }
 
 def perform_check(name, data):
