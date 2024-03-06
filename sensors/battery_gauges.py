@@ -1,6 +1,8 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
+from utils import to_uint16
 import RPi.GPIO as GPIO
 import time
+
 
 # battery gauge datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/2944fa.pdf
 # I2C multiplexer datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/4312f.pdf 
@@ -56,9 +58,9 @@ class BatteryGauges(SMBusStreamReader):
         voltage_data = self.read_block(self.VOLTAGE_REGISTER, 2)
         current_data = self.read_block(self.CURRENT_REGISTER, 2)
         charge_data = self.read_block(self.CHARGE_REGISTER, 2)
-        voltage = voltage_data[1] + (voltage_data[0] << 8)
-        current = current_data[1] + (current_data[0] << 8)
-        charge = charge_data[1] + (charge_data[0] << 8)
+        voltage = to_uint16(voltage_data[0], voltage_data[1])
+        current = to_uint16(current_data[0], current_data[1])
+        charge = to_uint16(charge_data[0], charge_data[1])
         return voltage, current, charge
 
     def read_raw_data(self):

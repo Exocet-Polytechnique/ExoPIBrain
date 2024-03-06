@@ -1,4 +1,5 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
+from utils import to_int16
 
 
 class Compass(SMBusStreamReader):
@@ -35,31 +36,19 @@ class Compass(SMBusStreamReader):
 
         return True
 
-
-    def _read_word(self, register):
-        """Read a two bytes value stored as LSB and MSB."""
-        low = self.read_byte(register)
-        high = self.read_byte(register + 1)
-
-        val = (high << 8) + low
-        return val
-
-    def _read_word_2c(self, register):
-        """Calculate the 2's complement of a two bytes value."""
-        val = self._read_word(register)
-        if val >= 0x8000:  # 32768
-            return val - 0x10000  # 65536
-        else:
-            return val
-
     def read_raw_data(self):
         """Read data from magnetic and temperature data registers."""
         with self.acquire_bus_lock():
-            x = self._read_word_2c(self.REG_XOUT_LSB)
-            y = self._read_word_2c(self.REG_YOUT_LSB)
-            z = self._read_word_2c(self.REG_ZOUT_LSB)
+            data_x = self.read_block(self.REG_XOUT_LSB, 2)
+            data_y = self.read_block(self.REG_YOUT_LSB, 2)
+            data_z = self.read_block(self.REG_ZOUT_LSB, 2)
+
+        x = to_int16(data_x[1], data_x[0])
+        y = to_int16(data_y[1], data_y[0])
+        z = to_int16(data_z[1], data_z[0])
         
         return x, y, z
+
 
 if __name__ == "__main__":
     import time

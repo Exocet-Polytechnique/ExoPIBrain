@@ -6,8 +6,8 @@
 # This is a Raspberry Pi Python implementation to help you get started with
 # the Adafruit Triple Axis ADXL345 breakout board:
 # http://shop.pimoroni.com/products/adafruit-triple-axis-accelerometer
-
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
+from utils import to_int16
 
 
 class Accelerometer(SMBusStreamReader):
@@ -54,25 +54,17 @@ class Accelerometer(SMBusStreamReader):
         with self.acquire_bus_lock():
             i2c_bytes = self.read_block(self.AXES_DATA, 6)
 
-        x = i2c_bytes[0] | (i2c_bytes[1] << 8)
-        if x & (1 << 16 - 1):
-            x = x - (1 << 16)
+        x = to_int16(i2c_bytes[1], i2c_bytes[0])
+        y = to_int16(i2c_bytes[3], i2c_bytes[2])
+        z = to_int16(i2c_bytes[5], i2c_bytes[4])
 
-        y = i2c_bytes[2] | (i2c_bytes[3] << 8)
-        if y & (1 << 16 - 1):
-            y = y - (1 << 16)
+        x *= self.SCALE_MULTIPLIER
+        y *= self.SCALE_MULTIPLIER
+        z *= self.SCALE_MULTIPLIER
 
-        z = i2c_bytes[4] | (i2c_bytes[5] << 8)
-        if z & (1 << 16 - 1):
-            z = z - (1 << 16)
-
-        x = x * self.SCALE_MULTIPLIER
-        y = y * self.SCALE_MULTIPLIER
-        z = z * self.SCALE_MULTIPLIER
-
-        x = x * self.EARTH_GRAVITY_MS2
-        y = y * self.EARTH_GRAVITY_MS2
-        z = z * self.EARTH_GRAVITY_MS2
+        x *= self.EARTH_GRAVITY_MS2
+        y *= self.EARTH_GRAVITY_MS2
+        z *= self.EARTH_GRAVITY_MS2
 
         return x, y, z
 
