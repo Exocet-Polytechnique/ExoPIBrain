@@ -89,10 +89,10 @@ CONFIG = {
         "read_interval": 3,
         "name": "GPS",
     },
-    "RP_CPU_TEMPERATURE": {
+    "RPI_CPU_TEMPERATURE": {
         "priority": 2,
         "read_interval": 5,
-        "name": "RP_CPU_TEMPERATURE",
+        "name": "RPI_CPU_TEMPERATURE",
         "warning_temperature": 80,
         "alert_temperature": 90,
     },
