@@ -1,5 +1,6 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
 import RPi.GPIO as GPIO
+import time
 
 # battery gauge datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/2944fa.pdf
 # I2C multiplexer datasheet: https://www.analog.com/media/en/technical-documentation/data-sheets/4312f.pdf 
@@ -13,6 +14,8 @@ class BatteryGauges(SMBusStreamReader):
     # ADC mode: sleep, prescaler: 4096 (default), ALCC disabled
     INITIAL_CONFIGUARION = 0b00111000
     REQUEST_ADC_UPDATE = 0b01111000
+
+    GAUGE_SWITCH_DELAY = 0.01
 
     # switch these if necessary
     GAUGE_24V = GPIO.HIGH
@@ -28,11 +31,11 @@ class BatteryGauges(SMBusStreamReader):
         try:
             with self.acquire_bus_lock():
                 # write to the first battery gauge ...
-                GPIO.output(self.config["select_gpio"], self.GAUGE_12V)
+                self._switch_gauge(self.GAUGE_12V)
                 self.write_byte(self.CONTROL_REGISTER, self.INITIAL_CONFIGUARION)
 
                 # ... and the second
-                GPIO.output(self.config["select_gpio"], self.GAUGE_24V)
+                self._switch_gauge(self.GAUGE_24V)
                 self.write_byte(self.CONTROL_REGISTER, self.INITIAL_CONFIGUARION)
 
         except:
@@ -40,12 +43,16 @@ class BatteryGauges(SMBusStreamReader):
         
         return True
 
-    def _request_adc_update(self, gauge):
+    def _switch_gauge(self, gauge):
         GPIO.output(self._select_gpio, gauge)
+        time.sleep(self.GAUGE_SWITCH_DELAY)
+
+    def _request_adc_update(self, gauge):
+        self._switch_gauge(gauge)
         self.write_byte(self.CONTROL_REGISTER, self.REQUEST_ADC_UPDATE)
 
     def _read_gauge_values(self, gauge):
-        GPIO.output(self._select_gpio, gauge)
+        self._switch_gauge(gauge)
         voltage_data = self.read_block(self.VOLTAGE_REGISTER, 2)
         current_data = self.read_block(self.CURRENT_REGISTER, 2)
         charge_data = self.read_block(self.CHARGE_REGISTER, 2)
