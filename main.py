@@ -3,9 +3,9 @@ Main file of the project. This will create all the objects necessary for the boa
 properly. It will also wait for a button press before starting all the procedures and GUI.
 """
 
-from sensors.imu.adxl345 import Accelerometer
-from sensors.imu.itg3205 import Gyroscope
-from sensors.imu.hmc5883l import Compass
+from sensors.imu.accelerometer import Accelerometer
+from sensors.imu.gyroscope import Gyroscope
+from sensors.imu.compass import Compass
 from sensors.gps import GPS
 from sensors.temperature import Thermocouple
 from sensors.rpmonitor import RPCPUTemperature
