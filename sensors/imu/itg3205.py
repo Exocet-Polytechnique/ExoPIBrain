@@ -1,10 +1,12 @@
 from multithreading.protocols.smbus_stream_reader import SMBusStreamReader
+from utils import to_int16
 
 
 class Gyroscope(SMBusStreamReader):
     """
     https://github.com/ControlEverythingCommunity/ITG3200/blob/master/Python/ITG_3200.py
     """
+    # ITG3205 constants
     POWER_MANAGEMENT = 0x3E
     PLL_X_GYRO = 0x01
     DLPF_FS = 0x16
@@ -30,19 +32,11 @@ class Gyroscope(SMBusStreamReader):
             data = self.read_block(self.DATA_REG, 6)
 
         # Convert the data
-        x = data[0] * 256 + data[1]
-        if x > 32767 :
-            x -= 65536
-
-        y = data[2] * 256 + data[3]
-        if y > 32767 :
-            y -= 65536
-
-        z = data[4] * 256 + data[5]
-        if z > 32767 :
-            z -= 65536
-        
+        x = to_int16(data[0], data[1])
+        y = to_int16(data[2], data[3])
+        z = to_int16(data[4], data[5])
         return x, y, z
+
 
 if __name__ == "__main__":
     import time
