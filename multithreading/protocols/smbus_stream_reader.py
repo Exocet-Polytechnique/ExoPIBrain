@@ -1,4 +1,4 @@
-from config import SMBUS_NEW_ID, SMBUS_OLD_ID
+from config import SMBUS_ID
 from multithreading.stream_reader import StreamReader
 import threading
 import smbus2
@@ -22,8 +22,7 @@ class SMBusStreamReader(StreamReader):
         super().__init__(lock, data_queue, log_queue, config)
 
         if SMBusStreamReader._bus is None:
-            revision = ([l[12:-1] for l in open('/proc/cpuinfo','r').readlines() if l[:8]=="Revision"]+['0000'])[0]
-            SMBusStreamReader._bus = smbus2.SMBus(SMBUS_NEW_ID if int(revision, 16) >= 4 else SMBUS_OLD_ID)
+            SMBusStreamReader._bus = smbus2.SMBus(SMBUS_ID)
         
         self.address = config["i2c_address"]
         self.__has_lock = False
