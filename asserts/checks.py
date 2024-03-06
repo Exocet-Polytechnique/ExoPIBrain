@@ -77,7 +77,7 @@ _CHECKS = {
     CONFIG["BATT_TEMP"]["name"]: batt_temp_check,
     CONFIG["FUELCELL_A"]["name"]: fuel_cell_check,
     CONFIG["FUELCELL_B"]["name"]: fuel_cell_check,
-    CONFIG["BATT_GAUGES"]["name"]: battery_gauges_check,
+    CONFIG["BATT_GAUGES"]["name"]: check_battery_levels,
 }
 
 def perform_check(name, data):
