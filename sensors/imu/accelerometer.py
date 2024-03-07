@@ -54,19 +54,19 @@ class Accelerometer(SMBusStreamReader):
         with self.acquire_bus_lock():
             i2c_bytes = self.read_block(self.AXES_DATA, 6)
 
-        x = to_int16(i2c_bytes[1], i2c_bytes[0])
-        y = to_int16(i2c_bytes[3], i2c_bytes[2])
-        z = to_int16(i2c_bytes[5], i2c_bytes[4])
+        x_acceleration = to_int16(i2c_bytes[1], i2c_bytes[0])
+        y_acceleration = to_int16(i2c_bytes[3], i2c_bytes[2])
+        z_acceleration = to_int16(i2c_bytes[5], i2c_bytes[4])
 
-        x *= self.SCALE_MULTIPLIER
-        y *= self.SCALE_MULTIPLIER
-        z *= self.SCALE_MULTIPLIER
+        x_acceleration *= self.SCALE_MULTIPLIER
+        y_acceleration *= self.SCALE_MULTIPLIER
+        z_acceleration *= self.SCALE_MULTIPLIER
 
-        x *= self.EARTH_GRAVITY_MS2
-        y *= self.EARTH_GRAVITY_MS2
-        z *= self.EARTH_GRAVITY_MS2
+        x_acceleration *= self.EARTH_GRAVITY_MS2
+        y_acceleration *= self.EARTH_GRAVITY_MS2
+        z_acceleration *= self.EARTH_GRAVITY_MS2
 
-        return x, y, z
+        return x_acceleration, y_acceleration, z_acceleration
 
 if __name__ == "__main__":
     import time
