@@ -20,10 +20,10 @@ def check_cpu_temperature(data):
     """
     temperature = data["temperature"]
     check_device_temperature(
-        CONFIG["RPI_CPU_TEMPERATURE"]["name"],
+        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["name"],
         temperature,
-        CONFIG["RPI_CPU_TEMPERATURE"]["warning_temperature"],
-        CONFIG["RPI_CPU_TEMPERATURE"]["alert_temperature"]
+        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["warning_temperature"],
+        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["alert_temperature"]
     )
 
 
@@ -67,7 +67,7 @@ def check_fuel_cell(data):
 
 # List of sensors we want to check as well as their respective functions
 _CHECKS = {
-    CONFIG["RPI_CPU_TEMPERATURE"]["name"]: check_cpu_temperature,
+    CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["name"]: check_cpu_temperature,
     CONFIG["TEMPERATURES"]["name"]: check_temperatures,
     CONFIG["FUELCELL_A"]["name"]: check_fuel_cell,
     CONFIG["FUELCELL_B"]["name"]: check_fuel_cell,
