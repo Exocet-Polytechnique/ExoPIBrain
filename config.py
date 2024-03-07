@@ -44,12 +44,41 @@ CONFIG = {
             # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
         }
     },
-    "IMU": {
+    "BATT_GAUGES": {
+        "priority": 0,
+        "read_interval": 1,
+        "name": "BATT_GAUGES",
+        "i2c_address": 0x64,
+        "select_gpio": 13,
+        "charge_levels" : {
+            # coulomb counter values - these will definitely need to be adjusted
+            "12V": {
+                "warning": 1000,
+                "alert": 1500,
+            },
+            "24V": {
+                "warning": 1000,
+                "alert": 1500,
+            }
+        }
+    },
+    "ADXL345": {
         "priority": 1,
         "read_interval": 1,
-        "name": "IMU",
-        "new_rev_i2c_id": 1,
-        "old_rev_i2c_id": 0,
+        "name": "Accelerometer",
+        "i2c_address": 0x53,
+    },
+    "HMC5883L": {
+        "priority": 1,
+        "read_interval": 1,
+        "name": "Compass",
+        "i2c_address": 0x0C,
+    },
+    "ITG3205": {
+        "priority": 1,
+        "read_interval": 1,
+        "name": "Gyroscope",
+        "i2c_address": 0x68,
     },
     "GPS": {
         "serial": {
@@ -81,3 +110,5 @@ BUTTON_DEBOUNCE_S = 0.02
 
 import board
 ADC_ENABLE_PIN = board.D8
+
+SMBUS_ID = 1
