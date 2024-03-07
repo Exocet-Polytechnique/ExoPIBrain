@@ -6,6 +6,8 @@ import time
 
 
 class SMBusStreamReader(StreamReader):
+    WRITE_DELAY_S = 0.01
+
     _bus_lock = threading.Lock()
     _bus = None
 
@@ -41,7 +43,7 @@ class SMBusStreamReader(StreamReader):
             print("SMBusStreamReader: lock not acquired before using bus")
 
         SMBusStreamReader._bus.write_byte_data(self.address, register, value)
-        time.sleep(0.01)
+        time.sleep(self.WRITE_DELAY_S)
 
     def read_byte(self, register):
         if not self.__has_lock:
