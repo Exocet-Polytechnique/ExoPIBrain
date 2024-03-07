@@ -32,10 +32,17 @@ CONFIG = {
             "M0": {"range": (0, 400), "channel": 0},
         },
     },
-    "BATT_TEMP": {
+    "TEMPERATURES": {
         "priority": 0,
-        "read_interval": 1,
-        "name": "BATT_TEMP",
+        "read_interval": 0, # delay already created by the conversion time of the sensors
+        "name": "TEMPERATURES",
+        "sensors": {
+            "battery_12V": {"warn": 0, "alert": 0, "max": 0, "address": 0x00000dc67e14},
+            "battery_24V": {"warn": 50, "alert": 80, "max": 0, "address": 0x00000e841698},
+            # "fc_controllers": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+            # "h2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+            # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
+        }
     },
     "BATT_GAUGES": {
         "priority": 0,
@@ -82,10 +89,12 @@ CONFIG = {
         "read_interval": 3,
         "name": "GPS",
     },
-    "RP_CPU_TEMP": {
+    "RPI_CPU_TEMPERATURE": {
         "priority": 2,
         "read_interval": 5,
-        "name": "RP_CPU_TEMP",
+        "name": "RPI_CPU_TEMPERATURE",
+        "warning_temperature": 80,
+        "alert_temperature": 90,
     },
     "START_BUTTON": {
         "pin": 27,

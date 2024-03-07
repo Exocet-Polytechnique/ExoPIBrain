@@ -7,7 +7,7 @@ from sensors.imu.accelerometer import Accelerometer
 from sensors.imu.gyroscope import Gyroscope
 from sensors.imu.compass import Compass
 from sensors.gps import GPS
-from sensors.temperature import Thermocouple
+from sensors.temperature import Thermocouples
 from sensors.rpmonitor import RPCPUTemperature
 from sensors.start_button import StartButton
 from fuel_cell.fuel_cell import FuelCell
@@ -38,7 +38,7 @@ def main():
     fc_b = FuelCell(lock, data_queue, log_queue, CONFIG["FUELCELL_B"])
 
     # Thermocouple
-    batt_temp = Thermocouple(lock, data_queue, log_queue, CONFIG["BATT_TEMP"])
+    thermocouples = Thermocouples(lock, data_queue, log_queue, CONFIG["TEMPERATURES"])
     # Sensors
     cputemp = RPCPUTemperature(lock, data_queue, log_queue, CONFIG["RP_CPU_TEMP"])
     gps = GPS(lock, data_queue, log_queue, CONFIG["GPS"])
@@ -73,7 +73,8 @@ def main():
     accelerometer.start()
     gyroscope.start()
     compass.start()
-    batt_temp.start()
+    thermocouples.start()
+    
     data_cons.start()
     log_cons.start()
 
