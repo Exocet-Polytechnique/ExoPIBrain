@@ -37,17 +37,19 @@ class Compass(SMBusStreamReader):
         return True
 
     def read_raw_data(self):
-        """Read data from magnetic and temperature data registers."""
+        """
+        Read data from each axis of the compass.
+        """
         with self.acquire_bus_lock():
             data_x = self.read_block(self.REG_XOUT_LSB, 2)
             data_y = self.read_block(self.REG_YOUT_LSB, 2)
             data_z = self.read_block(self.REG_ZOUT_LSB, 2)
 
-        x = to_int16(data_x[1], data_x[0])
-        y = to_int16(data_y[1], data_y[0])
-        z = to_int16(data_z[1], data_z[0])
+        global_x_heading = to_int16(data_x[1], data_x[0])
+        global_y_heading = to_int16(data_y[1], data_y[0])
+        global_z_heading = to_int16(data_z[1], data_z[0])
         
-        return x, y, z
+        return global_x_heading, global_y_heading, global_z_heading
 
 
 if __name__ == "__main__":

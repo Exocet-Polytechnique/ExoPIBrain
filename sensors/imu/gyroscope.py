@@ -28,14 +28,18 @@ class Gyroscope(SMBusStreamReader):
         return True
 
     def read_raw_data(self):
+        """
+        Read data from each axis of the gyroscope.
+        """
         with self.acquire_bus_lock():
             data = self.read_block(self.DATA_REG, 6)
 
         # Convert the data
-        x = to_int16(data[0], data[1])
-        y = to_int16(data[2], data[3])
-        z = to_int16(data[4], data[5])
-        return x, y, z
+        local_x_orientation = to_int16(data[0], data[1])
+        local_y_orientation = to_int16(data[2], data[3])
+        local_z_orientation = to_int16(data[4], data[5])
+
+        return local_x_orientation, local_y_orientation, local_z_orientation
 
 
 if __name__ == "__main__":
