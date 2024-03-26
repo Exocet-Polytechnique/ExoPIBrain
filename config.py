@@ -100,9 +100,9 @@ CONFIG = {
         "pin": 27,
     },
     "PRECHARGE" : {
-        "contacteur1" : 22,
-        "contacteur2" : 27,
-        "contacteur3" : 17,
+        "main_contactor" : 22,
+        "stage1_contactor" : 27,
+        "stage2_contactor" : 17,
     }
 }
 

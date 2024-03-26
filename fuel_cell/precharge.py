@@ -1,37 +1,46 @@
 """
 """
-import RPi.GPIO as GPIO # works in the raspberrypi
+
+import RPi.GPIO as GPIO
 import time
 
 class Precharge():
     """
-    The precharge procedure is yet to
-    be implemented once we recieve and install the 
-    appropriate components.    
+    Class containing methods to handle the charge and discharge procedures
+    of the contactors.
     """
-    #commentaire : au démarage / GPIO22, GPIO27 / après 2s / GPIO22 GPIO17
+
+    CHARGE_DELAY = 2
+    STAGE_SWITCH_DELAY = 0.5
+
     def __init__(self, config):
+        # address pins with their gpio number (not physical pin number)
         GPIO.setmode(GPIO.BCM)
 
-        self.contacteur1 = config["contacteur1"]
-        GPIO.setup(self.contacteur1, GPIO.OUT)
-        GPIO.output(self.contacteur1, GPIO.LOW)
+        self.main_contactor = config["main_contactor"]
+        GPIO.setup(self.main_contactor, GPIO.OUT)
+        GPIO.output(self.main_contactor, GPIO.LOW)
 
-        self.contacteur2 = config["contacteur2"]
-        GPIO.setup(self.contacteur2, GPIO.OUT)
-        GPIO.output(self.contacteur2, GPIO.LOW)
+        self.stage1_contactor = config["stage1_contactor"]
+        GPIO.setup(self.stage1_contactor, GPIO.OUT)
+        GPIO.output(self.stage1_contactor, GPIO.LOW)
 
-        self.contacteur3 = config["contacteur3"]
-        GPIO.setup(self.contacteur3, GPIO.OUT)
-        GPIO.output(self.contacteur3, GPIO.LOW)
+        self.stage2_contactor = config["stage2_contactor"]
+        GPIO.setup(self.stage2_contactor, GPIO.OUT)
+        GPIO.output(self.stage2_contactor, GPIO.LOW)
         
     def charge(self):
-        GPIO.output(self.contacteur1, GPIO.HIGH)
-        GPIO.output(self.contacteur2, GPIO.HIGH)
-        time.sleep(2)
-        GPIO.output(self.contacteur2, GPIO.LOW)
-        GPIO.output(self.contacteur3, GPIO.HIGH)
+        GPIO.output(self.main_contactor, GPIO.HIGH)
+        GPIO.output(self.stage1_contactor, GPIO.HIGH)
+        time.sleep(self.CHARGE_DELAY)
+        GPIO.output(self.stage1_contactor, GPIO.LOW)
 
-    def decharge(self):
-        # TODO find a way to discharge the capacitor
+        time.sleep(self.STAGE_SWITCH_DELAY)
+        GPIO.output(self.stage2_contactor, GPIO.HIGH)
+        time.sleep(self.CHARGE_DELAY)
+
+        # TODO: do we need to do anything else at the end?
+
+    def discharge(self):
+        # TODO: Figure out what needs to be done here.
         pass
