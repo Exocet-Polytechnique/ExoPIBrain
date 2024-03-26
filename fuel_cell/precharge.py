@@ -4,7 +4,8 @@
 import RPi.GPIO as GPIO
 import time
 
-class Precharge():
+
+class Precharge:
     """
     Class containing methods to handle the charge and discharge procedures
     of the contactors.
@@ -17,26 +18,26 @@ class Precharge():
         # address pins with their gpio number (not physical pin number)
         GPIO.setmode(GPIO.BCM)
 
-        self.main_contactor = config["main_contactor"]
-        GPIO.setup(self.main_contactor, GPIO.OUT)
-        GPIO.output(self.main_contactor, GPIO.LOW)
+        self.main_contactor_ = config["main_contactor"]
+        GPIO.setup(self.main_contactor_, GPIO.OUT)
+        GPIO.output(self.main_contactor_, GPIO.LOW)
 
-        self.stage1_contactor = config["stage1_contactor"]
-        GPIO.setup(self.stage1_contactor, GPIO.OUT)
-        GPIO.output(self.stage1_contactor, GPIO.LOW)
+        self.stage1_contactor_ = config["stage1_contactor"]
+        GPIO.setup(self.stage1_contactor_, GPIO.OUT)
+        GPIO.output(self.stage1_contactor_, GPIO.LOW)
 
-        self.stage2_contactor = config["stage2_contactor"]
-        GPIO.setup(self.stage2_contactor, GPIO.OUT)
-        GPIO.output(self.stage2_contactor, GPIO.LOW)
+        self.stage2_contactor_ = config["stage2_contactor"]
+        GPIO.setup(self.stage2_contactor_, GPIO.OUT)
+        GPIO.output(self.stage2_contactor_, GPIO.LOW)
         
     def charge(self):
-        GPIO.output(self.main_contactor, GPIO.HIGH)
-        GPIO.output(self.stage1_contactor, GPIO.HIGH)
+        GPIO.output(self.main_contactor_, GPIO.HIGH)
+        GPIO.output(self.stage1_contactor_, GPIO.HIGH)
         time.sleep(self.CHARGE_DELAY)
-        GPIO.output(self.stage1_contactor, GPIO.LOW)
+        GPIO.output(self.stage1_contactor_, GPIO.LOW)
 
         time.sleep(self.STAGE_SWITCH_DELAY)
-        GPIO.output(self.stage2_contactor, GPIO.HIGH)
+        GPIO.output(self.stage2_contactor_, GPIO.HIGH)
         time.sleep(self.CHARGE_DELAY)
 
         # TODO: do we need to do anything else at the end?
