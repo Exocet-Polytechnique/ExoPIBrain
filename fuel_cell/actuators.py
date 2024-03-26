@@ -1,36 +1,47 @@
 """
-Controls the valve's actuator
+Controls a valve's actuator
 """
-import RPi.GPIO as GPIO # works in the raspberrypi
+
+import RPi.GPIO as GPIO
 
 
-class Actuator():
-    def __init__(self, pinNumber):
+class Actuator:
+    def __init__(self, output_pin, error_pin, closed_on_low):
         GPIO.setmode(GPIO.BCM)
-        self.pinNumber = pinNumber
-        GPIO.setup(self.pinNumber, GPIO.OUT) # puts the pin pinNumber as an Output
+
+        self.output_pin_ = output_pin
+        GPIO.setup(self.output_pin_, GPIO.OUT)
+        # NOTE: should we always ensure the actuator is in its default
+        # position? Does the following line garantee that?
+        GPIO.output(self.output_pin_, GPIO.LOW)
+        self.error_pin_ = error_pin
+        self.closed_on_low_ = closed_on_low
     
     def open_valve(self):
-        GPIO.output(self.pinNumber, GPIO.HIGH) #puts a 0 in the pin, witch open the valve
+        if self.closed_on_low_:
+            GPIO.output(self.output_pin_, GPIO.HIGH)
+        else:
+            GPIO.output(self.output_pin_, GPIO.LOW)
 
-    
     def close_valve(self):
-        GPIO.output(self.pinNumber, GPIO.LOW) # puts a 1 in the pin, witch close the valve
+        if self.closed_on_low_:
+            GPIO.output(self.output_pin_, GPIO.LOW)
+        else:
+            GPIO.output(self.output_pin_, GPIO.HIGH)
+
+    def get_status(self):
+        return bool(GPIO.input(self.error_pin_))
 
 if __name__ == "__main__":
     import time
-    actuator1 = Actuator(12)
-    actuator2 = Actuator(19)
+    # TODO: make sure the actuator doesn't move right after creating the object
+    actuator = Actuator(17, 27, True)
+    time.sleep(5)
     while(True):
-        print("on allume le 1")
-        actuator1.open_valve()
-        time.sleep(2)
-        print("on allume le 2")
-        actuator2.open_valve()
-        time.sleep(2)
-        print("on ferme le 2")
-        actuator2.close_valve()
-        time.sleep(2)
-        print("on ferme le 1")
-        actuator1.close_valve()
-        time.sleep(4)
+        actuator.open_valve()
+        print(actuator.get_status())
+        time.sleep(3)
+        print(actuator.get_status())
+        actuator.close_valve()
+        print(actuator.get_status())
+        time.sleep(3)
