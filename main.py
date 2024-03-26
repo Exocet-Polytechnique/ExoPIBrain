@@ -74,6 +74,7 @@ def main():
     gyroscope.start()
     compass.start()
     thermocouples.start()
+
     data_cons.start()
     log_cons.start()
 
