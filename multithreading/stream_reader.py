@@ -1,6 +1,8 @@
-from multithreading.thread import LoopingThread
-from sensors.sensor_error import *
 import time
+from multithreading.thread import LoopingThread
+from sensors.sensor_error import SensorConnectionError, InvalidDataError
+from procedures.exception_handling.sensor_result import SensorResult
+from procedures.exception_handling.messages import create_message_id, DISCONNECTED, CONNECTED
 
 class StreamReader(LoopingThread):
     """
@@ -19,7 +21,7 @@ class StreamReader(LoopingThread):
 
         # connection status
         self.is_connected = False
-    
+
     def read(self):
         """
         Reads the data from the sensor with name
@@ -36,6 +38,10 @@ class StreamReader(LoopingThread):
         while not self.stopped():
             if not self.is_connected:
                 self.is_connected = self.try_connect()
+                if self.is_connected:
+                    self.data_queue.put(SensorResult(
+                        False, create_message_id(self.config["name"], CONNECTED)))
+
                 continue
 
             try:
@@ -51,8 +57,11 @@ class StreamReader(LoopingThread):
 
             except SensorConnectionError:
                 self.is_connected = False
+                self.data_queue.put(SensorResult(
+                    False, create_message_id(self.config["name"], DISCONNECTED)))
+                self.log_queue.put(None)
             except InvalidDataError:
-                pass
+                self.log_queue.put(None)
 
             time.sleep(self.read_interval)
 
