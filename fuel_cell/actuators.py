@@ -35,7 +35,7 @@ class Actuator:
 if __name__ == "__main__":
     import time
     # TODO: make sure the actuator doesn't move right after creating the object
-    actuator = Actuator(17, 27, True)
+    actuator = Actuator(23, 5, True)
     time.sleep(5)
     while(True):
         actuator.open_valve()
