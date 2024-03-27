@@ -1,10 +1,11 @@
 """
 Config file containing information about the various sensors or systems and how they are connected
 to the RPI.
-
-NOTE: A lower priority value means that the data coming from these sensors will be processed first.
 """
 
+import board
+
+# data from sensors with lower priority values will be processed first
 CONFIG = {
     "FUELCELL_A": {
         "serial": {
@@ -44,10 +45,10 @@ CONFIG = {
             # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
         }
     },
-    "BATT_GAUGES": {
+    "BATTERY_GAUGES": {
         "priority": 0,
         "read_interval": 1,
-        "name": "BATT_GAUGES",
+        "name": "BATTERY_GAUGES",
         "i2c_address": 0x64,
         "select_gpio": 13,
         "charge_levels" : {
@@ -65,19 +66,19 @@ CONFIG = {
     "ADXL345": {
         "priority": 1,
         "read_interval": 1,
-        "name": "Accelerometer",
+        "name": "ACCELEROMETER",
         "i2c_address": 0x53,
     },
     "HMC5883L": {
         "priority": 1,
         "read_interval": 1,
-        "name": "Compass",
+        "name": "COMPASS",
         "i2c_address": 0x0C,
     },
     "ITG3205": {
         "priority": 1,
         "read_interval": 1,
-        "name": "Gyroscope",
+        "name": "GYROSCOPE",
         "i2c_address": 0x68,
     },
     "GPS": {
@@ -98,7 +99,48 @@ CONFIG = {
     },
     "START_BUTTON": {
         "pin": 27,
+        "name": "START_BUTTON",
     },
+}
+
+DEVICE_IDS = {
+    "FUELCELLS" : 0x00,
+    "FUELCELL_A" : 0x01,
+    "FUELCELL_B" : 0x02,
+    "DCDC_CONVERTER" : 0x04,
+
+    "TEMPERATURES" : 0x10,
+    "TEMPERATURE_BATTERY_12V" : 0x11,
+    "TEMPERATURE_BATTERY_24V" : 0x12,
+    "TEMPERATURE_H2_PLATE" : 0x13,
+    "TEMPERATURE_H2_TANKS" : 0x14,
+    "TEMPERATURE_FUELCELL_CONTROLLERS" : 0x15,
+
+    "BATTERY_GAUGES" : 0x20,
+    "I2C_MULTIPLEX" : 0x21,
+    "BATTERY_GAUGE_12V" : 0x22,
+    "BATTERY_GAUGE_24V" : 0x23,
+
+    "MANOMETERS" : 0x40,
+    "MANOMETER_0" : 0x41,
+    "MANOMETER_1" : 0x42,
+
+    "START_BUTTON" : 0x50,
+    "PRECHARGE" : 0x51,
+    "ACTUATORS" : 0x58,
+    "ACTUATOR_1" : 0x59,
+    "ACTUATOR_2" : 0x5A,
+
+    "ARDUINO" : 0x60,
+    "INTERFACE" : 0x61,
+    "RASPBERRY_PI_CPU_TEMPERATURE" : 0x62,
+
+    "TELEMETRY_SENSORS" : 0x70,
+    "IMU" : 0x71,
+    "GYROSCOPE" : 0x73,
+    "COMPASS" : 0x75,
+    "ACCELEROMETER" : 0x77,
+    "GPS" : 0x78,
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
@@ -108,7 +150,6 @@ TELE_CONFIG = {
 
 BUTTON_DEBOUNCE_S = 0.02
 
-import board
 ADC_ENABLE_PIN = board.D8
 
 SMBUS_ID = 1

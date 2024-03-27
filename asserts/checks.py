@@ -47,16 +47,16 @@ def check_battery_levels(data):
 
     # This will ultimately be changed when we implement proper error checking and protocols.
     # We should also check the batteries individually, but this will do for now.
-    if battery_charge_12V >= CONFIG["BATT_GAUGES"]["charge_levels"]["12V"]["alert"]:
+    if battery_charge_12V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["12V"]["alert"]:
         raise CriticalError("Error: 12V battery charge level is critically low.")
-    if battery_charge_12V >= CONFIG["BATT_GAUGES"]["charge_levels"]["12V"]["warning"]:
+    if battery_charge_12V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["12V"]["warning"]:
         raise WarningError("Warning: 12V battery charge level is low.")
 
     battery_charge_24V = data["24V"]["charge_level"]
 
-    if battery_charge_24V >= CONFIG["BATT_GAUGES"]["charge_levels"]["24V"]["alert"]:
+    if battery_charge_24V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["24V"]["alert"]:
         raise CriticalError("Error: 24V battery charge level is critically low.")
-    if battery_charge_24V >= CONFIG["BATT_GAUGES"]["charge_levels"]["24V"]["warning"]:
+    if battery_charge_24V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["24V"]["warning"]:
         raise WarningError("Warning: 24V battery charge level is low.")
 
 def check_fuel_cell(data):
@@ -71,7 +71,7 @@ _CHECKS = {
     CONFIG["TEMPERATURES"]["name"]: check_temperatures,
     CONFIG["FUELCELL_A"]["name"]: check_fuel_cell,
     CONFIG["FUELCELL_B"]["name"]: check_fuel_cell,
-    CONFIG["BATT_GAUGES"]["name"]: check_battery_levels,
+    CONFIG["BATTERY_GAUGES"]["name"]: check_battery_levels,
 }
 
 def perform_check(name, data):
