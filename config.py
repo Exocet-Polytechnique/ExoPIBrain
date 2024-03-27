@@ -99,6 +99,11 @@ CONFIG = {
     "START_BUTTON": {
         "pin": 27,
     },
+    "PRECHARGE" : {
+        "main_contactor" : 22,
+        "stage1_contactor" : 27,
+        "stage2_contactor" : 17,
+    }
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
