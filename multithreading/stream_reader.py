@@ -39,8 +39,8 @@ class StreamReader(LoopingThread):
             if not self.is_connected:
                 self.is_connected = self.try_connect()
                 if self.is_connected:
-                    self.data_queue.put(SensorResult(
-                        False, create_message_id(self.config["name"], CONNECTED)))
+                    self.data_queue.put((self.priority, SensorResult(
+                        False, create_message_id(self.config["name"], CONNECTED))))
 
                 continue
 
@@ -49,16 +49,16 @@ class StreamReader(LoopingThread):
 
                 if self.lock:
                     with self.lock:
-                        self.data_queue.put((self.priority, data))
+                        self.data_queue.put((self.priority, SensorResult(True, data)))
                         self.log_queue.put(data)
                 else:
-                    self.data_queue.put((self.priority, data))
+                    self.data_queue.put((self.priority, SensorResult(True, data)))
                     self.log_queue.put(data)
 
             except SensorConnectionError:
                 self.is_connected = False
-                self.data_queue.put(SensorResult(
-                    False, create_message_id(self.config["name"], DISCONNECTED)))
+                self.data_queue.put((self.priority, SensorResult(
+                    False, create_message_id(self.config["name"], DISCONNECTED))))
                 self.log_queue.put(None)
             except InvalidDataError:
                 self.log_queue.put(None)
