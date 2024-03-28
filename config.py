@@ -99,6 +99,23 @@ CONFIG = {
     "START_BUTTON": {
         "pin": 27,
     },
+    "PRECHARGE" : {
+        "main_contactor" : 22,
+        "stage1_contactor" : 27,
+        "stage2_contactor" : 17,
+    },
+    "ACTUATORS": {
+        "valve1": {
+            "output_pin": 23,
+            "error_pin": 5,
+            "closed_on_low": True, # NOTE: verify before tests
+        },
+        "valve2": {
+            "output_pin": 24,
+            "error_pin": 6,
+            "closed_on_low": True, # NOTE: verify before tests
+        },
+    }
 }
 
 # Config for telemetry (serial connection over USB with Arduino)
