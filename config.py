@@ -108,12 +108,12 @@ CONFIG = {
         "valve1": {
             "output_pin": 23,
             "error_pin": 5,
-            "closed_on_low": True,
+            "closed_on_low": True, # NOTE: verify before tests
         },
         "valve2": {
-            "output_pin": 23,
-            "error_pin": 5,
-            "closed_on_low": True,
+            "output_pin": 24,
+            "error_pin": 6,
+            "closed_on_low": True, # NOTE: verify before tests
         },
     }
 }
