@@ -103,6 +103,18 @@ CONFIG = {
         "main_contactor" : 22,
         "stage1_contactor" : 27,
         "stage2_contactor" : 17,
+    },
+    "ACTUATORS": {
+        "valve1": {
+            "output_pin": 23,
+            "error_pin": 5,
+            "closed_on_low": True,
+        },
+        "valve2": {
+            "output_pin": 23,
+            "error_pin": 5,
+            "closed_on_low": True,
+        },
     }
 }
 

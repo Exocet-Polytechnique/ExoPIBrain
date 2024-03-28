@@ -34,14 +34,20 @@ class Actuator:
 
 if __name__ == "__main__":
     import time
+    from config import CONFIG
+
+    TEST_DELAY_S = 3
+
     # TODO: make sure the actuator doesn't move right after creating the object
-    actuator = Actuator(23, 5, True)
-    time.sleep(5)
+    valve1_config = CONFIG["ACTUATORS"]["valve1"]
+    actuator = Actuator(valve1_config["output_pin"], valve1_config["error_pin"],
+                        valve1_config["closed_on_low"])
+    time.sleep(TEST_DELAY_S)
     while(True):
         actuator.open_valve()
         print(actuator.get_status())
-        time.sleep(3)
+        time.sleep(TEST_DELAY_S)
         print(actuator.get_status())
         actuator.close_valve()
         print(actuator.get_status())
-        time.sleep(3)
+        time.sleep(TEST_DELAY_S)
