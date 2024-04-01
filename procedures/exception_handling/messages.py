@@ -34,6 +34,18 @@ def create_message_id(device, severity):
 
 def get_message_severity(message_id):
     """
+    Gets the message severity from a message id.
+
+    Args:
+        message_id (int): The message id.
+
+    Returns:
+        int: The message severity.
+    """
+    return (message_id & SEVERITY_MASK) >> SEVERITY_BITSHIFT
+
+def get_message_device_id(message_id):
+    """
     Gets the device id from a message id.
 
     Args:
@@ -42,9 +54,10 @@ def get_message_severity(message_id):
     Returns:
         int: The device id.
     """
-    return (message_id & SEVERITY_MASK) >> SEVERITY_BITSHIFT
+    return message_id & DEVICE_ID_MASK
 
-# 1. Common exceptions (some define the start of ranges)
+
+# 1. Common exceptions (some define the end of ranges)
 
 CRITICAL_ERROR_EXIT   = 0x10
 CRITICAL_DISCONNECTED = 0x01
