@@ -37,10 +37,10 @@ class DataConsumer(Consumer):
         """
         return get_message_severity(message_id) <= CRITICAL_ERROR
 
-    def process_result(self, sensor_result):
+    def process_exception(self, sensor_result):
         """
-        Processes the result of the sensor data by showing sending a message to the gui and/or
-        starting the shutdown procedure if necessary
+        Processes the result of the sensor data by showing sending a message to the gui and
+        starting the shutdown procedure if necessary. The result must be an exception.
         """
         self.gui.dispatch_message(sensor_result.get_error_message_id())
         if self.requires_shutdown(sensor_result.get_error_message_id()):
@@ -64,15 +64,15 @@ class DataConsumer(Consumer):
                 if isinstance(check_results, list):
                     for result in check_results:
                         if not result.is_valid():
-                            self.process_result(result)
+                            self.process_exception(result)
                 elif not check_results.is_valid():
-                    self.process_result(check_results)
+                    self.process_exception(check_results)
 
             else:
-                self.process_result(data)
+                self.process_exception(data)
 
             self.queue.task_done()
-           
+
 
 class LogConsumer(Consumer):
     """
