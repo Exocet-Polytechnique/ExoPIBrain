@@ -1,8 +1,8 @@
 import time
 from multithreading.thread import LoopingThread
-from sensors.sensor_error import SensorConnectionError, InvalidDataError
+from sensors.sensor_error import SensorConnectionError, InvalidDataError, SensorException
 from procedures.exception_handling.sensor_result import SensorResult
-from procedures.exception_handling.messages import create_message_id, DISCONNECTED, CONNECTED
+from procedures.exception_handling.messages import create_message_id, ERROR_DISCONNECTED, INFO_CONNECTED, WARNING_BAD_DATA
 
 class StreamReader(LoopingThread):
     """
@@ -10,6 +10,9 @@ class StreamReader(LoopingThread):
     on a new thread. The data is read at a specified interval on a new thread.
     It is a data producer.
     """
+
+    MAX_INVALID_DATA = 3
+
     def __init__(self, lock, data_queue, log_queue, config):
         super(StreamReader, self).__init__()
         self.config = config
@@ -21,6 +24,7 @@ class StreamReader(LoopingThread):
 
         # connection status
         self.is_connected = False
+        self.invalid_data_counter_ = 0
 
     def read(self):
         """
@@ -40,12 +44,15 @@ class StreamReader(LoopingThread):
                 self.is_connected = self.try_connect()
                 if self.is_connected:
                     self.data_queue.put((self.priority, SensorResult(
-                        False, create_message_id(self.config["name"], CONNECTED))))
+                        False, create_message_id(self.config["name"], INFO_CONNECTED))))
 
                 continue
 
             try:
                 data = self.read()
+
+                if self.invalid_data_counter_ >= self.MAX_INVALID_DATA:
+                    raise SensorConnectionError()
 
                 if self.lock:
                     with self.lock:
@@ -55,12 +62,21 @@ class StreamReader(LoopingThread):
                     self.data_queue.put((self.priority, SensorResult(True, data)))
                     self.log_queue.put(data)
 
+                self.invalid_data_counter_ = 0
+
             except SensorConnectionError:
                 self.is_connected = False
                 self.data_queue.put((self.priority, SensorResult(
-                    False, create_message_id(self.config["name"], DISCONNECTED))))
+                    False, create_message_id(self.config["name"], ERROR_DISCONNECTED))))
                 self.log_queue.put(None)
             except InvalidDataError:
+                self.data_queue.put((self.priority, SensorResult(
+                    False, create_message_id(self.config["name"], WARNING_BAD_DATA))))
+                self.log_queue.put(None)
+            except SensorException as e:
+                # allows sending custom message ids through
+                self.data_queue.put((self.priority, SensorResult(
+                    False, create_message_id(self.config["name"], e.exception_id))))
                 self.log_queue.put(None)
 
             time.sleep(self.read_interval)
