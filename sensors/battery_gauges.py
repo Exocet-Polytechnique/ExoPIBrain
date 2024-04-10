@@ -73,12 +73,12 @@ class BatteryGauges(SMBusStreamReader):
             voltage_24V, current_24V, charge_level_24V = self._read_gauge_values(self.GAUGE_24V)
 
         return {
-            "12V": {
+            "BATTERY_12V": {
                 "voltage": voltage_12V,
                 "current": current_12V,
                 "charge_level": charge_level_12V,
             },
-            "24V": {
+            "BATTERY_24V": {
                 "voltage": voltage_24V,
                 "current": current_24V,
                 "charge_level": charge_level_24V,

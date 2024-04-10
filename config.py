@@ -38,8 +38,8 @@ CONFIG = {
         "read_interval": 0, # delay already created by the conversion time of the sensors
         "name": "TEMPERATURES",
         "sensors": {
-            "battery_12V": {"warn": 0, "alert": 0, "max": 0, "address": 0x00000dc67e14},
-            "battery_24V": {"warn": 50, "alert": 80, "max": 0, "address": 0x00000e841698},
+            "BATTERY_12V": {"warn": 0, "alert": 0, "critical": 0, "address": 0x00000dc67e14},
+            "BATTERY_24V": {"warn": 50, "alert": 80, "critical": 0, "address": 0x00000e841698},
             # "fc_controllers": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
             # "h2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
             # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
@@ -53,13 +53,15 @@ CONFIG = {
         "select_gpio": 13,
         "charge_levels" : {
             # coulomb counter values - these will definitely need to be adjusted
-            "12V": {
+            "BATTERY_12V": {
                 "warning": 1000,
                 "alert": 1500,
+                "critical": 2000,
             },
-            "24V": {
+            "BATTERY_24V": {
                 "warning": 1000,
                 "alert": 1500,
+                "critical": 2000,
             }
         }
     },
@@ -95,7 +97,8 @@ CONFIG = {
         "read_interval": 5,
         "name": "RASPBERRY_PI_CPU_TEMPERATURE",
         "warning_temperature": 80,
-        "alert_temperature": 90,
+        "alert_temperature": 85,
+        "critical_temperature": 90,
     },
     "START_BUTTON": {
         "pin": 27,
@@ -118,8 +121,8 @@ DEVICE_IDS = {
 
     "BATTERY_GAUGES" : 0x20,
     "I2C_MULTIPLEX" : 0x21,
-    "BATTERY_GAUGE_12V" : 0x22,
-    "BATTERY_GAUGE_24V" : 0x23,
+    "BATTERY_12V" : 0x22,
+    "BATTERY_24V" : 0x23,
 
     "MANOMETERS" : 0x40,
     "MANOMETER_0" : 0x41,

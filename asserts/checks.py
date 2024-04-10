@@ -4,21 +4,36 @@ Check functions called when processing the data queue.
 
 from config import CONFIG
 from procedures.exception_handling.sensor_result import SensorResult
-from procedures.exception_handling.messages import create_message_id, WARNING_TEMPERATURE, \
-    CRITICAL_TEMPERATURE, BATTERY_12V_CRITICAL_CHARGE, BATTERY_12V_WARNING_CHARGE, \
-    BATTERY_24V_CRITICAL_CHARGE, BATTERY_24V_WARNING_CHARGE
+from procedures.exception_handling.messages import create_message_id, CRITICAL_TEMPERATURE, \
+    CRITICAL_CHARGE, ALERT_TEMPERATURE, ALERT_CHARGE, WARNING_TEMPERATURE, WARNING_CHARGE
 
 
-def check_device_temperature(name, temperature, max_temperature_warn, max_temperature_alert):
+def check_device_temperature(name, temperature, warning_temperature,
+                             alert_temperature, critical_temperature):
     """
     Checks the temperature of a sensor.
     """
-    if max_temperature_warn <= temperature < max_temperature_alert:
-        return SensorResult(False, create_message_id(name, WARNING_TEMPERATURE))
-    if temperature > max_temperature_alert:
+    if temperature >= critical_temperature:
         return SensorResult(False, create_message_id(name, CRITICAL_TEMPERATURE))
+    if temperature >= alert_temperature:
+        return SensorResult(False, create_message_id(name, ALERT_TEMPERATURE))
+    if temperature >= warning_temperature:
+        return SensorResult(False, create_message_id(name, WARNING_TEMPERATURE))
 
-    return SensorResult(True, None)
+    return SensorResult(True, temperature)
+
+def check_device_charge(name, charge, warning_charge, alert_charge, critical_charge):
+    """
+    Checks the charge level of a battery.
+    """
+    if charge <= critical_charge:
+        return SensorResult(False, create_message_id(name, CRITICAL_CHARGE))
+    if charge <= alert_charge:
+        return SensorResult(False, create_message_id(name, ALERT_CHARGE))
+    if charge <= warning_charge:
+        return SensorResult(False, create_message_id(name, WARNING_CHARGE))
+
+    return SensorResult(True, charge)
 
 
 def check_cpu_temperature(data):
@@ -30,7 +45,8 @@ def check_cpu_temperature(data):
         CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["name"],
         temperature,
         CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["warning_temperature"],
-        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["alert_temperature"]
+        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["alert_temperature"],
+        CONFIG["RASPBERRY_PI_CPU_TEMPERATURE"]["critical_temperature"]
     )
 
 
@@ -44,6 +60,7 @@ def check_temperatures(data):
             name,
             temperature,
             CONFIG["TEMPERATURES"]["sensors"][name]["warn"],
+            CONFIG["TEMPERATURES"]["sensors"][name]["alert"],
             CONFIG["TEMPERATURES"]["sensors"][name]["alert"]
         ))
 
@@ -55,21 +72,14 @@ def check_battery_levels(data):
     """
     results = []
 
-    battery_charge_12V = data["12V"]["charge_level"]
-
-    # This will ultimately be changed when we implement proper error checking and protocols.
-    # We should also check the batteries individually, but this will do for now.
-    if battery_charge_12V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["12V"]["alert"]:
-        results.append(SensorResult(False, BATTERY_12V_CRITICAL_CHARGE))
-    elif battery_charge_12V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["12V"]["warning"]:
-        results.append(SensorResult(False, BATTERY_12V_WARNING_CHARGE))
-
-    battery_charge_24V = data["24V"]["charge_level"]
-
-    if battery_charge_24V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["24V"]["alert"]:
-        results.append(SensorResult(False, BATTERY_24V_CRITICAL_CHARGE))
-    elif battery_charge_24V >= CONFIG["BATTERY_GAUGES"]["charge_levels"]["24V"]["warning"]:
-        results.append(SensorResult(False, BATTERY_24V_WARNING_CHARGE))
+    for name, battery in data.items():
+        results.append(check_device_charge(
+            name,
+            battery["charge_level"],
+            CONFIG["BATTERY_GAUGES"]["charge_levels"][name]["warning"],
+            CONFIG["BATTERY_GAUGES"]["charge_levels"][name]["alert"],
+            CONFIG["BATTERY_GAUGES"]["charge_levels"][name]["critical"]
+        ))
 
     return results
 
@@ -96,4 +106,4 @@ def perform_check(name, data):
     if name in _CHECKS:
         return _CHECKS[name](data)
 
-    return SensorResult(True, None)
+    return SensorResult(True, data)
