@@ -1,10 +1,9 @@
 from asserts.checks import perform_check
-from asserts.asserts import WarningError, CriticalError
 from multithreading.thread import LoopingThread
 from serial.serialutil import SerialTimeoutException
 from utils import stringify_data
-import abc
 import serial
+from procedures.exception_handling.messages import get_message_severity, CRITICAL_ERROR
 
 
 class Consumer(LoopingThread):
@@ -29,6 +28,23 @@ class DataConsumer(Consumer):
     def __init__(self, lock, queue, gui):
         super().__init__(lock, queue)
         self.gui = gui
+        # TODO when we implement procedures
+        self.shutdown_procedure = None
+
+    def requires_shutdown(self, message_id):
+        """
+        Determines if the message is severe enough to trigger the shutdown procedure.
+        """
+        return get_message_severity(message_id) <= CRITICAL_ERROR
+
+    def process_exception(self, sensor_result):
+        """
+        Processes the result of the sensor data by showing sending a message to the gui and
+        starting the shutdown procedure if necessary. The result must be an exception.
+        """
+        self.gui.dispatch_message(sensor_result.get_error_message_id())
+        if self.requires_shutdown(sensor_result.get_error_message_id()):
+            self.shutdown_procedure.start()
 
     def run(self):
         """
@@ -43,20 +59,20 @@ class DataConsumer(Consumer):
             name, data = self.queue.get()
             self.lock.release()
 
-            try:
-                perform_check(name)(data)
-            except CriticalError as e:
-               self.gui.dispatch_alert("alert")
-               raise e  # this will cause emergency shutdown.
-            except WarningError as e:
-                self.gui.dispatch_alert("warning")
-                print(e)
-            except Exception as e:
-                print(e)
-                print(data)
+            if data.is_valid():
+                check_results = perform_check(name, data.value)
+                if isinstance(check_results, list):
+                    for result in check_results:
+                        if not result.is_valid():
+                            self.process_exception(result)
+                elif not check_results.is_valid():
+                    self.process_exception(check_results)
+
+            else:
+                self.process_exception(data)
 
             self.queue.task_done()
-           
+
 
 class LogConsumer(Consumer):
     """
