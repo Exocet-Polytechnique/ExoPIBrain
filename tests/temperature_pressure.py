@@ -5,7 +5,7 @@ from config import CONFIG
 def main():
     """Shows the temperature and pressure"""
     temperature = Thermocouples(None, None, None, CONFIG["TEMPERATURES"])
-    pressure = Manometers(None, None, None, CONFIG["PRESSURES"])
+    pressure = Manometers(None, None, None, CONFIG["MANOMETERS"])
     while True:
         temp_data = temperature.read_raw_data()
         pressure_data = pressure.read_raw_data()
