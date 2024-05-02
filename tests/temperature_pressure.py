@@ -11,7 +11,7 @@ def main():
         # pressure_data = pressure.read_raw_data()
         pressure_data = {"M0": 0, "M1": 0}
         print("Plaque H2 (°C):", temp_data["H2_plate"])
-        print("Refuelling station (°C):", temp_data["refueling_station"])
+        print("Refuelling station (°C):", temp_data["refuelling_station"])
         print("Flottant (°C):", temp_data["floating"])
         print("Haute pression (bar):", pressure_data["M0"])
         print("Basse pression (bar):", pressure_data["M1"])
