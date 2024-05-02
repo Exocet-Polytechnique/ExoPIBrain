@@ -30,7 +30,7 @@ def main():
     """
     Parses arguments to control the actuators
     """
-    args = sys.argv()[1:]
+    args = sys.argv[1:]
     if len(args) != 2:
         print("Utilisation: ./valve_control <valve1> <valve2>")
         sys.exit(1)
