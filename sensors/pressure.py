@@ -37,8 +37,8 @@ class Manometers(StreamReader):
         for i, name in enumerate(self.sensors):
             output[name] = self._convert_to_pressure(
                 self.channels[i].value,
-                self.sensors["name"]["range"][0],
-                self.sensors["name"]["range"][0])
+                self.sensors[name]["range"][0],
+                self.sensors[name]["range"][0])
 
         return output
 
