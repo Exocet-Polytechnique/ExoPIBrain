@@ -30,6 +30,7 @@ CONFIG = {
         "name": "MANOMETERS",
         "sensors": {
             "M0": {"range": (0, 400), "channel": 0},
+            "M1": {"range": (0, 4), "channel": 1},
         },
     },
     "TEMPERATURES": {
@@ -38,7 +39,7 @@ CONFIG = {
         "name": "TEMPERATURES",
         "sensors": {
             "H2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x00000dc67e14},
-            "refueling_station": {"warn": 50, "alert": 80, "max": 0, "address": 0x00000e841698},
+            "refuelling_station": {"warn": 50, "alert": 80, "max": 0, "address": 0x00000e841698},
             "floating": {"warn": 0, "alert": 0, "max": 0, "address": 0x00000dc6d911},
             # "h2_plate": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
             # "h2_tanks": {"warn": 0, "alert": 0, "max": 0, "address": 0x000000000000},
