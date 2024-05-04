@@ -11,7 +11,7 @@ possible_channels = [MCP.P0, MCP.P1, MCP.P2, MCP.P3, MCP.P4, MCP.P5]
 
 class Manometers(StreamReader):
     MAX_ANALOG_VALUE = 0xFFFF
-    PRESSURE_BIAS = 1.038 # d'apres les tests
+    PRESSURE_BIAS = 1.038 # d'apres les tests (haute pression seulement)
 
     """
     Manometer class used to read pressure data from H2 supplies.
