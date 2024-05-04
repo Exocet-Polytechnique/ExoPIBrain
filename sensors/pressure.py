@@ -11,7 +11,7 @@ possible_channels = [MCP.P0, MCP.P1, MCP.P2, MCP.P3, MCP.P4, MCP.P5]
 
 class Manometers(StreamReader):
     MAX_ANALOG_VALUE = 0xFFFF
-    MIN_ANALOG_VALUE = 0
+    PRESSURE_BIAS = 1.038 # d'apres les tests
 
     """
     Manometer class used to read pressure data from H2 supplies.
@@ -28,18 +28,16 @@ class Manometers(StreamReader):
         for _, sensor_config in self.sensors.items():
             self.channels.append(AnalogIn(self.mcp, possible_channels[sensor_config["channel"]]))
 
-    def _convert_to_pressure(self, channel_value, min_bar, max_bar):
-        ratio = (channel_value - Manometers.MIN_ANALOG_VALUE) / (Manometers.MAX_ANALOG_VALUE - Manometers.MIN_ANALOG_VALUE)
-        return min_bar + ratio * (max_bar - min_bar)
+    def _convert_to_pressure(self, channel_value, max_bar):
+        pressure = channel_value / self.MAX_ANALOG_VALUE * max_bar
+        return pressure * Manometers.PRESSURE_BIAS
 
     def read_raw_data(self):
         output = {}
         for i, name in enumerate(self.sensors):
             output[name] = self._convert_to_pressure(
                 self.channels[i].value,
-                self.sensors[name]["range"][0],
-                self.sensors[name]["range"][0])
-            output[name] = self.channels[i].value
+                self.sensors[name]["max_bar"])
 
         return output
 

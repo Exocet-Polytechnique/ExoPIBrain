@@ -12,8 +12,8 @@ def main():
         print("Plaque H2 (°C):", temp_data["H2_plate"])
         print("Refuelling station (°C):", temp_data["refuelling_station"])
         print("Flottant (°C):", temp_data["floating"])
-        print("Haute pression (bar):", pressure_data["M0"])
-        print("Basse pression (bar):", pressure_data["M1"])
+        print("Haute pression (bar):", pressure_data["high_pressure"])
+        print("Basse pression (bar):", pressure_data["low_pressure"])
         print("\n\n\n\n\n")
 
 if __name__ == "__main__":

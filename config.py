@@ -29,8 +29,8 @@ CONFIG = {
         "read_interval": 1,
         "name": "MANOMETERS",
         "sensors": {
-            "M0": {"range": (0, 400), "channel": 0},
-            "M1": {"range": (0, 4), "channel": 1},
+            "high_pressure": {"max_bar": 400, "channel": 0},
+            "low_pressure": {"max_bar": 4, "channel": 1},
         },
     },
     "TEMPERATURES": {
