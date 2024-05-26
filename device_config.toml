@@ -1,0 +1,71 @@
+[fuel_cell_a]
+priority = 0
+read_interval = 1
+serial.port = "/dev/tty_FCA"
+serial.baudrate = 57600
+
+[fuel_cell_b]
+priority = 0
+read_interval = 1
+serial.port = "/dev/tty_FCB"
+serial.baudrate = 57600
+
+[manometers]
+priority = 0
+read_interval = 1
+
+[manometers.high_pressure]
+channel = 0
+max_bar = 400
+
+[manometers.low_pressure]
+channel = 1
+max_bar = 4
+
+[temperatures]
+priority = 0
+read_interval = 0 # delay already caused by the conversion time of the sensors
+
+[temperatures.h2_plate]
+warn = 0
+alert = 0
+max = 0
+address = 0x00000dc67e14
+
+[temperatures.batteries]
+warn = 0
+alert = 0
+max = 0
+address = 0x00000e841698
+
+[temperatures.fuel_cell_controllers]
+warn = 0
+alert = 0
+max = 0
+address = 0x000000000000
+
+[temperatures.h2_tanks]
+warn = 0
+alert = 0
+max = 0
+address = 0x000000000000
+
+[temperatures.extra]
+warn = 0
+alert = 0
+max = 0
+address = 0x00000dc6d911
+
+[battery_gauge]
+priority = 0
+read_interval = 1
+i2c_address = 0x64
+select_gpio = 13
+warn = 0
+alert = 0
+max =0
+
+[valve1]
+control_pin = 8
+error_pin = 9
+closed_on_low = false
