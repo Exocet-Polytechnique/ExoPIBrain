@@ -1,6 +1,15 @@
-use exo_pi_brain_rs::config;
+use exo_pi_brain_rs::{devices::SensorData, interface::Interface};
 
 fn main() {
-    let cfg = config::load_config("device_config.toml");
-    println!("{cfg:?}");
+    let mut interface = Interface::new();
+    loop {
+        let should_close = interface.update(&SensorData {
+            fuel_cell_a: None,
+            fuel_cell_b: None,
+        });
+        if should_close {
+            break;
+        }
+        interface.render();
+    }
 }

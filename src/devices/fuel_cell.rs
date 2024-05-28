@@ -12,6 +12,7 @@ pub struct FuelCell {
     data: Option<FuelCellData>,
 }
 
+#[derive(Clone, Copy)]
 pub struct FuelCellData {
     temperature: f32,
 }
@@ -32,6 +33,15 @@ impl FuelCell {
             uart_device,
             data: None,
         }
+    }
+
+    fn write(&mut self, command: String) -> rppal::uart::Result<()> {
+        self.uart_device.write((command + "\r").as_bytes())?;
+        Ok(())
+    }
+
+    pub fn start(&mut self) {
+        self.write("start".to_string());
     }
 
     pub fn run(&mut self) -> () {

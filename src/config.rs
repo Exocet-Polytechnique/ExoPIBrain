@@ -36,7 +36,7 @@ pub struct TemperatureSensorConfig {
     warn: u8,
     alert: u8,
     max: u8,
-    address: u64,
+    pub address: u64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -44,11 +44,11 @@ pub struct TemperatureSensorsConfig {
     priority: u8,
     read_interval: f32,
 
-    h2_plate: TemperatureSensorConfig,
-    batteries: TemperatureSensorConfig,
-    fuel_cell_controllers: TemperatureSensorConfig,
-    h2_tanks: TemperatureSensorConfig,
-    extra: TemperatureSensorConfig,
+    pub h2_plate: TemperatureSensorConfig,
+    pub batteries: TemperatureSensorConfig,
+    pub fuel_cell_controllers: TemperatureSensorConfig,
+    pub h2_tanks: TemperatureSensorConfig,
+    pub extra: TemperatureSensorConfig,
 }
 
 #[derive(Deserialize, Debug)]
@@ -69,6 +69,12 @@ pub struct Config {
     manometers: ManometerConfig,
     temperatures: TemperatureSensorsConfig,
     battery_gauge: BatteryGaugeConfig,
+}
+
+pub struct GpsConfig {
+    pub priority: u8,
+    pub read_interval: f32,
+    pub serial: SerialConfig,
 }
 
 pub fn load_config(file_path: &str) -> Config {
