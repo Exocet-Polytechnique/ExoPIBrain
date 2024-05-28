@@ -4,9 +4,11 @@ use rppal::uart::{Parity, Uart};
 
 use crate::config::SerialConfig;
 
+use super::exceptions::DeviceException;
+
 const BASE_LINE_LENGTH: usize = 256; // optimize line strings
 
-enum SerialError {
+pub enum SerialError {
     IoError,
 }
 
@@ -16,9 +18,8 @@ pub struct SerialDevice {
 
 impl SerialDevice {
     pub fn initialize(config: &SerialConfig) -> SerialDevice {
-        let mut device =
+        let device =
             Uart::with_path(Path::new(&config.port), config.baudrate, Parity::None, 8, 1).unwrap();
-        device.set_read_mode(1, Duration::ZERO);
 
         SerialDevice { device }
     }
@@ -28,16 +29,19 @@ impl SerialDevice {
         Ok(())
     }
 
-    pub fn readln(&mut self) -> String {
+    pub fn readln(&mut self, timeout: f32) -> Result<String, DeviceException> {
         let mut line = String::with_capacity(BASE_LINE_LENGTH);
+
+        self.device
+            .set_read_mode(0, Duration::from_secs_f32(timeout))?;
 
         let mut buffer = [0u8; 1];
         while buffer[0] != b'\n' || buffer[0] != b'\r' {
-            self.device.read(&mut buffer);
+            self.device.read(&mut buffer)?;
             line.push(buffer[0] as char);
         }
 
-        line
+        Ok(line)
     }
 }
 

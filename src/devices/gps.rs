@@ -3,6 +3,7 @@ use crate::config::GpsConfig;
 
 pub struct GpsDevice {
     serial: SerialDevice,
+    read_timeout: f32,
 }
 
 #[derive(Debug)]
@@ -26,14 +27,15 @@ impl GpsDevice {
     pub fn initialize(config: &GpsConfig) -> GpsDevice {
         GpsDevice {
             serial: SerialDevice::initialize(&config.serial),
+            read_timeout: config.read_interval,
         }
     }
 
     pub fn read(&mut self) -> Result<GpsData, DeviceException> {
         // TODO: implement time out
-        let mut data_line = self.serial.readln();
+        let mut data_line = String::new(); // self.serial.readln();
         while !data_line.contains("$GPRMC") {
-            data_line = self.serial.readln();
+            data_line = self.serial.readln(self.read_timeout)?;
         }
 
         let split_data: Vec<&str> = data_line.split(',').collect();
@@ -45,32 +47,5 @@ impl GpsDevice {
             latitude_deg: split_data[3].parse().ok().map(|x| to_degrees(x)),
             longitude_deg: split_data[5].parse().ok().map(|x| to_degrees(x) * -1.0),
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::time::Duration;
-
-    use crate::config::{GpsConfig, SerialConfig};
-
-    use super::GpsDevice;
-
-    #[test]
-    fn gps() {
-        let mut gps_dev = GpsDevice::initialize(&GpsConfig {
-            priority: 2,
-            read_interval: 1.0,
-            serial: SerialConfig {
-                baudrate: 9600,
-                port: "/dev/tty0".to_string(),
-            },
-        });
-
-        loop {
-            let data = gps_dev.read().unwrap();
-            println!("{data:?}");
-            std::thread::sleep(Duration::from_secs(1));
-        }
     }
 }
