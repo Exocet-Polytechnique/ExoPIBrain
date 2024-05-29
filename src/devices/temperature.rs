@@ -2,7 +2,7 @@ use std::{fs::File, io::Read, path::PathBuf, process::Command};
 
 use crate::config::TemperatureSensorsConfig;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct TemperatureData {
     pub h2_plate: Option<f32>,
     pub batteries: Option<f32>,
@@ -11,7 +11,7 @@ pub struct TemperatureData {
     pub extra: Option<f32>,
 }
 
-struct Temperature {
+pub struct Temperature {
     h2_plate_path: PathBuf,
     batteries_path: PathBuf,
     fuel_cell_controllers_path: PathBuf,

@@ -3,7 +3,7 @@ pub mod battery;
 pub mod common;
 pub mod fuel_cell;
 pub mod gps;
-pub mod pressure;
+pub mod manometer;
 pub mod temperature;
 
 use fuel_cell::FuelCellData;

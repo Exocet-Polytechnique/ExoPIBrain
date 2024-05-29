@@ -42,13 +42,13 @@ address = 0x00000e841698
 warn = 0
 alert = 0
 max = 0
-address = 0x000000000000
+address = 0xFFFFFFFFFFFF
 
 [temperatures.h2_tanks]
 warn = 0
 alert = 0
 max = 0
-address = 0x000000000000
+address = 0xFFFFFFFFFFFF
 
 [temperatures.extra]
 warn = 0

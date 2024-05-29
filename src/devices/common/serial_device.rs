@@ -32,11 +32,12 @@ impl SerialDevice {
     pub fn readln(&mut self, timeout: f32) -> Result<String, DeviceException> {
         let mut line = String::with_capacity(BASE_LINE_LENGTH);
 
+        // TODO: make sure the timeout works
         self.device
             .set_read_mode(0, Duration::from_secs_f32(timeout))?;
 
         let mut buffer = [0u8; 1];
-        while buffer[0] != b'\n' || buffer[0] != b'\r' {
+        while buffer[0] != b'\n' && buffer[0] != b'\r' {
             self.device.read(&mut buffer)?;
             line.push(buffer[0] as char);
         }

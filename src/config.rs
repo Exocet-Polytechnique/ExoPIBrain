@@ -66,8 +66,8 @@ pub struct BatteryGaugeConfig {
 pub struct Config {
     fuel_cell_a: FuelCellConfig,
     fuel_cell_b: FuelCellConfig,
-    manometers: ManometerConfig,
-    temperatures: TemperatureSensorsConfig,
+    manometers: ManometersConfig,
+    pub temperatures: TemperatureSensorsConfig,
     battery_gauge: BatteryGaugeConfig,
 }
 

@@ -32,7 +32,6 @@ impl GpsDevice {
     }
 
     pub fn read(&mut self) -> Result<GpsData, DeviceException> {
-        // TODO: implement time out
         let mut data_line = String::new(); // self.serial.readln();
         while !data_line.contains("$GPRMC") {
             data_line = self.serial.readln(self.read_timeout)?;
