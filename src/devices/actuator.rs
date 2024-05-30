@@ -1,12 +1,6 @@
 use rppal::gpio::{Gpio, InputPin, Level, OutputPin};
-use serde::Deserialize;
 
-#[derive(Deserialize)]
-pub struct ActuatorConfig {
-    control_pin: u8,
-    error_pin: u8,
-    closed_on_low: bool,
-}
+use crate::config::ActuatorConfig;
 
 pub struct Actuator {
     control_pin: OutputPin,

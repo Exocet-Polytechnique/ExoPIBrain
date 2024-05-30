@@ -62,6 +62,19 @@ pub struct BatteryGaugeConfig {
     max: u16,
 }
 
+pub struct GpsConfig {
+    pub priority: u8,
+    pub read_interval: f32,
+    pub serial: SerialConfig,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ActuatorConfig {
+    pub control_pin: u8,
+    pub error_pin: u8,
+    pub closed_on_low: bool,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct Config {
     fuel_cell_a: FuelCellConfig,
@@ -69,12 +82,7 @@ pub struct Config {
     manometers: ManometersConfig,
     pub temperatures: TemperatureSensorsConfig,
     battery_gauge: BatteryGaugeConfig,
-}
-
-pub struct GpsConfig {
-    pub priority: u8,
-    pub read_interval: f32,
-    pub serial: SerialConfig,
+    pub valve1: ActuatorConfig,
 }
 
 pub fn load_config(file_path: &str) -> Config {

@@ -11,7 +11,7 @@ pub struct TemperatureData {
     pub extra: Option<f32>,
 }
 
-/// For the temperature sensors to work, the following line must be added to `boot/config.txt`:
+/// For the temperature sensors to work, the following line must be added to `/boot/config.txt`:
 /// ```
 /// dtoverlay=w1-gpio
 /// ```
@@ -75,8 +75,7 @@ impl Temperature {
         file.read_to_string(&mut file_content).ok()?;
 
         let mut lines = file_content.lines().map(|x| x.trim());
-        if !lines.next()?.contains("YES") {
-            // maybe ends_with instead?
+        if !lines.next()?.ends_with("YES") {
             return None;
         }
 
