@@ -11,6 +11,17 @@ pub struct TemperatureData {
     pub extra: Option<f32>,
 }
 
+/// For the temperature sensors to work, the following line must be added to `boot/config.txt`:
+/// ```
+/// dtoverlay=w1-gpio
+/// ```
+/// By default, the raspberry pi uses GPIO4 for the w1 interface, so the temperatures sensors
+/// should be connected there
+/// Also, the following two lines must be added to `/etc/modules`:
+/// ```
+/// w1-gpio
+/// w1-therm
+/// ```
 pub struct Temperature {
     h2_plate_path: PathBuf,
     batteries_path: PathBuf,
@@ -23,11 +34,6 @@ pub struct Temperature {
 
 impl Temperature {
     pub fn initialize(config: &TemperatureSensorsConfig) -> Temperature {
-        // NOTE: see /boot/config.txt to change the GPIO pin used
-        // TODO: handle errors better
-        Command::new("modprobe").arg("w1-gpio").output().unwrap();
-        Command::new("modprobe").arg("w1-therm").output().unwrap();
-
         Temperature {
             h2_plate_path: PathBuf::from(format!(
                 "/sys/bus/w1/devices/28-{:012x}",
