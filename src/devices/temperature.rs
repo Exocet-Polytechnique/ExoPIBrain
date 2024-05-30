@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, path::PathBuf, process::Command};
+use std::{fs::File, io::Read, path::PathBuf};
 
 use crate::config::TemperatureSensorsConfig;
 
@@ -36,23 +36,23 @@ impl Temperature {
     pub fn initialize(config: &TemperatureSensorsConfig) -> Temperature {
         Temperature {
             h2_plate_path: PathBuf::from(format!(
-                "/sys/bus/w1/devices/28-{:012x}",
+                "/sys/bus/w1/devices/28-{:012x}/w1_slave",
                 config.h2_plate.address
             )),
             batteries_path: PathBuf::from(format!(
-                "/sys/bus/w1/devices/28-{:012x}",
+                "/sys/bus/w1/devices/28-{:012x}/w1_slave",
                 config.batteries.address
             )),
             fuel_cell_controllers_path: PathBuf::from(format!(
-                "/sys/bus/w1/devices/28-{:012x}",
+                "/sys/bus/w1/devices/28-{:012x}/w1_slave",
                 config.fuel_cell_controllers.address
             )),
             h2_tanks_path: PathBuf::from(format!(
-                "/sys/bus/w1/devices/28-{:012x}",
+                "/sys/bus/w1/devices/28-{:012x}/w1_slave",
                 config.h2_tanks.address
             )),
             extra_path: PathBuf::from(format!(
-                "/sys/bus/w1/devices/28-{:012x}",
+                "/sys/bus/w1/devices/28-{:012x}/w1_slave",
                 config.extra.address
             )),
             current_sensor_index: 0,
@@ -97,7 +97,7 @@ impl Temperature {
             }
             3 => self.current_data.h2_tanks = self.read_sensor(&self.h2_tanks_path),
             4 => self.current_data.extra = self.read_sensor(&self.extra_path),
-            _ => (),
+            _ => panic!("Temperature sensor index should not be > 4."),
         };
 
         self.current_sensor_index += 1;
