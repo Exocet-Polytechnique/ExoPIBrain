@@ -8,7 +8,7 @@ use crossterm::{
 
 use ratatui::{backend::CrosstermBackend, prelude::*, style::*, symbols, widgets::*, Terminal};
 
-use crate::devices::SensorData;
+use crate::devices::{fuel_cell, SensorData};
 
 enum State {
     Startup,
@@ -60,8 +60,13 @@ impl Interface {
                 // Constants
                 ///////////////
                 let default_style = Style::default().fg(Color::White).bg(Color::Black);
-                let spacing = 3;
-
+                let speed_style = Style::default().fg(Color::LightMagenta);
+                let efficiency_style = Style::default().fg(Color::LightMagenta);
+                let battery_title_style = Style::default().fg(Color::LightGreen);
+                let hydrogen_title_style = Style::default().fg(Color::LightBlue);
+                let fuel_cells_title_style = Style::default().fg(Color::LightRed);
+                let tank_title_style = Style::default().fg(Color::LightYellow);
+                let messages_title_style = Style::default().fg(Color::White);
 
                 /////////////
                 // Widgets
@@ -72,7 +77,7 @@ impl Interface {
                 .block(
                     Block::default()
                         .borders(Borders::LEFT | Borders::TOP)
-                        .title_style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+                        .title_style(speed_style)
                         .title(" 󰓅 Speed ")
                 );
 
@@ -85,11 +90,11 @@ impl Interface {
                             top_left: symbols::line::NORMAL.vertical_right,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+                        .title_style(efficiency_style)
                         .title(" 󰌪 Efficiency ")
                 );
 
-                let battery_widget = Paragraph::new(format!("Capacity:{:>10} %\nTemperature:{:>7.2} °C\nVoltage:{:>11.2} V\nCurrent:{:>11.2} A", 92, 142.1283, 23.21, 5.2))
+                let battery_widget = Paragraph::new(format!("Capacity:{:>10} %\nVoltage:{:>11.2} V\nCurrent:{:>11.2} A\nTemperature:{:>7.2} °C", 92, 23.21, 5.2, 142.1283))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -98,11 +103,11 @@ impl Interface {
                             top_left: symbols::line::NORMAL.vertical_right,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::LightGreen).add_modifier(Modifier::BOLD))
+                        .title_style(battery_title_style)
                         .title(" 󰁹 Battery ")
                 );
 
-                let hydrogen_widget = Paragraph::new(format!("Temperature:{:>8.2}  °C\nHigh Pressure:{:>7.2} Bar\nLow Pressure:     {:>6.2} Bar", 142.1283, 23.21, 5.2))
+                let hydrogen_widget = Paragraph::new(format!("High Pressure:{:>7.2} Bar\nLow Pressure:{:>8.2} Bar\nTemperature:{:>9.2} °C", 399.0, 5.29312, 142.1283))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -111,11 +116,11 @@ impl Interface {
                             top_left: symbols::line::NORMAL.horizontal_down,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::LightBlue).add_modifier(Modifier::BOLD))
+                        .title_style(hydrogen_title_style)
                         .title("  Hydrogen ")
                 );
 
-                let fuel_cells_widget = Paragraph::new(format!("Temperature:{:>8.2} °C\nHigh Pressure:{:>7.2} Bar\nLow Pressure:{:>6.2} Bar", 142.1283, 23.21, 5.2))
+                let fuel_cells_widget = Paragraph::new(format!("Fuel Cell A:{:>9.2} Bar\nFuel Cell B:{:>9.2} Bar\nTemperature:{:>9.2} °C", 5800.07, 5803.07, 142.1283))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -125,11 +130,11 @@ impl Interface {
                             top_right: symbols::line::NORMAL.vertical_left,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::LightRed).add_modifier(Modifier::BOLD))
+                        .title_style(fuel_cells_title_style)
                         .title(" 󱐋 Fuel Cells ")
                 );
 
-                let tank_widget = Paragraph::new(format!("Temperature:{:>8.2}", 142.1283))
+                let tank_widget = Paragraph::new(format!("Temperature:{:>9.2} °C", 142.1283))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -139,7 +144,7 @@ impl Interface {
                             top_right: symbols::line::NORMAL.vertical_left,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::LightYellow).add_modifier(Modifier::BOLD))
+                        .title_style(tank_title_style)
                         .title(" 󱍗 Tank ")
                 );
 
@@ -153,7 +158,7 @@ impl Interface {
                             top_right: symbols::line::NORMAL.vertical_left,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(Style::default().fg(Color::White).add_modifier(Modifier::BOLD))
+                        .title_style(messages_title_style)
                         .title("  Messages ")
                 );
 
@@ -169,8 +174,8 @@ impl Interface {
                 let columns_layout = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([
-                            Constraint::Length(30),
-                            Constraint::Length(31)
+                            Constraint::Length(23),
+                            Constraint::Length(27)
                         ].as_ref())
                     .split(main_layout[0]);
 
@@ -195,7 +200,7 @@ impl Interface {
                 let messages_layout = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([
-                        Constraint::Length(61),
+                        Constraint::Length(50),
                     ].as_ref(),)
                     .split(main_layout[1]);
 
