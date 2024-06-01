@@ -1,4 +1,4 @@
-use std::io::{stdout, Stdout};
+use std::{default, io::{stdout, Stdout}};
 
 use crossterm::{
     event::{self, KeyEventKind},
@@ -6,7 +6,6 @@ use crossterm::{
     ExecutableCommand,
 };
 
-use layout::Columns;
 use ratatui::{backend::CrosstermBackend, prelude::*, symbols, widgets::*, Terminal};
 
 use crate::devices::SensorData;
@@ -57,12 +56,71 @@ impl Interface {
     pub fn render(&mut self) {
         self.terminal
             .draw(|frame| {
-                ////////////
-                // layouts
-                ////////////
+                ///////////////
+                // Constants
+                ///////////////
+                let default_style = Style::default().fg(Color::White).bg(Color::Black);
+                let spacing = 3;
+
+
+                /////////////
+                // Widgets
+                /////////////
+                
+                let battery_widget = Paragraph::new(format!("Capacity: Temperature: {:>6.2}°C\nVoltage:     {:>6.2} V\nCurrent:     {:>6.2} A", 142.1283, 23.21, 5.2))
+                .style(default_style)
+                .block(
+                    Block::default()
+                        .borders(Borders::LEFT | Borders::TOP)
+                        .title_style(Style::default().fg(Color::LightGreen).add_modifier(Modifier::BOLD))
+                        .title(" 󰁹 Battery ")
+                );
+
+                let hydrogen_widget = Paragraph::new(format!("Temperature:{:>8.2}  °C\nHigh Pressure:{:>7.2} Bar\nLow Pressure:     {:>6.2} Bar", 142.1283, 23.21, 5.2))
+                .style(default_style)
+                .block(
+                    Block::default()
+                        .borders(Borders::LEFT | Borders::TOP)
+                        .title_style(Style::default().fg(Color::LightBlue).add_modifier(Modifier::BOLD))
+                        .title("  Hydrogen ")
+                );
+
+                let fuel_cells_widget = Paragraph::new(format!("Temperature:{:>8.2}  °C\nHigh Pressure:{:>7.2} Bar\nLow Pressure:     {:>6.2} Bar", 142.1283, 23.21, 5.2))
+                .style(default_style)
+                .block(
+                    Block::default()
+                        .borders(Borders::LEFT | Borders::TOP)
+                        .title_style(Style::default().fg(Color::LightRed).add_modifier(Modifier::BOLD))
+                        .title(" 󱐋 Fuel Cells ")
+                );
+
+                let tank_widget = Paragraph::new(format!("Temperature:{:>8.2}", 142.1283))
+                .style(default_style)
+                .block(
+                    Block::default()
+                        .borders(Borders::LEFT | Borders::TOP)
+                        .title_style(Style::default().fg(Color::LightYellow).add_modifier(Modifier::BOLD))
+                        .title(" 󱍗 Tank ")
+                );
+
+                let boat_widget = Paragraph::new(format!("Temperature:{:>8.2}", 142.1283))
+                .style(default_style)
+                .block(
+                    Block::default()
+                        .borders(Borders::LEFT | Borders::TOP)
+                        .title_style(Style::default().fg(Color::LightMagenta).add_modifier(Modifier::BOLD))
+                        .title(" 󰻈 Ship ")
+                );
+
+
+
+                /////////////
+                // Layouts
+                /////////////
+
                 let main_layout = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([Constraint::Length(9), Constraint::Length(4)].as_ref())
+                    .constraints([Constraint::Length(14), Constraint::Length(4)].as_ref())
                     .split(frame.size());
 
                 let columns_layout = Layout::default()
@@ -74,9 +132,8 @@ impl Interface {
                     .direction(Direction::Vertical)
                     .constraints(
                         [
+                            Constraint::Length(5),
                             Constraint::Length(4),
-                            Constraint::Length(3),
-                            Constraint::Length(2),
                         ]
                         .as_ref(),
                     )
@@ -86,77 +143,82 @@ impl Interface {
                     .direction(Direction::Vertical)
                     .constraints(
                         [
-                            Constraint::Length(2),
                             Constraint::Length(3),
-                            Constraint::Length(2),
+                            Constraint::Length(4),
                             Constraint::Length(2),
                         ]
                         .as_ref(),
                     )
                     .split(columns_layout[1]);
 
-                // left column widgets
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP)
-                        .title("Battery"),
-                    left_column_layout[0],
-                );
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP)
-                        .border_set(symbols::border::Set {
-                            top_left: symbols::line::NORMAL.vertical_right,
-                            ..symbols::border::PLAIN
-                        })
-                        .title("Pressure Sensors"),
-                    left_column_layout[1],
-                );
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP)
-                        .border_set(symbols::border::Set {
-                            top_left: symbols::line::NORMAL.vertical_right,
-                            ..symbols::border::PLAIN
-                        })
-                        .title("Hydrogen"),
-                    left_column_layout[2],
-                );
+                // // left column widgets
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP)
+                //         .title("Battery"),
+                //     left_column_layout[0],
+                // );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP)
+                //         .border_set(symbols::border::Set {
+                //             top_left: symbols::line::NORMAL.vertical_right,
+                //             ..symbols::border::PLAIN
+                //         })
+                //         .title("Pressure Sensors"),
+                //     left_column_layout[1],
+                // );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP)
+                //         .border_set(symbols::border::Set {
+                //             top_left: symbols::line::NORMAL.vertical_right,
+                //             ..symbols::border::PLAIN
+                //         })
+                //         .title("Hydrogen"),
+                //     left_column_layout[2],
+                // );
+
+                frame.render_widget(battery_widget, left_column_layout[0]);
+                frame.render_widget(hydrogen_widget, left_column_layout[1]);
+                frame.render_widget(boat_widget, right_column_layout[0]);
+                frame.render_widget(fuel_cells_widget, right_column_layout[1]);
+                frame.render_widget(tank_widget, right_column_layout[2]);
 
                 // right column widgets
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
-                        .border_set(symbols::border::Set {
-                            top_left: symbols::line::NORMAL.horizontal_down,
-                            ..symbols::border::PLAIN
-                        })
-                        .title("Efficiency"),
-                    right_column_layout[0],
-                );
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
-                        .border_set(symbols::border::Set {
-                            top_left: symbols::line::NORMAL.horizontal_down,
-                            top_right: symbols::line::NORMAL.vertical_left,
-                            ..symbols::border::PLAIN
-                        })
-                        .title("Fuel Cells"),
-                    right_column_layout[1],
-                );
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
-                        .title("Speed"),
-                    right_column_layout[2],
-                );
-                frame.render_widget(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
-                        .title("Tank"),
-                    right_column_layout[3],
-                );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
+                //         .border_set(symbols::border::Set {
+                //             top_left: symbols::line::NORMAL.horizontal_down,
+                //             ..symbols::border::PLAIN
+                //         })
+                //         .title("Efficiency"),
+                //     right_column_layout[0],
+                // );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
+                //         .border_set(symbols::border::Set {
+                //             top_left: symbols::line::NORMAL.horizontal_down,
+                //             top_right: symbols::line::NORMAL.vertical_left,
+                //             ..symbols::border::PLAIN
+                //         })
+                //         .title("Fuel Cells"),
+                //     right_column_layout[1],
+                // );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
+                //         .title("Speed"),
+                //     right_column_layout[2],
+                // );
+                // frame.render_widget(
+                //     Block::default()
+                //         .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
+                //         .title("Tank"),
+                //     right_column_layout[3],
+                // );
 
                 // messages
                 frame.render_widget(
