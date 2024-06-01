@@ -9,8 +9,6 @@ use ratatui::widgets::Paragraph;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use ratatui::{layout::Rect, style::Stylize};
 
-use crate::devices::SensorData;
-
 enum State {
     Startup,
     Shutdown,
@@ -20,7 +18,6 @@ enum State {
 pub struct Interface {
     state: State,
     terminal: Terminal<CrosstermBackend<Stdout>>,
-    data: SensorData,
     // error_rx
 }
 
@@ -34,13 +31,10 @@ impl Interface {
         Interface {
             state: State::Startup,
             terminal,
-            data: SensorData::default(),
         }
     }
 
-    pub fn update(&mut self, data: &SensorData) -> bool {
-        self.data = *data;
-
+    pub fn update(&mut self) -> bool {
         // if error_rx.read() ...
 
         if event::poll(std::time::Duration::from_millis(10)).unwrap() {

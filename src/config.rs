@@ -62,6 +62,7 @@ pub struct BatteryGaugeConfig {
     max: u16,
 }
 
+#[derive(Deserialize, Debug)]
 pub struct GpsConfig {
     pub priority: u8,
     pub read_interval: f32,
@@ -76,6 +77,13 @@ pub struct ActuatorConfig {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct TelemetryConfig {
+    pub serial: SerialConfig,
+    pub send_interval: f32,
+    pub token_path: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Config {
     fuel_cell_a: FuelCellConfig,
     fuel_cell_b: FuelCellConfig,
@@ -83,6 +91,8 @@ pub struct Config {
     pub temperatures: TemperatureSensorsConfig,
     battery_gauge: BatteryGaugeConfig,
     pub valve1: ActuatorConfig,
+    pub telemetry: TelemetryConfig,
+    pub gps: GpsConfig,
 }
 
 pub fn load_config(file_path: &str) -> Config {

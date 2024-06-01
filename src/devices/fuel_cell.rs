@@ -12,7 +12,7 @@ pub struct FuelCell {
     data: Option<FuelCellData>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct FuelCellData {
     temperature: f32,
 }

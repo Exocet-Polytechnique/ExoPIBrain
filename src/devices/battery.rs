@@ -21,6 +21,7 @@ pub struct BatteryGauge {
     bus: Arc<Mutex<I2c>>,
 }
 
+#[derive(Debug)]
 pub struct BatteryGaugeData {
     voltage: f32,
     current: f32,

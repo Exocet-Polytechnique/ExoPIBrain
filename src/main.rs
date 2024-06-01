@@ -1,28 +1,41 @@
+use std::{
+    sync::{mpsc, Arc, RwLock},
+    thread,
+    time::{Duration, Instant},
+};
+
 use exo_pi_brain_rs::{
     config::load_config,
-    devices::{actuator::Actuator, temperature::Temperature},
+    devices::{
+        common::sensor_thread::{SensorThread, ThreadMessaging},
+        gps::GpsDevice,
+    },
 };
-use rppal::gpio::Gpio;
 
 fn main() {
+    let (txd, rxd) = mpsc::channel();
+    let (txe, _rxe) = mpsc::channel();
+    let stop_signal = Arc::new(RwLock::new(false));
+
+    let messaging = ThreadMessaging {
+        data_sender: txd,
+        error_sender: txe,
+        stop_signal: stop_signal.clone(),
+    };
+
     let config = load_config("device_config.toml");
 
-    let mut temperature = Temperature::initialize(&config.temperatures);
-    let gpio = Gpio::new().unwrap();
-    let mut actuator = Actuator::initialize(&gpio, &config.valve1);
+    let mut sensor_thread: SensorThread<GpsDevice> = SensorThread::new(messaging, &config.gps);
 
-    let mut is_open = false;
+    sensor_thread.start();
 
-    loop {
-        let data = temperature.read();
-        println!("Temperature: {data:?}");
+    let start = Instant::now();
 
-        println!("Actuator: {}", actuator.get_status());
-        if is_open {
-            actuator.close_valve()
-        } else {
-            actuator.open_valve()
-        };
-        is_open = !is_open;
+    while start.elapsed().as_secs() < 5 {
+        for data in &rxd {
+            println!("{:?}", data);
+        }
     }
+
+    *stop_signal.write().unwrap() = true;
 }

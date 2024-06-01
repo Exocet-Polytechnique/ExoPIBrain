@@ -1,6 +1,15 @@
+use super::sensor::SensorName;
+
 #[derive(Debug)]
 pub enum DeviceException {
     NotConnected,
+    Disconnected,
+    Connected,
+}
+
+pub struct SensorMessage {
+    pub name: SensorName,
+    pub exception: DeviceException,
 }
 
 impl From<rppal::i2c::Error> for DeviceException {
