@@ -32,9 +32,10 @@ fn main() {
     let start = Instant::now();
 
     while start.elapsed().as_secs() < 5 {
-        for data in &rxd {
+        for data in rxd.try_iter() {
             println!("{:?}", data);
         }
+        thread::sleep(Duration::from_millis(500));
     }
 
     *stop_signal.write().unwrap() = true;
