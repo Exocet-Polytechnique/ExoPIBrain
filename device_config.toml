@@ -69,3 +69,15 @@ max =0
 control_pin = 8
 error_pin = 9
 closed_on_low = false
+
+[gps]
+serial.port = "/dev/serial0"
+serial.baudrate = 9600
+priority = 1
+read_interval = 3
+
+[telemetry]
+serial.port = ""
+serial.baudrate = 0
+send_interval = 0
+token_path = "$HOME/boat_token.txt"
