@@ -1,24 +1,22 @@
-use super::common::{
-    exceptions::DeviceException,
-    sensor::{Sensor, SensorName},
-    sensor_data::SensorData,
-    sensor_thread::{SensorThread, ThreadMessaging},
-    serial_device::SerialDevice,
+use super::{
+    common::{sensor::Sensor, sensor_data::SensorData, serial_device::SerialDevice},
+    Exception,
 };
 use crate::config::GpsConfig;
 
 pub struct GpsDevice {
     serial: SerialDevice,
-    read_timeout: f32,
 }
 
-#[derive(Debug)]
+const READ_TIMEOUT: f32 = 1.0;
+
+#[derive(Debug, Clone, Copy)]
 pub struct GpsData {
-    nmea_time: Option<f32>,
-    speed_knots: Option<f32>,
-    course_angle: Option<f32>,
-    latitude_deg: Option<f32>,
-    longitude_deg: Option<f32>,
+    pub nmea_time: Option<f32>,
+    pub speed_knots: Option<f32>,
+    pub course_angle: Option<f32>,
+    pub latitude_deg: Option<f32>,
+    pub longitude_deg: Option<f32>,
 }
 
 fn to_degrees(sensor_value: f32) -> f32 {
@@ -30,10 +28,10 @@ fn to_degrees(sensor_value: f32) -> f32 {
 }
 
 impl GpsDevice {
-    fn try_read(&self) -> Result<SensorData, DeviceException> {
+    fn try_read(&self) -> Result<SensorData, Exception> {
         let mut data_line = String::new(); // self.serial.readln();
         while !data_line.contains("$GPRMC") {
-            data_line = self.serial.readln(self.read_timeout)?;
+            data_line = self.serial.readln(READ_TIMEOUT)?;
         }
 
         let split_data: Vec<&str> = data_line.split(',').collect();
@@ -54,18 +52,13 @@ impl Sensor for GpsDevice {
     fn new(config: &Self::Config) -> Self {
         Self {
             serial: SerialDevice::initialize(&config.serial),
-            read_timeout: config.read_interval,
         }
     }
 
-    fn read(&self) -> (SensorData, Option<DeviceException>) {
+    fn read(&mut self) -> (SensorData, Option<Exception>) {
         match self.try_read() {
             Ok(d) => (d, None),
             Err(e) => (SensorData::Gps(None), Some(e)),
         }
-    }
-
-    fn get_name() -> SensorName {
-        SensorName::Gps
     }
 }

@@ -2,15 +2,9 @@ use std::{path::Path, sync::Mutex, time::Duration};
 
 use rppal::uart::{Parity, Uart};
 
-use crate::config::SerialConfig;
-
-use super::exceptions::DeviceException;
+use crate::{config::SerialConfig, devices::Exception};
 
 const BASE_LINE_LENGTH: usize = 256; // optimize line strings
-
-pub enum SerialError {
-    IoError,
-}
 
 pub struct SerialDevice {
     device: Mutex<Uart>,
@@ -25,7 +19,7 @@ impl SerialDevice {
         SerialDevice { device }
     }
 
-    pub fn writeln(&mut self, command: String) -> Result<(), SerialError> {
+    pub fn writeln(&mut self, command: String) -> Result<(), Exception> {
         self.device
             .lock()
             .unwrap()
@@ -33,7 +27,7 @@ impl SerialDevice {
         Ok(())
     }
 
-    pub fn readln(&self, timeout: f32) -> Result<String, DeviceException> {
+    pub fn readln(&self, timeout: f32) -> Result<String, Exception> {
         let mut line = String::with_capacity(BASE_LINE_LENGTH);
 
         let mut device = self.device.lock().unwrap();
@@ -48,14 +42,5 @@ impl SerialDevice {
         }
 
         Ok(line)
-    }
-}
-
-impl From<rppal::uart::Error> for SerialError {
-    fn from(value: rppal::uart::Error) -> Self {
-        match value {
-            // TODO:
-            _ => panic!("Unexpected error when writing to serial device."),
-        }
     }
 }

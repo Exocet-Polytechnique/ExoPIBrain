@@ -1,19 +1,27 @@
 use crate::devices::{
-    battery::BatteryGaugeData, fuel_cell::FuelCellData, gps::GpsData, imu::ImuData,
+    battery::BatteryGaugeData,
+    fuel_cell::FuelCellData,
+    gps::GpsData,
+    imu::{AccelerometerData, CompassData, GyroscopeData},
+    temperature::TemperatureSensorName,
 };
 
+/// Possible data types that can be returned from the Sensor's `read()` method
 #[derive(Debug)]
 pub enum SensorData {
     FuelCellA(Option<FuelCellData>),
     FuelCellB(Option<FuelCellData>),
-    H2PlateTemperature(Option<f32>),
-    H2TanksTemperature(Option<f32>),
-    FuelCellControllersTemperature(Option<f32>),
-    BatteriesTemperture(Option<f32>),
-    ExtraTemperature(Option<f32>),
-    Imu(Option<ImuData>),
+
+    Temperature((TemperatureSensorName, Option<f32>)),
+
     HighPressureManometer(Option<f32>),
     LowPressureManometer(Option<f32>),
-    Gps(Option<GpsData>),
+
     Batteries(Option<BatteryGaugeData>),
+
+    Accelerometer(Option<AccelerometerData>),
+    Gyroscope(Option<GyroscopeData>),
+    Compass(Option<CompassData>),
+
+    Gps(Option<GpsData>),
 }

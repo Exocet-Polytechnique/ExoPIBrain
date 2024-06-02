@@ -3,16 +3,14 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-use super::{
-    exceptions::{DeviceException, SensorMessage},
-    sensor::Sensor,
-    sensor_data::SensorData,
-};
+use crate::devices::{Exception, Name};
+
+use super::{message::Message, sensor::Sensor, sensor_data::SensorData};
 
 #[derive(Clone)]
 pub struct ThreadMessaging {
     pub data_sender: Sender<SensorData>,
-    pub error_sender: Sender<SensorMessage>,
+    pub error_sender: Sender<Message>,
     pub stop_signal: Arc<RwLock<bool>>,
 }
 
@@ -20,23 +18,26 @@ pub struct SensorThread<T> {
     handle: Option<JoinHandle<()>>,
     messaging: Arc<ThreadMessaging>,
     sensor: Arc<RwLock<T>>,
+    device_name: Name,
 }
 
 impl<T> SensorThread<T>
 where
     T: Sensor + Sync + Send + 'static,
 {
-    pub fn new(messaging: ThreadMessaging, config: &T::Config) -> Self {
+    pub fn new(messaging: ThreadMessaging, config: &T::Config, name: Name) -> Self {
         Self {
             handle: None,
             messaging: Arc::new(messaging),
             sensor: Arc::new(RwLock::new(T::new(config))),
+            device_name: name,
         }
     }
 
     pub fn start(&mut self) {
         let messaging = self.messaging.clone();
         let sensor_lock = self.sensor.clone();
+        let device_name = self.device_name.clone();
 
         self.handle = Some(thread::spawn(move || loop {
             {
@@ -53,10 +54,7 @@ where
                 if sensor.is_connected() {
                     messaging
                         .error_sender
-                        .send(SensorMessage {
-                            name: T::get_name(),
-                            exception: DeviceException::Connected,
-                        })
+                        .send(Message::new(device_name, Exception::InfoConnected))
                         .unwrap();
                 }
                 continue;
@@ -68,10 +66,7 @@ where
             if let Some(exception) = read_result.1 {
                 messaging
                     .error_sender
-                    .send(SensorMessage {
-                        name: T::get_name(),
-                        exception,
-                    })
+                    .send(Message::new(device_name, exception))
                     .unwrap();
             }
         }))

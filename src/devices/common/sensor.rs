@@ -1,16 +1,12 @@
-use super::{exceptions::DeviceException, sensor_data::SensorData};
-
-#[derive(Debug)]
-pub enum SensorName {
-    FuelCellA,
-    FuelCellB,
-    Gps,
-    Batteries,
-}
+use super::sensor_data::SensorData;
+use crate::devices::Exception;
 
 pub trait Sensor {
     type Config;
 
+    /// Creates an appropriate handle to the device. Called once when the program is loaded. Should
+    /// panic if there is an IO error (i.e. permission denied) preventing us from reading the
+    /// device.
     fn new(config: &Self::Config) -> Self;
 
     fn is_connected(&self) -> bool {
@@ -20,8 +16,6 @@ pub trait Sensor {
     fn intialize(&mut self) {}
     fn shutdown(&mut self) {}
 
-    fn get_name() -> SensorName;
-
-    /// should always timeout after 1.5s at most. Performs necessary checks
-    fn read(&self) -> (SensorData, Option<DeviceException>);
+    /// Should always timeout after 1.5s at most. Performs necessary checks
+    fn read(&mut self) -> (SensorData, Option<Exception>);
 }
