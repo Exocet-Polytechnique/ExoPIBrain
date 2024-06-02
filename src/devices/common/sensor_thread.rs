@@ -62,7 +62,7 @@ where
 
             let read_result = sensor.read();
 
-            messaging.data_sender.send(read_result.0);
+            messaging.data_sender.send(read_result.0).unwrap();
             if let Some(exception) = read_result.1 {
                 messaging
                     .error_sender

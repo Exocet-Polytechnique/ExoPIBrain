@@ -37,7 +37,10 @@ impl SerialDevice {
 
         let mut buffer = [0u8; 1];
         while buffer[0] != b'\n' && buffer[0] != b'\r' {
-            device.read(&mut buffer)?;
+            let length = device.read(&mut buffer)?;
+            if length == 0 {
+                return Err(Exception::InfoNotConnected);
+            }
             line.push(buffer[0] as char);
         }
 

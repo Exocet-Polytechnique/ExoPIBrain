@@ -64,6 +64,7 @@ pub enum Exception {
 
     /// Informational messages
     InfoConnected = 0xA1,
+    InfoNotConnected = 0xA2,
     Info = 0xC0,
 }
 
