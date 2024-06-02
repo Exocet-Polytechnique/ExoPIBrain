@@ -9,7 +9,7 @@ pub mod temperature;
 
 /// Possible devices from which messages could come
 #[derive(Clone, Copy)]
-enum Name {
+pub enum Name {
     /// Fuel cells
     FuelCellA,
     FuelCellB,

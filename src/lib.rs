@@ -1,3 +1,4 @@
+pub mod boat;
 pub mod config;
 pub mod devices;
 pub mod interface;

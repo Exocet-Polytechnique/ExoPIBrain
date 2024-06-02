@@ -1,4 +1,4 @@
-use std::{env, fs::File, io::Read};
+use std::{collections::HashMap, env, fs::File, io::Read};
 
 use crate::{
     config::TelemetryConfig,
@@ -48,6 +48,18 @@ struct FinalTelemetryData {
     pub motor_power: Option<f32>,
 
     pub team: String,
+}
+
+impl TelemetryData {
+    pub fn new() -> TelemetryData {
+        TelemetryData {
+            battery: None,
+            fuel_cell_a: None,
+            fuel_cell_b: None,
+            gps: None,
+            temperature: TemperatureData::new(),
+        }
+    }
 }
 
 impl FinalTelemetryData {
