@@ -1,18 +1,22 @@
-use super::common::{exceptions::DeviceException, serial_device::SerialDevice};
+use super::{
+    common::{sensor::Sensor, sensor_data::SensorData, serial_device::SerialDevice},
+    Exception,
+};
 use crate::config::GpsConfig;
 
-pub struct GpsDevice {
+pub struct Gps {
     serial: SerialDevice,
-    read_timeout: f32,
 }
 
-#[derive(Debug)]
+const READ_TIMEOUT: f32 = 1.0;
+
+#[derive(Debug, Clone, Copy)]
 pub struct GpsData {
-    nmea_time: Option<f32>,
-    speed_knots: Option<f32>,
-    course_angle: Option<f32>,
-    latitude_deg: Option<f32>,
-    longitude_deg: Option<f32>,
+    pub nmea_time: Option<f32>,
+    pub speed_knots: Option<f32>,
+    pub course_angle: Option<f32>,
+    pub latitude_deg: Option<f32>,
+    pub longitude_deg: Option<f32>,
 }
 
 fn to_degrees(sensor_value: f32) -> f32 {
@@ -23,29 +27,38 @@ fn to_degrees(sensor_value: f32) -> f32 {
     degrees + mm_mmmm
 }
 
-impl GpsDevice {
-    pub fn initialize(config: &GpsConfig) -> GpsDevice {
-        GpsDevice {
-            serial: SerialDevice::initialize(&config.serial),
-            read_timeout: config.read_interval,
-        }
-    }
-
-    pub fn read(&mut self) -> Result<GpsData, DeviceException> {
-        // TODO: implement time out
+impl Gps {
+    fn try_read(&self) -> Result<SensorData, Exception> {
         let mut data_line = String::new(); // self.serial.readln();
         while !data_line.contains("$GPRMC") {
-            data_line = self.serial.readln(self.read_timeout)?;
+            data_line = self.serial.readln(READ_TIMEOUT)?;
         }
 
         let split_data: Vec<&str> = data_line.split(',').collect();
 
-        Ok(GpsData {
+        Ok(SensorData::Gps(Some(GpsData {
             nmea_time: split_data[1].parse().ok(),
             speed_knots: split_data[7].parse().ok(),
             course_angle: split_data[8].parse().ok(),
             latitude_deg: split_data[3].parse().ok().map(|x| to_degrees(x)),
             longitude_deg: split_data[5].parse().ok().map(|x| to_degrees(x) * -1.0),
-        })
+        })))
+    }
+}
+
+impl Sensor for Gps {
+    type Config = GpsConfig;
+
+    fn new(config: &Self::Config) -> Self {
+        Self {
+            serial: SerialDevice::initialize(&config.serial),
+        }
+    }
+
+    fn read(&mut self) -> (SensorData, Option<Exception>) {
+        match self.try_read() {
+            Ok(d) => (d, None),
+            Err(e) => (SensorData::Gps(None), Some(e)),
+        }
     }
 }

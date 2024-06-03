@@ -1,71 +1,92 @@
 [fuel_cell_a]
-priority = 0
-read_interval = 1
 serial.port = "/dev/tty_FCA"
 serial.baudrate = 57600
 
 [fuel_cell_b]
-priority = 0
-read_interval = 1
 serial.port = "/dev/tty_FCB"
 serial.baudrate = 57600
 
-[manometers]
-priority = 0
-read_interval = 1
-
-[manometers.high_pressure]
+# TODO: check channels
+[high_pressure_manometer]
 channel = 0
 max_bar = 400
+max_delta = 20
 
-[manometers.low_pressure]
+[low_pressure_manometer]
 channel = 1
 max_bar = 4
+max_delta = 0.05
 
-[temperatures]
-priority = 0
-read_interval = 0 # delay already caused by the conversion time of the sensors
-
-[temperatures.h2_plate]
-warn = 0
-alert = 0
-max = 0
-address = 0x00000dc67e14
-
-[temperatures.batteries]
-warn = 0
-alert = 0
-max = 0
-address = 0x00000e841698
-
-[temperatures.fuel_cell_controllers]
-warn = 0
-alert = 0
-max = 0
-address = 0x000000000000
-
-[temperatures.h2_tanks]
-warn = 0
-alert = 0
-max = 0
-address = 0x000000000000
-
-[temperatures.extra]
-warn = 0
-alert = 0
-max = 0
-address = 0x00000dc6d911
-
-[battery_gauge]
-priority = 0
-read_interval = 1
-i2c_address = 0x64
-select_gpio = 13
-warn = 0
-alert = 0
-max =0
-
+# TODO: check pins and NO / NC + rename
 [valve1]
 control_pin = 8
 error_pin = 9
-closed_on_low = false
+normally_open = false
+
+[valve2]
+control_pin = 0
+error_pin = 0
+normally_open = true
+
+[[temperatures]]
+name = "H2Plate"
+address = 0x00000dc67e14
+warn = 0
+alert = 0
+max = 0
+
+[[temperatures]]
+name = "Batteries"
+address = 0x00000e841698
+warn = 0
+alert = 0
+max = 0
+
+[[temperatures]]
+name = "FuelCellControllers"
+address = 0xFFFFFFFFFFFF
+warn = 0
+alert = 0
+max = 0
+
+[[temperatures]]
+name = "H2Tanks"
+address = 0xFFFFFFFFFFFF
+warn = 0
+alert = 0
+max = 0
+
+[[temperatures]]
+name = "Extra"
+address = 0x00000dc6d911
+warn = 100
+alert = 105
+max = 200
+
+[battery_gauge]
+i2c_address = 0x64
+
+[accelerometer]
+i2c_address = 0x53
+
+[gyroscope]
+i2c_address = 0x68
+
+[compass]
+i2c_address = 0x0C
+
+[gps]
+serial.port = "/dev/serial0"
+serial.baudrate = 9600
+
+[start_button]
+pin = 0
+
+[stop_button]
+pin = 0
+
+[telemetry]
+serial.port = ""
+serial.baudrate = 0
+send_interval = 1
+token_path = "$HOME/boat_token.txt"

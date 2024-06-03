@@ -1,13 +1,12 @@
 use rppal::i2c::I2c;
 use std::{
-    ops::DerefMut,
     sync::{Arc, Mutex},
     thread,
 };
 
 use crate::config::BatteryGaugeConfig;
 
-use super::common::exceptions::DeviceException;
+use super::Exception;
 
 const DEVICE_ADDRESS: u16 = 0x64;
 const CONTROL_REGISTER: u8 = 0x01;
@@ -21,10 +20,11 @@ pub struct BatteryGauge {
     bus: Arc<Mutex<I2c>>,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct BatteryGaugeData {
-    voltage: f32,
-    current: f32,
-    charge_level: f32,
+    pub voltage: f32,
+    pub current: f32,
+    pub charge_level: f32,
 }
 
 impl BatteryGauge {
@@ -32,7 +32,7 @@ impl BatteryGauge {
         BatteryGauge { bus }
     }
 
-    pub fn try_connect(&mut self) -> Result<(), DeviceException> {
+    pub fn try_connect(&mut self) -> Result<(), Exception> {
         let mut bus_lock = self.bus.lock().unwrap();
         (*bus_lock).set_slave_address(DEVICE_ADDRESS)?;
         (*bus_lock).smbus_write_byte(CONTROL_REGISTER, INITIAL_CONFIGURATION)?;
@@ -40,7 +40,7 @@ impl BatteryGauge {
         Ok(())
     }
 
-    pub fn read(&mut self) -> Result<BatteryGaugeData, DeviceException> {
+    pub fn read(&mut self) -> Result<BatteryGaugeData, Exception> {
         let mut bus_lock = self.bus.lock().unwrap();
         (*bus_lock).set_slave_address(DEVICE_ADDRESS)?;
         (*bus_lock).smbus_write_byte(CONTROL_REGISTER, REQUEST_ADC_UPDATE)?;

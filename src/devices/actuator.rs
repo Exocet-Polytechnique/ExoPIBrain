@@ -1,17 +1,11 @@
 use rppal::gpio::{Gpio, InputPin, Level, OutputPin};
-use serde::Deserialize;
 
-#[derive(Deserialize)]
-pub struct ActuatorConfig {
-    control_pin: u8,
-    error_pin: u8,
-    closed_on_low: bool,
-}
+use crate::config::ActuatorConfig;
 
 pub struct Actuator {
     control_pin: OutputPin,
     error_pin: InputPin,
-    closed_on_low: bool,
+    normally_open: bool,
 }
 
 impl Actuator {
@@ -23,16 +17,16 @@ impl Actuator {
         Actuator {
             control_pin,
             error_pin,
-            closed_on_low: config.closed_on_low,
+            normally_open: config.normally_open,
         }
     }
 
     pub fn open_valve(&mut self) {
-        self.control_pin.write(Level::from(self.closed_on_low));
+        self.control_pin.write(Level::from(self.normally_open));
     }
 
     pub fn close_valve(&mut self) {
-        self.control_pin.write(Level::from(!self.closed_on_low));
+        self.control_pin.write(Level::from(!self.normally_open));
     }
 
     pub fn get_status(&self) -> bool {

@@ -3,8 +3,9 @@ use std::sync::mpsc::Sender;
 
 use rppal::uart::{Parity, Uart};
 
-use super::common::exceptions::DeviceException;
 use crate::config::FuelCellConfig;
+
+use super::Exception;
 
 pub struct FuelCell {
     started: bool,
@@ -12,13 +13,16 @@ pub struct FuelCell {
     data: Option<FuelCellData>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct FuelCellData {
-    temperature: f32,
+    pub temperature: f32,
+    pub voltage: f32,
+    pub current: f32,
+    pub power: f32,
 }
 
 impl FuelCell {
-    pub fn initialize(config: &FuelCellConfig, error_tx: Sender<DeviceException>) -> FuelCell {
+    pub fn initialize(config: &FuelCellConfig, error_tx: Sender<Exception>) -> FuelCell {
         let uart_device = Uart::with_path(
             Path::new(&config.serial.port),
             config.serial.baudrate,
