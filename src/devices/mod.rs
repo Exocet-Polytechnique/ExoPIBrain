@@ -17,11 +17,7 @@ pub enum Name {
     FuelCellB,
 
     /// Temperature sensors
-    BatteriesTemperature,
-    H2PlateTemperature,
-    H2TanksTemperature,
-    FuelCellControllersTemperature,
-    ExtraTemperature,
+    Temperatures,
 
     /// Manometers
     HighPressureManometer,

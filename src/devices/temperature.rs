@@ -104,18 +104,6 @@ impl Sensor for Temperature {
     }
 
     fn read(&mut self) -> (SensorData, Option<Exception>) {
-        let sensor = &self.sensors[&self.current_sensor];
-        let result = match read_sensor(&sensor.path) {
-            Ok(data) => (
-                SensorData::Temperature((self.current_sensor, Some(data))),
-                check_temperature(sensor, data),
-            ),
-            Err(exception) => (
-                SensorData::Temperature((self.current_sensor, None)),
-                Some(exception),
-            ),
-        };
-
         self.current_sensor = match self.current_sensor {
             TemperatureSensorName::H2Plate => TemperatureSensorName::Batteries,
             TemperatureSensorName::Batteries => TemperatureSensorName::FuelCellControllers,
@@ -124,6 +112,17 @@ impl Sensor for Temperature {
             TemperatureSensorName::Extra => TemperatureSensorName::H2Plate,
         };
 
-        result
+        let sensor = &self.sensors[&self.current_sensor];
+
+        match read_sensor(&sensor.path) {
+            Ok(data) => (
+                SensorData::Temperature((self.current_sensor, Some(data))),
+                check_temperature(sensor, data),
+            ),
+            Err(exception) => (
+                SensorData::Temperature((self.current_sensor, None)),
+                Some(exception),
+            ),
+        }
     }
 }

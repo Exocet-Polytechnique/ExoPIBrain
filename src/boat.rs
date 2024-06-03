@@ -15,6 +15,7 @@ use crate::{
             sensor_thread::{SensorThread, ThreadMessaging},
         },
         gps::GpsDevice,
+        temperature::Temperature,
     },
     telemetry::{Telemetry, TelemetryData},
 };
@@ -31,6 +32,7 @@ pub struct Boat {
 
     /// Devices
     gps_thread: SensorThread<GpsDevice>,
+    temperature_thread: SensorThread<Temperature>,
 }
 
 impl Boat {
@@ -56,24 +58,39 @@ impl Boat {
             last_telemetry_time: Instant::now(),
             telemetry_send_interval: config.telemetry.send_interval,
             telemetry_data: TelemetryData::new(),
-            gps_thread: SensorThread::new(messaging, &config.gps, crate::devices::Name::Gps),
+            gps_thread: SensorThread::new(
+                messaging.clone(),
+                &config.gps,
+                crate::devices::Name::Gps,
+            ),
+            temperature_thread: SensorThread::new(
+                messaging.clone(),
+                &config.temperatures,
+                crate::devices::Name::Temperatures,
+            ),
             stop_signal,
         }
     }
 
     fn start(&mut self) {
         self.gps_thread.start();
+        self.temperature_thread.start();
     }
 
     fn shutdown(&mut self) {
         *self.stop_signal.write().unwrap() = true;
+
+        while !(self.gps_thread.is_stopped() && self.temperature_thread.is_stopped()) {}
     }
 
     fn update_data(data: &SensorData, telemetry: &mut TelemetryData) {
         match data {
-            SensorData::Gps(d) => telemetry.gps = *d,
+            SensorData::Gps(values) => telemetry.gps = *values,
+            SensorData::Temperature((name, value)) => {
+                telemetry.temperature.insert(*name, *value);
+            }
             _ => (),
-        }
+        };
     }
 
     fn running_loop(&mut self) -> () {
