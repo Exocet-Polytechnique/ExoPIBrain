@@ -16,6 +16,27 @@ enum State {
     Running,
 }
 
+pub struct InterfaceData {
+    pub speed: Option<f32>, // km/h
+
+    pub efficiency: Option<f32>, // 0-100%
+
+    pub battery_capacity: Option<f32>, // 0-100%
+    pub battery_voltage: Option<f32>, // V
+    pub battery_current: Option<f32>, // A
+    pub battery_temperature: Option<f32>, // deg C
+
+    pub high_pressure: Option<f32>, // bar
+    pub low_pressure: Option<f32>, // bar
+    pub h2_plate_temperature: Option<f32>, // deg C
+
+    pub fuel_cell_a_current: Option<f32>, // A
+    pub fuel_cell_b_current: Option<f32>, // A
+    pub fuel_cell_controllers_temperature: Option<f32>, // deg C
+
+    pub h2_tanks_temperature: Option<f32>, // deg C
+}
+
 pub struct Interface {
     state: State,
     terminal: Terminal<CrosstermBackend<Stdout>>,
@@ -53,7 +74,14 @@ impl Interface {
         false
     }
 
-    pub fn render(&mut self) {
+    fn format_an_optional_float(value: Option<f32>) -> String {
+        match value {
+            Some(x) => return format!("{:.2}", x),
+            None => return "-.--".to_string(),
+        }
+    }
+
+    pub fn render(&mut self, data: &InterfaceData) {
         self.terminal
             .draw(|frame| {
                 ///////////////
@@ -72,16 +100,16 @@ impl Interface {
                 // Widgets
                 /////////////
                 
-                let speed_widget = Paragraph::new(format!("{:>5.2} km/h", 12.1))
+                let speed_widget = Paragraph::new(format!("{:>12} km/h", Self::format_an_optional_float(data.speed)))
                 .style(default_style)
                 .block(
                     Block::default()
                         .borders(Borders::LEFT | Borders::TOP)
                         .title_style(speed_style)
-                        .title(" 󰓅 Speed ")
+                        .title(" 󰓅 SPEED ")
                 );
 
-                let efficiency_widget = Paragraph::new(format!("{:>5.2} %", 76.324))
+                let efficiency_widget = Paragraph::new(format!("{:>12} %", Self::format_an_optional_float(data.efficiency)))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -91,10 +119,10 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(efficiency_style)
-                        .title(" 󰌪 Efficiency ")
+                        .title(" 󰌪 EFFICIENCY ")
                 );
 
-                let battery_widget = Paragraph::new(format!("Capacity:{:>10} %\nVoltage:{:>11.2} V\nCurrent:{:>11.2} A\nTemperature:{:>7.2} °C", 92, 23.21, 5.2, 142.1283))
+                let battery_widget = Paragraph::new(format!("Capacity:{:>6} %\nVoltage:{:>7} V\nCurrent:{:>7} A\nTemp:{:>10}°C", Self::format_an_optional_float(data.battery_capacity), Self::format_an_optional_float(data.battery_voltage), Self::format_an_optional_float(data.battery_current), Self::format_an_optional_float(data.battery_temperature)))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -104,10 +132,10 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(battery_title_style)
-                        .title(" 󰁹 Battery ")
+                        .title(" 󰁹 BATTERY ")
                 );
 
-                let hydrogen_widget = Paragraph::new(format!("High Pressure:{:>7.2} Bar\nLow Pressure:{:>8.2} Bar\nTemperature:{:>9.2} °C", 399.0, 5.29312, 142.1283))
+                let hydrogen_widget = Paragraph::new(format!("Hi Pres:{:>7} Bar\nLo Pres:{:>7} Bar\nTemp:{:>10} °C", Self::format_an_optional_float(data.high_pressure), Self::format_an_optional_float(data.low_pressure), Self::format_an_optional_float(data.h2_plate_temperature)))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -117,10 +145,10 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(hydrogen_title_style)
-                        .title("  Hydrogen ")
+                        .title("  HYDROGEN ")
                 );
 
-                let fuel_cells_widget = Paragraph::new(format!("Fuel Cell A:{:>9.2} Bar\nFuel Cell B:{:>9.2} Bar\nTemperature:{:>9.2} °C", 5800.07, 5803.07, 142.1283))
+                let fuel_cells_widget = Paragraph::new(format!("Temp:{:>10} °C", Self::format_an_optional_float(data.fuel_cell_controllers_temperature)))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -131,10 +159,10 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(fuel_cells_title_style)
-                        .title(" 󱐋 Fuel Cells ")
+                        .title(" 󱐋 FUEL CELLS ")
                 );
 
-                let tank_widget = Paragraph::new(format!("Temperature:{:>9.2} °C", 142.1283))
+                let tank_widget = Paragraph::new(format!("Temp:{:>10} °C", 142.1283))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -145,7 +173,7 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(tank_title_style)
-                        .title(" 󱍗 Tank ")
+                        .title(" 󱍗 TANK ")
                 );
 
                 let messages_widget = Paragraph::new(format!("No message"))
@@ -159,7 +187,7 @@ impl Interface {
                             ..symbols::border::PLAIN
                         })
                         .title_style(messages_title_style)
-                        .title("  Messages ")
+                        .title("  MESSAGES ")
                 );
 
                 /////////////
@@ -168,14 +196,14 @@ impl Interface {
 
                 let main_layout = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([Constraint::Length(10), Constraint::Length(4)].as_ref())
+                    .constraints([Constraint::Length(9), Constraint::Length(3)].as_ref())
                     .split(frame.size());
 
                 let columns_layout = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([
-                            Constraint::Length(23),
-                            Constraint::Length(27)
+                            Constraint::Length(18),
+                            Constraint::Length(21)
                         ].as_ref())
                     .split(main_layout[0]);
 
@@ -184,7 +212,7 @@ impl Interface {
                     .constraints([
                         Constraint::Length(2),
                         Constraint::Length(2),
-                        Constraint::Length(6),
+                        Constraint::Length(5),
                     ].as_ref(),)
                     .split(columns_layout[0]);
 
@@ -192,15 +220,15 @@ impl Interface {
                     .direction(Direction::Vertical)
                     .constraints([
                         Constraint::Length(4),
-                        Constraint::Length(4),
                         Constraint::Length(2),
+                        Constraint::Length(3),
                     ].as_ref(),)
                     .split(columns_layout[1]);
 
                 let messages_layout = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([
-                        Constraint::Length(50),
+                        Constraint::Length(39),
                     ].as_ref(),)
                     .split(main_layout[1]);
 
