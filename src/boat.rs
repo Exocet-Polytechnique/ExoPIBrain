@@ -159,7 +159,7 @@ impl Boat {
             }
 
             if self.last_telemetry_time.elapsed().as_secs_f32() >= self.telemetry_send_interval {
-                self.telemetry.send(&self.telemetry_data);
+                // self.telemetry.send(&self.telemetry_data);
                 self.last_telemetry_time = Instant::now();
             }
 

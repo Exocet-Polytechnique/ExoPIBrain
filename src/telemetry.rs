@@ -14,8 +14,7 @@ use serde::Serialize;
 use serde_json::to_string;
 
 pub struct Telemetry {
-    serial: Uart,
-
+    // serial: Uart,
     data: FinalTelemetryData,
 }
 
@@ -115,14 +114,14 @@ impl FinalTelemetryData {
 
 impl Telemetry {
     pub fn new(config: &TelemetryConfig) -> Telemetry {
-        let serial = Uart::with_path(
-            &config.serial.port,
-            config.serial.baudrate,
-            Parity::None,
-            8,
-            1,
-        )
-        .unwrap();
+        // let serial = Uart::with_path(
+        //     &config.serial.port,
+        //     config.serial.baudrate,
+        //     Parity::None,
+        //     8,
+        //     1,
+        // )
+        // .unwrap();
 
         let token_file_path = config
             .token_path
@@ -136,7 +135,8 @@ impl Telemetry {
         let mut data = FinalTelemetryData::none();
         data.team = team_token;
 
-        Telemetry { serial, data }
+        // Telemetry { serial, data }
+        Telemetry { data }
     }
 
     pub fn send(&mut self, data: &TelemetryData) {

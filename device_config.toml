@@ -79,7 +79,7 @@ pin = 0
 pin = 0
 
 [telemetry]
-serial.port = ""
+serial.port = "/dev/ttyACM0"
 serial.baudrate = 0
 send_interval = 1
 token_path = "$HOME/boat_token.txt"
