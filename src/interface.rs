@@ -1,13 +1,13 @@
-use std::{default, io::{stdout, Stdout}};
+use std::io::{stdout, Stdout};
 
 use crossterm::{
-    event::{self, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use ratatui::widgets::Paragraph;
+use ratatui::{layout::{Constraint, Direction, Layout}, style::{Color, Style}, symbols, widgets::{Block, Borders, Paragraph}};
 use ratatui::{backend::CrosstermBackend, Terminal};
-use ratatui::{layout::Rect, style::Stylize};
+
+use crate::devices::common::message::Message;
 
 enum State {
     Startup,
@@ -55,25 +55,15 @@ impl Interface {
         }
     }
 
-    pub fn update(&mut self) -> bool {
-        // if error_rx.read() ...
-
-        if event::poll(std::time::Duration::from_millis(10)).unwrap() {
-            if let event::Event::Key(key) = event::read().unwrap() {
-                if key.kind == KeyEventKind::Press {
-                    return true;
-                }
-            }
-        }
-
-        false
-    }
-
     fn format_an_optional_float(value: Option<f32>) -> String {
         match value {
             Some(x) => return format!("{:.2}", x),
             None => return "-.--".to_string(),
         }
+    }
+
+    pub fn dispatch_message(&mut self, error: &Message) {
+        
     }
 
     pub fn render(&mut self, data: &InterfaceData) {
@@ -225,6 +215,31 @@ impl Interface {
                 frame.render_widget(messages_widget, messages_layout[0]);
             })
             .unwrap();
+    }
+}
+
+impl InterfaceData {
+    pub fn new() -> Self {
+        Self {
+            speed: None,
+
+            efficiency: None,
+
+            battery_capacity: None,
+            battery_voltage: None,
+            battery_current: None,
+            battery_temperature: None,
+
+            high_pressure: None,
+            low_pressure: None,
+
+            h2_plate_temperature: None,
+
+            fuel_cell_a_temperature: None,
+            fuel_cell_b_temperature: None,
+            fuel_cell_controllers_temperature: None,
+            h2_tanks_temperature: None,
+        }
     }
 }
 

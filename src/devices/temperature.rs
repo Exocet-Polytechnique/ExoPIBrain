@@ -33,7 +33,6 @@ pub enum TemperatureSensorName {
     Batteries = 1,
     FuelCellControllers = 2,
     H2Tanks = 3,
-    Extra = 4,
 }
 
 struct TemperatureSensor {
@@ -108,8 +107,7 @@ impl Sensor for Temperature {
             TemperatureSensorName::H2Plate => TemperatureSensorName::Batteries,
             TemperatureSensorName::Batteries => TemperatureSensorName::FuelCellControllers,
             TemperatureSensorName::FuelCellControllers => TemperatureSensorName::H2Tanks,
-            TemperatureSensorName::H2Tanks => TemperatureSensorName::Extra,
-            TemperatureSensorName::Extra => TemperatureSensorName::H2Plate,
+            TemperatureSensorName::H2Tanks => TemperatureSensorName::H2Plate,
         };
 
         let sensor = &self.sensors[&self.current_sensor];

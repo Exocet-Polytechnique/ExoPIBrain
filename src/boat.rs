@@ -3,7 +3,8 @@ use std::{
         mpsc::{self, Receiver},
         Arc, Mutex, RwLock,
     },
-    time::Instant,
+    thread,
+    time::{Duration, Instant},
 };
 
 use rppal::spi::Spi;
@@ -18,8 +19,9 @@ use crate::{
         },
         gps::Gps,
         manometer::Manometer,
-        temperature::Temperature,
+        temperature::{Temperature, TemperatureSensorName},
     },
+    interface::{Interface, InterfaceData},
     telemetry::{Telemetry, TelemetryData},
 };
 
@@ -32,6 +34,10 @@ pub struct Boat {
     last_telemetry_time: Instant,
     telemetry_send_interval: f32,
     telemetry_data: TelemetryData,
+
+    interface: Interface,
+    interface_data: InterfaceData,
+    last_interface_time: Instant,
 
     /// Devices
     gps_thread: SensorThread<Gps>,
@@ -73,6 +79,9 @@ impl Boat {
             last_telemetry_time: Instant::now(),
             telemetry_send_interval: config.telemetry.send_interval,
             telemetry_data: TelemetryData::new(),
+            interface: Interface::new(),
+            interface_data: InterfaceData::new(),
+            last_interface_time: Instant::now(),
             gps_thread: SensorThread::new(
                 messaging.clone(),
                 &config.gps,
@@ -108,42 +117,58 @@ impl Boat {
         while !(self.gps_thread.is_stopped() && self.temperature_thread.is_stopped()) {}
     }
 
-    fn update_data(data: &SensorData, telemetry: &mut TelemetryData) {
+    fn update_data(
+        data: &SensorData,
+        telemetry: &mut TelemetryData,
+        interface: &mut InterfaceData,
+    ) {
         match data {
-            SensorData::Gps(values) => telemetry.gps = *values,
+            SensorData::Gps(values) => {
+                telemetry.gps = *values;
+                interface.speed = match *values {
+                    Some(x) => x.speed_knots.map(|speed| speed * 1.852),
+                    None => None,
+                }
+            }
             SensorData::Temperature((name, value)) => {
                 telemetry.temperature.insert(*name, *value);
+                match name {
+                    TemperatureSensorName::H2Plate => interface.h2_plate_temperature = *value,
+                    TemperatureSensorName::Batteries => interface.battery_temperature = *value,
+                    TemperatureSensorName::FuelCellControllers => {
+                        interface.fuel_cell_controllers_temperature = *value
+                    }
+                    TemperatureSensorName::H2Tanks => interface.h2_tanks_temperature = *value,
+                }
             }
             _ => (),
         };
     }
 
     fn running_loop(&mut self) -> () {
-        let mut TEMP_COUNTER = 0;
-
         loop {
             for error in self.error_receiver.try_iter() {
-                // self.interface.dispatch_message(error);
+                self.interface.dispatch_message(&error);
                 if (error.get_exception() as u16) < 0x30 {
                     break;
                 }
             }
 
             for data in self.data_receiver.try_iter() {
-                Self::update_data(&data, &mut self.telemetry_data);
+                Self::update_data(&data, &mut self.telemetry_data, &mut self.interface_data);
             }
 
             if self.last_telemetry_time.elapsed().as_secs_f32() >= self.telemetry_send_interval {
-                TEMP_COUNTER += 1;
                 self.telemetry.send(&self.telemetry_data);
                 self.last_telemetry_time = Instant::now();
             }
 
-            if TEMP_COUNTER > 15 {
-                break;
+            if self.last_interface_time.elapsed().as_secs_f32() >= 1.0 {
+                self.interface.render(&self.interface_data);
+                self.last_interface_time = Instant::now();
             }
 
-            // self.interface.render();
+            thread::sleep(Duration::from_millis(20));
         }
     }
 

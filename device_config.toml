@@ -51,17 +51,10 @@ max = 0
 
 [[temperatures]]
 name = "H2Tanks"
-address = 0xFFFFFFFFFFFF
+address = 0x00000dc6d911
 warn = 0
 alert = 0
 max = 0
-
-[[temperatures]]
-name = "Extra"
-address = 0x00000dc6d911
-warn = 100
-alert = 105
-max = 200
 
 [battery_gauge]
 i2c_address = 0x64
