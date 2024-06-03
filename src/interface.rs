@@ -1,4 +1,4 @@
-use std::io::{stdout, Stdout};
+use std::{io::{stdout, Stdout}, time::Duration};
 
 use crossterm::{
     event::{self, KeyEventKind}, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand
@@ -63,8 +63,8 @@ impl Interface {
 
     pub fn dispatch_message(&mut self, error: &Message) {}
 
-    pub fn should_quit(&mut self, millis: u64) -> bool {
-        if event::poll(std::time::Duration::from_millis(millis)).unwrap() {
+    pub fn should_quit(&mut self) -> bool {
+        if event::poll(Duration::ZERO).unwrap() {
             if let event::Event::Key(key) = event::read().unwrap() {
                 if key.kind == KeyEventKind::Press {
                     return true;
