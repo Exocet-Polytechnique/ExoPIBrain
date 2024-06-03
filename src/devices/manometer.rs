@@ -1,30 +1,35 @@
+use std::sync::{Arc, Mutex};
+
 use rppal::spi::Spi;
 
+use super::{
+    common::{sensor::Sensor, sensor_data::SensorData},
+    Exception,
+};
 use crate::config::ManometerConfig;
 
 pub struct Manometer {
-    spi_device: Spi,
+    spi_device: Arc<Mutex<Spi>>,
 }
 
-impl Manometer {
-    pub fn initalize(config: &ManometerConfig) -> Manometer {
-        let spi_device = Spi::new(
-            rppal::spi::Bus::Spi0,
-            rppal::spi::SlaveSelect::Ss0,
-            3_600_000,
-            rppal::spi::Mode::Mode0,
-        )
-        .unwrap();
-        Manometer { spi_device }
+impl Sensor for Manometer {
+    type Config = (Arc<Mutex<Spi>>, ManometerConfig);
+
+    fn new(config: &Self::Config) -> Self {
+        Manometer {
+            spi_device: config.0.clone(),
+        }
     }
 
-    pub fn read(&self) -> Option<f32> {
+    fn read(&mut self) -> (SensorData, Option<Exception>) {
         let out_data: [u8; 2] = [3, 1];
         let mut in_data: [u8; 2] = [0; 2];
-        let size = self.spi_device.transfer(&mut in_data, &out_data).ok()?;
-        if size != 2 {
-            return None;
-        }
+
+        let size_result = self
+            .spi_device
+            .lock()
+            .unwrap()
+            .transfer(&mut in_data, &out_data);
 
         todo!()
     }

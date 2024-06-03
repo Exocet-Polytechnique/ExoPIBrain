@@ -1,10 +1,12 @@
 use std::{
     sync::{
         mpsc::{self, Receiver},
-        Arc, RwLock,
+        Arc, Mutex, RwLock,
     },
     time::Instant,
 };
+
+use rppal::spi::Spi;
 
 use crate::{
     config::load_config,
@@ -14,7 +16,8 @@ use crate::{
             sensor_data::SensorData,
             sensor_thread::{SensorThread, ThreadMessaging},
         },
-        gps::GpsDevice,
+        gps::Gps,
+        manometer::Manometer,
         temperature::Temperature,
     },
     telemetry::{Telemetry, TelemetryData},
@@ -31,8 +34,10 @@ pub struct Boat {
     telemetry_data: TelemetryData,
 
     /// Devices
-    gps_thread: SensorThread<GpsDevice>,
+    gps_thread: SensorThread<Gps>,
     temperature_thread: SensorThread<Temperature>,
+    low_pressure_thread: SensorThread<Manometer>,
+    high_pressure_thread: SensorThread<Manometer>,
 }
 
 impl Boat {
@@ -48,6 +53,16 @@ impl Boat {
             error_sender,
             stop_signal: stop_signal.clone(),
         };
+
+        let spi_bus = Arc::new(Mutex::new(
+            Spi::new(
+                rppal::spi::Bus::Spi0,
+                rppal::spi::SlaveSelect::Ss0,
+                3_600_000,
+                rppal::spi::Mode::Mode0,
+            )
+            .unwrap(),
+        ));
 
         let telemetry = Telemetry::new(&config.telemetry);
 
@@ -67,6 +82,16 @@ impl Boat {
                 messaging.clone(),
                 &config.temperatures,
                 crate::devices::Name::Temperatures,
+            ),
+            low_pressure_thread: SensorThread::new(
+                messaging.clone(),
+                &(spi_bus.clone(), config.low_pressure_manometer),
+                crate::devices::Name::LowPressureManometer,
+            ),
+            high_pressure_thread: SensorThread::new(
+                messaging.clone(),
+                &(spi_bus.clone(), config.high_pressure_manometer),
+                crate::devices::Name::HighPressureManometer,
             ),
             stop_signal,
         }

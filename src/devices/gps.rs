@@ -4,7 +4,7 @@ use super::{
 };
 use crate::config::GpsConfig;
 
-pub struct GpsDevice {
+pub struct Gps {
     serial: SerialDevice,
 }
 
@@ -27,7 +27,7 @@ fn to_degrees(sensor_value: f32) -> f32 {
     degrees + mm_mmmm
 }
 
-impl GpsDevice {
+impl Gps {
     fn try_read(&self) -> Result<SensorData, Exception> {
         let mut data_line = String::new(); // self.serial.readln();
         while !data_line.contains("$GPRMC") {
@@ -46,7 +46,7 @@ impl GpsDevice {
     }
 }
 
-impl Sensor for GpsDevice {
+impl Sensor for Gps {
     type Config = GpsConfig;
 
     fn new(config: &Self::Config) -> Self {
