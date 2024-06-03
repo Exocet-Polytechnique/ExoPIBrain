@@ -1,6 +1,8 @@
 use super::sensor_data::SensorData;
 use crate::devices::Exception;
 
+pub const MIN_THREAD_DELAY_S: f32 = 0.5;
+
 pub trait Sensor {
     type Config;
 

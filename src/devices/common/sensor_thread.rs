@@ -1,11 +1,16 @@
 use std::{
     sync::{mpsc::Sender, Arc, RwLock},
     thread::{self, JoinHandle},
+    time::{Duration, Instant},
 };
 
 use crate::devices::{Exception, Name};
 
-use super::{message::Message, sensor::Sensor, sensor_data::SensorData};
+use super::{
+    message::Message,
+    sensor::{Sensor, MIN_THREAD_DELAY_S},
+    sensor_data::SensorData,
+};
 
 #[derive(Clone)]
 pub struct ThreadMessaging {
@@ -40,6 +45,8 @@ where
         let device_name = self.device_name.clone();
 
         self.handle = Some(thread::spawn(move || loop {
+            let start_time = Instant::now();
+
             {
                 if *messaging.stop_signal.read().unwrap() {
                     break;
@@ -68,6 +75,11 @@ where
                     .error_sender
                     .send(Message::new(device_name, exception))
                     .unwrap();
+            }
+
+            let remaining_time = MIN_THREAD_DELAY_S - start_time.elapsed().as_secs_f32();
+            if remaining_time > 0.0 {
+                std::thread::sleep(Duration::from_secs_f32(remaining_time));
             }
         }))
     }
