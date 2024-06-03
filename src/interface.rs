@@ -28,12 +28,12 @@ pub struct InterfaceData {
 
     pub high_pressure: Option<f32>, // bar
     pub low_pressure: Option<f32>, // bar
+
     pub h2_plate_temperature: Option<f32>, // deg C
 
-    pub fuel_cell_a_current: Option<f32>, // A
-    pub fuel_cell_b_current: Option<f32>, // A
+    pub fuel_cell_a_temperature: Option<f32>, // A
+    pub fuel_cell_b_temperature: Option<f32>, // A
     pub fuel_cell_controllers_temperature: Option<f32>, // deg C
-
     pub h2_tanks_temperature: Option<f32>, // deg C
 }
 
@@ -92,8 +92,7 @@ impl Interface {
                 let efficiency_style = Style::default().fg(Color::LightMagenta);
                 let battery_title_style = Style::default().fg(Color::LightGreen);
                 let hydrogen_title_style = Style::default().fg(Color::LightBlue);
-                let fuel_cells_title_style = Style::default().fg(Color::LightRed);
-                let tank_title_style = Style::default().fg(Color::LightYellow);
+                let temperatures_title_style = Style::default().fg(Color::LightYellow);
                 let messages_title_style = Style::default().fg(Color::White);
 
                 /////////////
@@ -135,7 +134,7 @@ impl Interface {
                         .title(" 󰁹 BATTERY ")
                 );
 
-                let hydrogen_widget = Paragraph::new(format!("Hi Pres:{:>7} Bar\nLo Pres:{:>7} Bar\nTemp:{:>10} °C", Self::format_an_optional_float(data.high_pressure), Self::format_an_optional_float(data.low_pressure), Self::format_an_optional_float(data.h2_plate_temperature)))
+                let hydrogen_widget = Paragraph::new(format!("Hi Pres:{:>7} Bar\nLo Pres:{:>7} Bar", Self::format_an_optional_float(data.high_pressure), Self::format_an_optional_float(data.low_pressure)))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -148,7 +147,13 @@ impl Interface {
                         .title("  HYDROGEN ")
                 );
 
-                let fuel_cells_widget = Paragraph::new(format!("Temp:{:>10} °C", Self::format_an_optional_float(data.fuel_cell_controllers_temperature)))
+                let temperatures_widget = Paragraph::new(format!("H2 Plate:{:>7} °C\nFC A:{:>11} °C\nFC B:{:>11} °C\nFC Contro:{:>6} °C\nTanks:{:>10} °C",
+                    Self::format_an_optional_float(data.h2_plate_temperature),
+                    Self::format_an_optional_float(data.fuel_cell_a_temperature),
+                    Self::format_an_optional_float(data.fuel_cell_b_temperature),
+                    Self::format_an_optional_float(data.fuel_cell_controllers_temperature),
+                    Self::format_an_optional_float(data.h2_tanks_temperature)
+                ))
                 .style(default_style)
                 .block(
                     Block::default()
@@ -158,22 +163,8 @@ impl Interface {
                             top_right: symbols::line::NORMAL.vertical_left,
                             ..symbols::border::PLAIN
                         })
-                        .title_style(fuel_cells_title_style)
-                        .title(" 󱐋 FUEL CELLS ")
-                );
-
-                let tank_widget = Paragraph::new(format!("Temp:{:>10} °C", 142.1283))
-                .style(default_style)
-                .block(
-                    Block::default()
-                        .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT)
-                        .border_set(symbols::border::Set {
-                            top_left: symbols::line::NORMAL.vertical_right,
-                            top_right: symbols::line::NORMAL.vertical_left,
-                            ..symbols::border::PLAIN
-                        })
-                        .title_style(tank_title_style)
-                        .title(" 󱍗 TANK ")
+                        .title_style(temperatures_title_style)
+                        .title(" 󱍗 TEMPERATURES ")
                 );
 
                 let messages_widget = Paragraph::new(format!("No message"))
@@ -219,9 +210,8 @@ impl Interface {
                 let right_column_layout = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([
-                        Constraint::Length(4),
-                        Constraint::Length(2),
                         Constraint::Length(3),
+                        Constraint::Length(6),
                     ].as_ref(),)
                     .split(columns_layout[1]);
 
@@ -236,8 +226,7 @@ impl Interface {
                 frame.render_widget(efficiency_widget, left_column_layout[1]);
                 frame.render_widget(battery_widget, left_column_layout[2]);
                 frame.render_widget(hydrogen_widget, right_column_layout[0]);
-                frame.render_widget(fuel_cells_widget, right_column_layout[1]);
-                frame.render_widget(tank_widget, right_column_layout[2]);
+                frame.render_widget(temperatures_widget, right_column_layout[1]);
                 frame.render_widget(messages_widget, messages_layout[0]);
             })
             .unwrap();
