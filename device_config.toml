@@ -44,7 +44,7 @@ max = 0
 
 [[temperatures]]
 name = "FuelCellControllers"
-address = 0xFFFFFFFFFFFF
+address = 0x00000dc75129
 warn = 0
 alert = 0
 max = 0
