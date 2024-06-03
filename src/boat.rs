@@ -163,7 +163,7 @@ impl Boat {
                 self.last_telemetry_time = Instant::now();
             }
 
-            if self.last_interface_time.elapsed().as_secs_f32() >= 1.0 {
+            if self.last_interface_time.elapsed().as_secs_f32() >= 10.0 {
                 self.interface.render(&self.interface_data);
                 self.last_interface_time = Instant::now();
             }
@@ -171,7 +171,7 @@ impl Boat {
             if self.interface.should_quit(20) {
                 break;
             }
-            thread::sleep(Duration::from_millis(20));
+            thread::sleep(Duration::from_millis(500));
         }
     }
 
