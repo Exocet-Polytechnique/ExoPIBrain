@@ -1,8 +1,7 @@
 use std::io::{stdout, Stdout};
 
 use crossterm::{
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
+    event::{self, KeyEventKind}, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand
 };
 use ratatui::{layout::{Constraint, Direction, Layout}, style::{Color, Style}, symbols, widgets::{Block, Borders, Paragraph}};
 use ratatui::{backend::CrosstermBackend, Terminal};
@@ -62,8 +61,18 @@ impl Interface {
         }
     }
 
-    pub fn dispatch_message(&mut self, error: &Message) {
-        
+    pub fn dispatch_message(&mut self, error: &Message) {}
+
+    pub fn should_quit(&mut self, millis: u64) -> bool {
+        if event::poll(std::time::Duration::from_millis(millis)).unwrap() {
+            if let event::Event::Key(key) = event::read().unwrap() {
+                if key.kind == KeyEventKind::Press {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 
     pub fn render(&mut self, data: &InterfaceData) {

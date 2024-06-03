@@ -168,7 +168,10 @@ impl Boat {
                 self.last_interface_time = Instant::now();
             }
 
-            thread::sleep(Duration::from_millis(20));
+            if self.interface.should_quit(20) {
+                break;
+            }
+            // thread::sleep(Duration::from_millis(20));
         }
     }
 
