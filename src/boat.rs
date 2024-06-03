@@ -171,7 +171,7 @@ impl Boat {
             if self.interface.should_quit(20) {
                 break;
             }
-            // thread::sleep(Duration::from_millis(20));
+            thread::sleep(Duration::from_millis(20));
         }
     }
 
