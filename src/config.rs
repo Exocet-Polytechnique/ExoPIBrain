@@ -34,9 +34,9 @@ pub struct TemperatureConfig {
     pub name: TemperatureSensorName,
     pub address: u64,
 
-    pub warn: u8,
-    pub alert: u8,
-    pub max: u8,
+    pub warn: f32,
+    pub alert: f32,
+    pub max: f32,
 }
 
 #[derive(Deserialize, Debug)]

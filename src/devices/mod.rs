@@ -1,3 +1,5 @@
+use std::io;
+
 pub mod actuator;
 pub mod battery;
 pub mod common;
@@ -59,12 +61,12 @@ pub enum Exception {
     WarningTemperature = 0x51,
     WarningPressure = 0x52,
     WarningCharge = 0x53,
-    WarningBadData = 0x70,
     Warning = 0xA0,
 
     /// Informational messages
     InfoConnected = 0xA1,
     InfoNotConnected = 0xA2,
+    InfoBadData = 0xA3,
     Info = 0xC0,
 }
 
@@ -77,5 +79,17 @@ impl From<rppal::i2c::Error> for Exception {
 impl From<rppal::uart::Error> for Exception {
     fn from(value: rppal::uart::Error) -> Self {
         todo!();
+    }
+}
+
+impl From<io::Error> for Exception {
+    fn from(_: io::Error) -> Self {
+        Self::InfoNotConnected
+    }
+}
+
+impl From<std::num::ParseFloatError> for Exception {
+    fn from(_: std::num::ParseFloatError) -> Self {
+        Self::InfoBadData
     }
 }

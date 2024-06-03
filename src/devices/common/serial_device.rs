@@ -32,7 +32,6 @@ impl SerialDevice {
 
         let mut device = self.device.lock().unwrap();
 
-        // TODO: make sure the timeout works
         device.set_read_mode(0, Duration::from_secs_f32(timeout))?;
 
         let mut buffer = [0u8; 1];

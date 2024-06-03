@@ -23,100 +23,107 @@ pub type TemperatureData = HashMap<TemperatureSensorName, Option<f32>>;
 /// w1-therm
 /// ```
 pub struct Temperature {
-    // h2_plate_path: PathBuf,
-    // batteries_path: PathBuf,
-    // fuel_cell_controllers_path: PathBuf,
-    // h2_tanks_path: PathBuf,
-    // extra_path: PathBuf,
-    current_sensor_index: u8,
+    sensors: HashMap<TemperatureSensorName, TemperatureSensor>,
+    current_sensor: TemperatureSensorName,
 }
 
-#[derive(Deserialize, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum TemperatureSensorName {
-    H2Plate,
-    Batteries,
-    FuelCellControllers,
-    H2Tanks,
-    Extra,
+    H2Plate = 0,
+    Batteries = 1,
+    FuelCellControllers = 2,
+    H2Tanks = 3,
+    Extra = 4,
 }
 
-fn check_temperature(name: TemperatureSensorName, value: f32) -> bool {
-    true
+struct TemperatureSensor {
+    pub path: PathBuf,
+    pub max: f32,
+    pub alert: f32,
+    pub warning: f32,
 }
 
-impl Temperature {
-    fn read_sensor(&self, sensor_path: &PathBuf) -> Option<f32> {
-        if !sensor_path.is_file() {
-            return None;
-        }
-        let mut file = File::open(sensor_path).ok()?;
-        let mut file_content = String::new();
-        file.read_to_string(&mut file_content).ok()?;
-
-        let mut lines = file_content.lines().map(|x| x.trim());
-        if !lines.next()?.ends_with("YES") {
-            return None;
-        }
-
-        let value_line = lines.next()?;
-        let value_position = value_line.find("t=")?;
-        let value = value_line[value_position + 2..].parse::<f32>().ok()? / 1000.0;
-
-        Some(value)
+fn check_temperature(sensor: &TemperatureSensor, value: f32) -> Option<Exception> {
+    if value > sensor.max {
+        Some(Exception::CriticalTemperature)
+    } else if value > sensor.alert {
+        Some(Exception::AlertTemperature)
+    } else if value > sensor.warning {
+        Some(Exception::WarningTemperature)
+    } else {
+        None
     }
+}
+
+fn read_sensor(sensor_path: &PathBuf) -> Result<f32, Exception> {
+    if !sensor_path.is_file() {
+        return Err(Exception::InfoNotConnected);
+    }
+    let mut file = File::open(sensor_path)?;
+    let mut file_content = String::new();
+    file.read_to_string(&mut file_content)?;
+
+    let mut lines = file_content.lines().map(|x| x.trim());
+    if !lines.next().ok_or(Exception::InfoBadData)?.ends_with("YES") {
+        return Err(Exception::InfoBadData);
+    }
+
+    let value_line = lines.next().ok_or(Exception::InfoBadData)?;
+    let value_position = value_line.find("t=").ok_or(Exception::InfoBadData)?;
+    let value = value_line[value_position + 2..].parse::<f32>()? / 1000.0;
+
+    Ok(value)
 }
 
 impl Sensor for Temperature {
     type Config = Vec<TemperatureConfig>;
 
     fn new(config: &Self::Config) -> Self {
-        // use maps and clean this code up
+        let sensors = config
+            .iter()
+            .map(|x| {
+                (
+                    x.name,
+                    TemperatureSensor {
+                        max: x.max,
+                        alert: x.alert,
+                        warning: x.warn,
+                        path: PathBuf::from(format!(
+                            "/sys/bus/w1/devices/28-{:012x}/w1_slave",
+                            x.address
+                        )),
+                    },
+                )
+            })
+            .collect();
+
         Temperature {
-            // h2_plate_path: PathBuf::from(format!(
-            //     "/sys/bus/w1/devices/28-{:012x}/w1_slave",
-            //     config.h2_plate.address
-            // )),
-            // batteries_path: PathBuf::from(format!(
-            //     "/sys/bus/w1/devices/28-{:012x}/w1_slave",
-            //     config.batteries.address
-            // )),
-            // fuel_cell_controllers_path: PathBuf::from(format!(
-            //     "/sys/bus/w1/devices/28-{:012x}/w1_slave",
-            //     config.fuel_cell_controllers.address
-            // )),
-            // h2_tanks_path: PathBuf::from(format!(
-            //     "/sys/bus/w1/devices/28-{:012x}/w1_slave",
-            //     config.h2_tanks.address
-            // )),
-            // extra_path: PathBuf::from(format!(
-            //     "/sys/bus/w1/devices/28-{:012x}/w1_slave",
-            //     config.extra.address
-            // )),
-            current_sensor_index: 0,
+            sensors,
+            current_sensor: TemperatureSensorName::H2Plate,
         }
     }
 
     fn read(&mut self) -> (SensorData, Option<Exception>) {
-        // let data = match self.current_sensor_index {
-        //     0 => SensorData::H2PlateTemperature(self.read_sensor(&self.h2_plate_path)),
-        //     1 => self.current_data.batteries = self.read_sensor(&self.batteries_path),
-        //     2 => {
-        //         self.current_data.fuel_cell_controllers =
-        //             self.read_sensor(&self.fuel_cell_controllers_path)
-        //     }
-        //     3 => self.current_data.h2_tanks = self.read_sensor(&self.h2_tanks_path),
-        //     4 => self.current_data.extra = self.read_sensor(&self.extra_path),
-        //     _ => panic!("Temperature sensor index should not be > 4."),
-        // };
-        //
-        // self.current_sensor_index += 1;
-        // if self.current_sensor_index > 4 {
-        //     self.current_sensor_index = 0;
-        // }
+        let sensor = &self.sensors[&self.current_sensor];
+        let result = match read_sensor(&sensor.path) {
+            Ok(data) => (
+                SensorData::Temperature((self.current_sensor, Some(data))),
+                check_temperature(sensor, data),
+            ),
+            Err(exception) => (
+                SensorData::Temperature((self.current_sensor, None)),
+                Some(exception),
+            ),
+        };
 
-        (
-            SensorData::Temperature((TemperatureSensorName::H2Plate, None)),
-            None,
-        )
+        self.current_sensor = match self.current_sensor {
+            TemperatureSensorName::H2Plate => TemperatureSensorName::Batteries,
+            TemperatureSensorName::Batteries => TemperatureSensorName::FuelCellControllers,
+            TemperatureSensorName::FuelCellControllers => TemperatureSensorName::H2Tanks,
+            TemperatureSensorName::H2Tanks => TemperatureSensorName::Extra,
+            TemperatureSensorName::Extra => TemperatureSensorName::H2Plate,
+        };
+
+        result
     }
 }
