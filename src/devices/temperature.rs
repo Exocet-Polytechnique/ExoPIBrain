@@ -54,24 +54,28 @@ fn check_temperature(sensor: &TemperatureSensor, value: f32) -> Option<Exception
     }
 }
 
-fn read_sensor(sensor_path: &PathBuf) -> Result<f32, Exception> {
-    if !sensor_path.is_file() {
-        return Err(Exception::InfoNotConnected);
+impl Temperature {
+    pub fn read_sensor(&self, name: TemperatureSensorName) -> Result<f32, Exception> {
+        let sensor_path = self.sensors[&name].path;
+
+        if !sensor_path.is_file() {
+            return Err(Exception::InfoNotConnected);
+        }
+        let mut file = File::open(sensor_path)?;
+        let mut file_content = String::new();
+        file.read_to_string(&mut file_content)?;
+
+        let mut lines = file_content.lines().map(|x| x.trim());
+        if !lines.next().ok_or(Exception::InfoBadData)?.ends_with("YES") {
+            return Err(Exception::InfoBadData);
+        }
+
+        let value_line = lines.next().ok_or(Exception::InfoBadData)?;
+        let value_position = value_line.find("t=").ok_or(Exception::InfoBadData)?;
+        let value = value_line[value_position + 2..].parse::<f32>()? / 1000.0;
+
+        Ok(value)
     }
-    let mut file = File::open(sensor_path)?;
-    let mut file_content = String::new();
-    file.read_to_string(&mut file_content)?;
-
-    let mut lines = file_content.lines().map(|x| x.trim());
-    if !lines.next().ok_or(Exception::InfoBadData)?.ends_with("YES") {
-        return Err(Exception::InfoBadData);
-    }
-
-    let value_line = lines.next().ok_or(Exception::InfoBadData)?;
-    let value_position = value_line.find("t=").ok_or(Exception::InfoBadData)?;
-    let value = value_line[value_position + 2..].parse::<f32>()? / 1000.0;
-
-    Ok(value)
 }
 
 impl Sensor for Temperature {
@@ -110,12 +114,10 @@ impl Sensor for Temperature {
             TemperatureSensorName::H2Tanks => TemperatureSensorName::H2Plate,
         };
 
-        let sensor = &self.sensors[&self.current_sensor];
-
-        match read_sensor(&sensor.path) {
+        match self.read_sensor(self.current_sensor) {
             Ok(data) => (
                 SensorData::Temperature((self.current_sensor, Some(data))),
-                check_temperature(sensor, data),
+                check_temperature(&self.sensors[&self.current_sensor], data),
             ),
             Err(exception) => (
                 SensorData::Temperature((self.current_sensor, None)),

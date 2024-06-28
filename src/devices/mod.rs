@@ -2,6 +2,7 @@ use std::io;
 
 pub mod actuator;
 pub mod battery;
+pub mod button;
 pub mod common;
 pub mod fuel_cell;
 pub mod gps;
@@ -33,6 +34,13 @@ pub enum Name {
 
     /// Gps
     Gps,
+
+    /// Dms
+    Dms,
+
+    /// Actuators
+    Pt01Actuator,
+    Pt02Actuator,
 }
 
 /// Possible exceptions which can occur while operating the boat
@@ -42,15 +50,20 @@ pub enum Exception {
     CriticalErrorExit = 0x10,
 
     /// Boat shutdown
-    CriticalTemperature = 0x11,
-    CriticalPressure = 0x12,
-    CriticalCharge = 0x13,
+    CriticalValue = 0x11,
+    CriticalTemperature = 0x12,
+    CriticalPressure = 0x13,
+    CriticalCharge = 0x14,
+    StartupError = 0x20,
+    ShutdownError = 0x21,
     CriticalError = 0x30,
 
     /// Alert messages
     AlertTemperature = 0x31,
     AlertPressure = 0x32,
     AlertCharge = 0x33,
+    AlertStuck = 0x3A,
+    AlertNoDms = 0x40,
     Alert = 0x50,
 
     /// Warning messages
@@ -86,6 +99,12 @@ impl From<io::Error> for Exception {
 
 impl From<std::num::ParseFloatError> for Exception {
     fn from(_: std::num::ParseFloatError) -> Self {
+        Self::InfoBadData
+    }
+}
+
+impl From<rppal::spi::Error> for Exception {
+    fn from(value: rppal::spi::Error) -> Self {
         Self::InfoBadData
     }
 }

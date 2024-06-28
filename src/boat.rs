@@ -3,25 +3,28 @@ use std::{
         mpsc::{self, Receiver},
         Arc, Mutex, RwLock,
     },
-    thread,
+    thread::sleep,
     time::{Duration, Instant},
 };
 
-use rppal::spi::Spi;
+use rppal::{gpio::Gpio, spi::Spi};
 
 use crate::{
     config::load_config,
     devices::{
+        actuator::Actuator,
+        button::Button,
         common::{
             message::Message,
             sensor_data::SensorData,
             sensor_thread::{SensorThread, ThreadMessaging},
         },
         gps::Gps,
-        manometer::Manometer,
+        manometer::{Manometer, ManometerName},
         temperature::{Temperature, TemperatureSensorName},
     },
     interface::{Interface, InterfaceData},
+    procedures::startup,
     telemetry::{Telemetry, TelemetryData},
 };
 
@@ -42,8 +45,15 @@ pub struct Boat {
     /// Devices
     gps_thread: SensorThread<Gps>,
     temperature_thread: SensorThread<Temperature>,
+
     low_pressure_thread: SensorThread<Manometer>,
     high_pressure_thread: SensorThread<Manometer>,
+    mv01_actuator: Actuator,
+    mv02_actuator: Actuator,
+
+    start_button: Button,
+    stop_button: Button,
+    dms: Button,
 }
 
 impl Boat {
@@ -70,6 +80,8 @@ impl Boat {
             .unwrap(),
         ));
 
+        let gpio = Gpio::new().unwrap();
+
         let telemetry = Telemetry::new(&config.telemetry);
 
         Boat {
@@ -94,21 +106,71 @@ impl Boat {
             ),
             low_pressure_thread: SensorThread::new(
                 messaging.clone(),
-                &(spi_bus.clone(), config.low_pressure_manometer),
+                &(
+                    spi_bus.clone(),
+                    config.low_pressure_manometer,
+                    ManometerName::LowPressure,
+                ),
                 crate::devices::Name::LowPressureManometer,
             ),
             high_pressure_thread: SensorThread::new(
                 messaging.clone(),
-                &(spi_bus.clone(), config.high_pressure_manometer),
+                &(
+                    spi_bus.clone(),
+                    config.high_pressure_manometer,
+                    ManometerName::HighPressure,
+                ),
                 crate::devices::Name::HighPressureManometer,
             ),
+            mv01_actuator: Actuator::initialize(&gpio, &config.valve1),
+            mv02_actuator: Actuator::initialize(&gpio, &config.valve1),
             stop_signal,
+            start_button: Button::new(&gpio, &config.start_button),
+            stop_button: Button::new(&gpio, &config.stop_button),
+            dms: Button::new(&gpio, &config.dms),
         }
     }
 
     fn start(&mut self) {
-        self.gps_thread.start();
-        self.temperature_thread.start();
+        self.interface.clear_message();
+
+        loop {
+            while !self.dms.read() {
+                self.interface.dispatch_message(
+                    &Message::new(
+                        crate::devices::Name::Dms,
+                        crate::devices::Exception::AlertNoDms,
+                    )
+                    .timeout(Duration::from_millis(150)),
+                );
+                sleep(Duration::from_millis(100));
+
+                self.interface.render(&self.interface_data);
+                self.last_interface_time = Instant::now();
+            }
+
+            while !self.start_button.read() {
+                sleep(Duration::from_millis(20));
+            }
+
+            if !startup::startup(
+                &mut self.interface,
+                self.high_pressure_thread.get_sensor(),
+                self.low_pressure_thread.get_sensor(),
+                self.temperature_thread.get_sensor(),
+                &mut self.mv01_actuator,
+                &mut self.mv02_actuator,
+            ) {
+                // keep messages for at least a second
+                sleep(Duration::from_millis(1000));
+                continue;
+            }
+
+            self.interface.clear_message();
+
+            self.gps_thread.start();
+            self.temperature_thread.start();
+        }
     }
 
     fn shutdown(&mut self) {
@@ -141,6 +203,33 @@ impl Boat {
                     TemperatureSensorName::H2Tanks => interface.h2_tanks_temperature = *value,
                 }
             }
+            SensorData::FuelCellA(values) => {
+                telemetry.fuel_cell_a = *values;
+
+                interface.fuel_cell_a_temperature = values.map(|x| x.temperature);
+
+                // I'm too lazy to compute efficiency with both fuel cell's data so we'll just use fc_a
+                // data for now
+                interface.efficiency = *values.map(|x| compute_efficiency(x.energy));
+            }
+            SensorData::FuelCellB(values) => {
+                telemetry.fuel_cell_b = *values;
+
+                interface.fuel_cell_b_temperature = values.map(|x| x.temperature);
+            }
+            SensorData::Batteries(values) => {
+                telemetry.battery = *values;
+
+                interface.battery_capacity = values.map(|x| x.charge_level);
+                interface.battery_voltage = values.map(|x| x.voltage);
+                interface.battery_current = values.map(|x| x.current);
+            }
+            SensorData::HighPressureManometer(value) => {
+                interface.high_pressure = *value;
+            }
+            SensorData::LowPressureManometer(value) => {
+                interface.low_pressure = *value;
+            }
             _ => (),
         };
     }
@@ -159,7 +248,7 @@ impl Boat {
             }
 
             if self.last_telemetry_time.elapsed().as_secs_f32() >= self.telemetry_send_interval {
-                // self.telemetry.send(&self.telemetry_data);
+                self.telemetry.send(&self.telemetry_data);
                 self.last_telemetry_time = Instant::now();
             }
 
@@ -168,7 +257,7 @@ impl Boat {
                 self.last_interface_time = Instant::now();
             }
 
-            if self.interface.should_quit() {
+            if self.interface.should_quit() || self.dms.read() {
                 break;
             }
 
@@ -176,12 +265,11 @@ impl Boat {
         }
     }
 
-    // pub fn run(&mut self) -> ! {
-    pub fn run(&mut self) -> () {
-        // loop {
-        self.start();
-        self.running_loop();
-        self.shutdown();
-        // }
+    pub fn run(&mut self) -> ! {
+        loop {
+            self.start();
+            self.running_loop();
+            self.shutdown();
+        }
     }
 }

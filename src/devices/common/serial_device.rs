@@ -45,4 +45,23 @@ impl SerialDevice {
 
         Ok(line)
     }
+
+    pub fn read_until(&self, delimiter: char, timeout: f32) -> Result<String, Exception> {
+        let mut line = String::with_capacity(BASE_LINE_LENGTH);
+
+        let mut device = self.device.lock().unwrap();
+
+        device.set_read_mode(0, Duration::from_secs_f32(timeout))?;
+
+        let mut buffer = [0u8; 1];
+        while buffer[0] != delimiter as u8 {
+            let length = device.read(&mut buffer)?;
+            if length == 0 {
+                return Err(Exception::InfoNotConnected);
+            }
+            line.push(buffer[0] as char);
+        }
+
+        Ok(line)
+    }
 }

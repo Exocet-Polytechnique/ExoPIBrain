@@ -3,6 +3,10 @@ use std::fs;
 
 use crate::devices::temperature::TemperatureSensorName;
 
+const fn default_true() -> bool {
+    true
+}
+
 #[derive(Deserialize, Debug)]
 pub struct SerialConfig {
     pub port: String,
@@ -67,6 +71,8 @@ pub struct GpsConfig {
 #[derive(Deserialize, Debug)]
 pub struct ButtonConfig {
     pub pin: u8,
+    #[serde(default = "default_true")]
+    pub normally_open: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -100,6 +106,7 @@ pub struct Config {
 
     pub start_button: ButtonConfig,
     pub stop_button: ButtonConfig,
+    pub dms: ButtonConfig,
 
     pub telemetry: TelemetryConfig,
 }

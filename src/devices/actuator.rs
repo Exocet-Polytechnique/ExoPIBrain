@@ -29,7 +29,15 @@ impl Actuator {
         self.control_pin.write(Level::from(!self.normally_open));
     }
 
-    pub fn get_status(&self) -> bool {
-        self.error_pin.read() == Level::High
+    pub fn is_open(&self) -> bool {
+        if self.error_pin.read() == Level::High {
+            !self.normally_open
+        } else {
+            self.normally_open
+        }
+    }
+
+    pub fn is_in_correct_position(&self) -> bool {
+        self.error_pin.read() == Level::Low
     }
 }

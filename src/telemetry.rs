@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, fs::File, io::Read};
+use std::{env, fs::File, io::Read};
 
 use crate::{
     config::TelemetryConfig,
@@ -9,7 +9,6 @@ use crate::{
         temperature::{TemperatureData, TemperatureSensorName},
     },
 };
-use rppal::uart::{Parity, Uart};
 use serde::Serialize;
 use serde_json::to_string;
 

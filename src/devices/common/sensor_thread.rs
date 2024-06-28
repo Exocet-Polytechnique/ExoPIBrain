@@ -91,4 +91,8 @@ where
             true
         }
     }
+
+    pub fn get_sensor(&mut self) -> Arc<RwLock<T>> {
+        self.sensor.clone()
+    }
 }
