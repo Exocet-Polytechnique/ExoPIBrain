@@ -1,13 +1,9 @@
-use std::{sync::mpsc::Sender, thread::sleep, time::Duration};
+use std::{thread::sleep, time::Duration};
 
-use crate::config::{FuelCellConfig, SerialConfig};
+use crate::config::FuelCellConfig;
 
 use super::{
-    common::{
-        sensor::Sensor,
-        sensor_data::{self, SensorData},
-        serial_device::{self, SerialDevice},
-    },
+    common::{sensor::Sensor, sensor_data::SensorData, serial_device::SerialDevice},
     Exception,
 };
 
@@ -20,6 +16,10 @@ pub struct FuelCell {
     serial_device: SerialDevice,
     name: FuelCellName,
     is_started: bool,
+
+    warning_temperature: f32,
+    alert_temperature: f32,
+    critical_temperature: f32,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -138,6 +138,18 @@ impl FuelCell {
 
         Ok(())
     }
+
+    fn check_temperature(&self, temperature: f32) -> Option<Exception> {
+        if temperature > self.critical_temperature {
+            Some(Exception::CriticalTemperature)
+        } else if temperature > self.alert_temperature {
+            Some(Exception::AlertTemperature)
+        } else if temperature > self.warning_temperature {
+            Some(Exception::WarningTemperature)
+        } else {
+            None
+        }
+    }
 }
 
 impl Sensor for FuelCell {
@@ -150,6 +162,10 @@ impl Sensor for FuelCell {
             serial_device,
             name: config.1,
             is_started: false,
+
+            warning_temperature: config.0.warn_temperature,
+            alert_temperature: config.0.alert_temperature,
+            critical_temperature: config.0.critical_temperature,
         }
     }
 
@@ -160,6 +176,14 @@ impl Sensor for FuelCell {
             A => SensorData::FuelCellA(fuel_cell_data.ok()),
             B => SensorData::FuelCellB(fuel_cell_data.ok()),
         };
+
+        if let Ok(data) = fuel_cell_data {
+            if let Some(temperature) = data.temperature {
+                return (sensor_data, self.check_temperature(temperature));
+            } else {
+                return (sensor_data, Some(Exception::InfoBadData));
+            }
+        }
 
         (sensor_data, fuel_cell_data.err())
     }

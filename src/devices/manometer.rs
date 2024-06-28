@@ -21,6 +21,13 @@ pub struct Manometer {
     channel: u8,
     max_bar: f32,
     name: ManometerName,
+
+    warning_pressure: f32,
+    alert_pressure: f32,
+    critical_pressure: f32,
+
+    last_values: [f32; 2],
+    max_delta: f32,
 }
 
 impl Manometer {
@@ -47,6 +54,32 @@ impl Manometer {
 
         Ok((((value_u16 as f32) / MAX_ADC_VALUE) * self.max_bar) * ADC_BIAS)
     }
+
+    fn check_pressure(&mut self, pressure: f32) -> Option<Exception> {
+        let mut pressure_delta = 0.0;
+
+        if self.last_values[0] >= 0.0 {
+            pressure_delta = (self.last_values[0] - self.last_values[1]).abs();
+            pressure_delta += (self.last_values[1] - pressure).abs();
+        }
+
+        self.last_values[0] = self.last_values[1];
+        self.last_values[1] = pressure;
+
+        if pressure_delta > self.max_delta {
+            return Some(Exception::CriticalPressure);
+        }
+
+        if pressure > self.critical_pressure {
+            Some(Exception::CriticalPressure)
+        } else if pressure > self.alert_pressure {
+            Some(Exception::AlertPressure)
+        } else if pressure > self.warning_pressure {
+            Some(Exception::WarningPressure)
+        } else {
+            None
+        }
+    }
 }
 
 impl Sensor for Manometer {
@@ -54,10 +87,17 @@ impl Sensor for Manometer {
 
     fn new(config: &Self::Config) -> Self {
         Manometer {
-            spi_device: config.0.clone(),
+            spi_device: config.0,
             channel: config.1.channel,
             max_bar: config.1.max_bar,
             name: config.2,
+
+            warning_pressure: config.1.warn_pressure,
+            alert_pressure: config.1.alert_pressure,
+            critical_pressure: config.1.critical_pressure,
+
+            last_values: [-1.0; 2],
+            max_delta: config.1.max_delta,
         }
     }
 
@@ -68,6 +108,10 @@ impl Sensor for Manometer {
             ManometerName::LowPressure => SensorData::LowPressureManometer(value.ok()),
             ManometerName::HighPressure => SensorData::HighPressureManometer(value.ok()),
         };
+
+        if let Ok(pressure_data) = value {
+            return (data, self.check_pressure(pressure_data));
+        }
 
         (data, value.err())
     }

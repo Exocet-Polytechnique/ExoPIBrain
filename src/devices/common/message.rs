@@ -1,8 +1,9 @@
-use std::time::Duration;
+use std::{cmp::Ordering, time::Duration};
 
 use crate::devices::{Exception, Name};
 
 /// Message struct to be sent from devices in case of an exception
+#[derive(PartialEq, Eq)]
 pub struct Message {
     name: Name,
     exception: Exception,
@@ -36,6 +37,28 @@ impl Message {
     pub fn get_timeout_duration(&self) -> Option<Duration> {
         self.timeout_duration
     }
+
+    pub fn to_string(&self) -> String {
+        format!("{:?}: {:?}", self.name, self.exception)
+    }
+
+    pub fn is_critical(&self) -> bool {
+        self.exception <= Exception::CriticalError
+    }
 }
 
-// TODO: implement ordering for messages
+impl PartialOrd for Message {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Message {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.exception.cmp(&other.exception) != Ordering::Equal {
+            self.name.cmp(&other.name)
+        } else {
+            self.exception.cmp(&other.exception)
+        }
+    }
+}

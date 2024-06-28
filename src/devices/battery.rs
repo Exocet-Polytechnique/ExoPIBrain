@@ -6,9 +6,11 @@ use std::{
 
 use crate::config::BatteryGaugeConfig;
 
-use super::Exception;
+use super::{
+    common::{sensor::Sensor, sensor_data::SensorData},
+    Exception,
+};
 
-const DEVICE_ADDRESS: u16 = 0x64;
 const CONTROL_REGISTER: u8 = 0x01;
 // ADC mode: sleep: prescaler: 1024, ALCC disabled
 const INITIAL_CONFIGURATION: u8 = 0b00101000;
@@ -18,6 +20,7 @@ const ADC_UPDATE_DELAY_MS: u64 = 50;
 
 pub struct BatteryGauge {
     bus: Arc<Mutex<I2c>>,
+    config: BatteryGaugeConfig,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -28,21 +31,9 @@ pub struct BatteryGaugeData {
 }
 
 impl BatteryGauge {
-    pub fn initialize(config: &BatteryGaugeConfig, bus: Arc<Mutex<I2c>>) -> BatteryGauge {
-        BatteryGauge { bus }
-    }
-
-    pub fn try_connect(&mut self) -> Result<(), Exception> {
+    fn read_data(&mut self) -> Result<BatteryGaugeData, Exception> {
         let mut bus_lock = self.bus.lock().unwrap();
-        (*bus_lock).set_slave_address(DEVICE_ADDRESS)?;
-        (*bus_lock).smbus_write_byte(CONTROL_REGISTER, INITIAL_CONFIGURATION)?;
-
-        Ok(())
-    }
-
-    pub fn read(&mut self) -> Result<BatteryGaugeData, Exception> {
-        let mut bus_lock = self.bus.lock().unwrap();
-        (*bus_lock).set_slave_address(DEVICE_ADDRESS)?;
+        (*bus_lock).set_slave_address(self.config.i2c_address as u16)?;
         (*bus_lock).smbus_write_byte(CONTROL_REGISTER, REQUEST_ADC_UPDATE)?;
         thread::sleep(std::time::Duration::from_millis(ADC_UPDATE_DELAY_MS));
 
@@ -65,5 +56,48 @@ impl BatteryGauge {
             current,
             charge_level,
         })
+    }
+
+    fn check_data(&self, battery_data: &BatteryGaugeData) -> Option<Exception> {
+        if battery_data.charge_level < self.config.critical_level {
+            Some(Exception::CriticalCharge)
+        } else if battery_data.charge_level < self.config.alert_level {
+            Some(Exception::AlertCharge)
+        } else if battery_data.charge_level < self.config.warning_level {
+            Some(Exception::WarningCharge)
+        } else {
+            None
+        }
+    }
+}
+
+impl Sensor for BatteryGauge {
+    type Config = (Arc<Mutex<I2c>>, BatteryGaugeConfig);
+
+    fn new(config: &Self::Config) -> Self {
+        let mut bus_lock = config.0.lock().unwrap();
+        (*bus_lock)
+            .set_slave_address(config.1.i2c_address as u16)
+            .unwrap();
+        (*bus_lock)
+            .smbus_write_byte(CONTROL_REGISTER, INITIAL_CONFIGURATION)
+            .unwrap();
+
+        Self {
+            bus: config.0,
+            config: config.1,
+        }
+    }
+
+    fn read(&mut self) -> (SensorData, Option<Exception>) {
+        let data = self.read_data();
+
+        let sensor_data = SensorData::Batteries(data.ok());
+
+        if let Ok(battery_data) = data {
+            return (sensor_data, self.check_data(&battery_data));
+        }
+
+        (sensor_data, data.err())
     }
 }

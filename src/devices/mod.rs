@@ -11,7 +11,7 @@ pub mod manometer;
 pub mod temperature;
 
 /// Possible devices from which messages could come
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Name {
     /// Fuel cells
     FuelCellA,
@@ -41,10 +41,13 @@ pub enum Name {
     /// Actuators
     Pt01Actuator,
     Pt02Actuator,
+
+    /// Procedures
+    System,
 }
 
 /// Possible exceptions which can occur while operating the boat
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Exception {
     /// Pilot should evacuate immediatly
     CriticalErrorExit = 0x10,
@@ -77,17 +80,27 @@ pub enum Exception {
     InfoNotConnected = 0xA2,
     InfoBadData = 0xA3,
     Info = 0xC0,
+
+    /// Procedure messages
+    StartupComplete = 0xC1,
+    ShutdownComplete = 0xC2,
 }
 
 impl From<rppal::i2c::Error> for Exception {
     fn from(value: rppal::i2c::Error) -> Self {
-        todo!();
+        Self::InfoNotConnected
     }
 }
 
 impl From<rppal::uart::Error> for Exception {
     fn from(value: rppal::uart::Error) -> Self {
-        todo!();
+        Self::InfoNotConnected
+    }
+}
+
+impl From<rppal::spi::Error> for Exception {
+    fn from(value: rppal::spi::Error) -> Self {
+        Self::InfoNotConnected
     }
 }
 
@@ -99,12 +112,6 @@ impl From<io::Error> for Exception {
 
 impl From<std::num::ParseFloatError> for Exception {
     fn from(_: std::num::ParseFloatError) -> Self {
-        Self::InfoBadData
-    }
-}
-
-impl From<rppal::spi::Error> for Exception {
-    fn from(value: rppal::spi::Error) -> Self {
         Self::InfoBadData
     }
 }

@@ -4,7 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use crate::devices::{Exception, Name};
+use crate::devices::Name;
 
 use super::{
     message::Message,
@@ -54,18 +54,6 @@ where
             }
 
             let mut sensor = (*sensor_lock).write().unwrap();
-
-            if !sensor.is_connected() {
-                sensor.intialize();
-
-                if sensor.is_connected() {
-                    messaging
-                        .error_sender
-                        .send(Message::new(device_name, Exception::InfoConnected))
-                        .unwrap();
-                }
-                continue;
-            }
 
             let read_result = sensor.read();
 

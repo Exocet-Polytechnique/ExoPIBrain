@@ -11,13 +11,6 @@ pub trait Sensor {
     /// device.
     fn new(config: &Self::Config) -> Self;
 
-    fn is_connected(&self) -> bool {
-        true
-    }
-
-    fn intialize(&mut self) {}
-    fn shutdown(&mut self) {}
-
     /// Should always timeout after 1.5s at most. Performs necessary checks
     fn read(&mut self) -> (SensorData, Option<Exception>);
 }

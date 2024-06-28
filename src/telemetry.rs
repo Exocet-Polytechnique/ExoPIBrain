@@ -4,16 +4,17 @@ use crate::{
     config::TelemetryConfig,
     devices::{
         battery::BatteryGaugeData,
+        common::serial_device::SerialDevice,
         fuel_cell::FuelCellData,
         gps::GpsData,
         temperature::{TemperatureData, TemperatureSensorName},
+        Exception,
     },
 };
 use serde::Serialize;
-use serde_json::to_string;
 
 pub struct Telemetry {
-    // serial: Uart,
+    serial_device: SerialDevice,
     data: FinalTelemetryData,
 }
 
@@ -46,6 +47,18 @@ struct FinalTelemetryData {
     pub motor_power: Option<f32>,
 
     pub team: String,
+}
+
+fn add_opt(first: Option<f32>, second: Option<f32>) -> Option<f32> {
+    Some(first? + second?)
+}
+
+fn max_opt(first: Option<f32>, second: Option<f32>) -> Option<f32> {
+    if first? > second? {
+        first
+    } else {
+        second
+    }
 }
 
 impl TelemetryData {
@@ -93,34 +106,31 @@ impl FinalTelemetryData {
         self.batt24v_voltage = data.battery.map(|x| x.voltage);
         self.batt24v_current = data.battery.map(|x| x.current);
 
-        self.fuellcell_a_temperature = data.fuel_cell_a.map(|x| x.temperature);
-        self.fuellcell_b_temperature = data.fuel_cell_a.map(|x| x.temperature);
-        self.voltage = data
-            .fuel_cell_a
-            .and_then(|a| data.fuel_cell_b.map(|b| (a.voltage + b.voltage) / 2.0));
-        self.current = data
-            .fuel_cell_a
-            .and_then(|a| data.fuel_cell_b.map(|b| a.current + b.current));
+        self.fuellcell_a_temperature = data.fuel_cell_a.and_then(|x| x.temperature);
+        self.fuellcell_b_temperature = data.fuel_cell_a.and_then(|x| x.temperature);
+
+        self.voltage = max_opt(
+            data.fuel_cell_a.and_then(|a| a.voltage),
+            data.fuel_cell_b.and_then(|b| b.voltage),
+        );
+        self.current = add_opt(
+            data.fuel_cell_a.and_then(|a| a.current),
+            data.fuel_cell_b.and_then(|b| b.current),
+        );
 
         self.lat = data.gps.map(|x| x.latitude_deg).unwrap_or(None);
         self.lon = data.gps.map(|x| x.longitude_deg).unwrap_or(None);
 
-        self.motor_power = data
-            .fuel_cell_a
-            .and_then(|a| data.fuel_cell_b.map(|b| a.power + b.power));
+        self.motor_power = add_opt(
+            data.fuel_cell_a.and_then(|a| a.power),
+            data.fuel_cell_b.and_then(|b| b.power),
+        );
     }
 }
 
 impl Telemetry {
     pub fn new(config: &TelemetryConfig) -> Telemetry {
-        // let serial = Uart::with_path(
-        //     &config.serial.port,
-        //     config.serial.baudrate,
-        //     Parity::None,
-        //     8,
-        //     1,
-        // )
-        // .unwrap();
+        let serial_device = SerialDevice::initialize(&config.serial);
 
         let token_file_path = config
             .token_path
@@ -135,12 +145,19 @@ impl Telemetry {
         data.team = team_token;
 
         // Telemetry { serial, data }
-        Telemetry { data }
+        Telemetry {
+            serial_device,
+            data,
+        }
     }
 
-    pub fn send(&mut self, data: &TelemetryData) {
+    pub fn send(&mut self, data: &TelemetryData) -> Result<(), Exception> {
         self.data.update(data);
 
-        println!("{}", to_string(&self.data).unwrap());
+        let json_data = serde_json::to_string(&self.data).map_err(|_| Exception::InfoBadData)?;
+        self.serial_device
+            .write_null_terminated(json_data.as_bytes())?;
+
+        Ok(())
     }
 }

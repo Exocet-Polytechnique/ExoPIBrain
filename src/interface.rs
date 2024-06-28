@@ -1,4 +1,4 @@
-use std::{io::{stdout, Stdout}, time::Duration};
+use std::{io::{stdout, Stdout}, time::{Duration, Instant}};
 
 use crossterm::{
     event::{self, KeyEventKind}, terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand
@@ -38,6 +38,7 @@ pub struct InterfaceData {
 pub struct Interface {
     state: State,
     terminal: Terminal<CrosstermBackend<Stdout>>,
+    current_message: Option<(Message, Instant)>,
     // error_rx
 }
 
@@ -51,6 +52,7 @@ impl Interface {
         Interface {
             state: State::Startup,
             terminal,
+            current_message: None,
         }
     }
 
@@ -61,7 +63,30 @@ impl Interface {
         }
     }
 
-    pub fn dispatch_message(&mut self, error: &Message) {}
+    pub fn dispatch_message(&mut self, new_message: Message) {
+        let mut replace = false;
+
+        if let Some(current_message) = self.current_message {
+            let message_duration = current_message.1.elapsed();
+            if let Some(timeout_duration) = current_message.0.get_timeout_duration() {
+                if timeout_duration < message_duration {
+                    replace = true;
+                }
+            } else if new_message > current_message.0 {
+                replace = true;
+            }
+        } else {
+            replace = true;
+        }
+
+        if replace {
+            self.current_message = Some((new_message, Instant::now()));
+        }
+    }
+
+    pub fn clear_message(&mut self) {
+        self.current_message = None;
+    }
 
     pub fn should_quit(&mut self) -> bool {
         if event::poll(Duration::ZERO).unwrap() {
@@ -76,6 +101,23 @@ impl Interface {
     }
 
     pub fn render(&mut self, data: &InterfaceData) {
+        // update current message
+        let mut message_expired = false;
+
+        if let Some(message) = &mut self.current_message {
+            if let Some(timeout_duration) = message.0.get_timeout_duration() {
+                let message_duration = message.1.elapsed();
+                if message_duration > timeout_duration {
+                    message_expired = true;
+                }
+            }
+
+        }
+        
+        if message_expired {
+            self.clear_message();
+        }
+
         self.terminal
             .draw(|frame| {
                 ///////////////
@@ -161,7 +203,10 @@ impl Interface {
                         .title(" 󱍗 TEMPERATURES ")
                 );
 
-                let messages_widget = Paragraph::new(format!("No message"))
+                let messages_widget = Paragraph::new(match self.current_message {
+                    Some(message) => message.0.to_string(),
+                    None => "No message".to_string(),
+                })
                 .style(default_style)
                 .block(
                     Block::default()

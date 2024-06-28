@@ -16,6 +16,10 @@ pub struct SerialConfig {
 #[derive(Deserialize, Debug)]
 pub struct FuelCellConfig {
     pub serial: SerialConfig,
+
+    pub warn_temperature: f32,
+    pub alert_temperature: f32,
+    pub critical_temperature: f32,
 }
 
 #[derive(Deserialize, Debug)]
@@ -24,6 +28,10 @@ pub struct ManometerConfig {
     pub max_bar: f32,
 
     pub max_delta: f32,
+
+    pub warn_pressure: f32,
+    pub alert_pressure: f32,
+    pub critical_pressure: f32,
 }
 
 #[derive(Deserialize, Debug)]
@@ -45,7 +53,10 @@ pub struct TemperatureConfig {
 
 #[derive(Deserialize, Debug)]
 pub struct BatteryGaugeConfig {
-    i2c_address: u8,
+    pub i2c_address: u8,
+    pub warning_level: f32,
+    pub alert_level: f32,
+    pub critical_level: f32,
 }
 
 #[derive(Deserialize, Debug)]

@@ -114,15 +114,17 @@ impl Sensor for Temperature {
             TemperatureSensorName::H2Tanks => TemperatureSensorName::H2Plate,
         };
 
-        match self.read_sensor(self.current_sensor) {
-            Ok(data) => (
-                SensorData::Temperature((self.current_sensor, Some(data))),
-                check_temperature(&self.sensors[&self.current_sensor], data),
-            ),
-            Err(exception) => (
-                SensorData::Temperature((self.current_sensor, None)),
-                Some(exception),
-            ),
+        let data = self.read_sensor(self.current_sensor);
+
+        let sensor_data = SensorData::Temperature((self.current_sensor, data.ok()));
+
+        if let Ok(temperature) = data {
+            return (
+                sensor_data,
+                check_temperature(&self.sensors[&self.current_sensor], temperature),
+            );
         }
+
+        (sensor_data, data.err())
     }
 }

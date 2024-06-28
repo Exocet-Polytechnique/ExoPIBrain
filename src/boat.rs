@@ -137,7 +137,7 @@ impl Boat {
         loop {
             while !self.dms.read() {
                 self.interface.dispatch_message(
-                    &Message::new(
+                    Message::new(
                         crate::devices::Name::Dms,
                         crate::devices::Exception::AlertNoDms,
                     )
@@ -206,16 +206,12 @@ impl Boat {
             SensorData::FuelCellA(values) => {
                 telemetry.fuel_cell_a = *values;
 
-                interface.fuel_cell_a_temperature = values.map(|x| x.temperature);
-
-                // I'm too lazy to compute efficiency with both fuel cell's data so we'll just use fc_a
-                // data for now
-                interface.efficiency = *values.map(|x| compute_efficiency(x.energy));
+                interface.fuel_cell_a_temperature = values.and_then(|x| x.temperature);
             }
             SensorData::FuelCellB(values) => {
                 telemetry.fuel_cell_b = *values;
 
-                interface.fuel_cell_b_temperature = values.map(|x| x.temperature);
+                interface.fuel_cell_b_temperature = values.and_then(|x| x.temperature);
             }
             SensorData::Batteries(values) => {
                 telemetry.battery = *values;
@@ -237,7 +233,7 @@ impl Boat {
     fn running_loop(&mut self) -> () {
         loop {
             for error in self.error_receiver.try_iter() {
-                self.interface.dispatch_message(&error);
+                self.interface.dispatch_message(error);
                 if (error.get_exception() as u16) < 0x30 {
                     break;
                 }
