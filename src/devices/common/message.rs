@@ -3,7 +3,7 @@ use std::{cmp::Ordering, time::Duration};
 use crate::devices::{Exception, Name};
 
 /// Message struct to be sent from devices in case of an exception
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Message {
     name: Name,
     exception: Exception,

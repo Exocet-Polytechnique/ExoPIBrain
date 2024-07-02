@@ -1,47 +1,13 @@
 use std::{
-    sync::{Arc, RwLock},
-    thread::sleep,
+    sync::{mpsc::Sender, Arc, Mutex, RwLock},
+    thread::{self, sleep, JoinHandle},
     time::Duration,
 };
 
-use crate::{
-    devices::{
-        actuator::Actuator,
-        common::{message::Message, sensor::Sensor, sensor_data::SensorData},
-        manometer::Manometer,
-        temperature::Temperature,
-        Exception, Name,
-    },
-    interface::{Interface, InterfaceData},
+use crate::devices::{
+    actuator::Actuator, button::Button, common::message::Message, contactor::Contactor,
+    fuel_cell::FuelCell, Exception, Name,
 };
-
-fn check_pressure(manometer: Arc<RwLock<Manometer>>) -> Option<f32> {
-    let (data, _) = (*manometer).write().unwrap().read();
-    match data {
-        SensorData::HighPressureManometer(pressure)
-        | SensorData::LowPressureManometer(pressure) => pressure,
-        _ => panic!("Incorrect return type from high pressure manometer"),
-    }
-}
-
-fn check_value_under(
-    interface: &mut Interface,
-    device_name: Name,
-    value: Option<f32>,
-    max: f32,
-) -> bool {
-    if let Some(x) = value {
-        if x < max {
-            return true;
-        } else {
-            interface.dispatch_message(&Message::new(device_name, Exception::CriticalValue));
-        }
-    } else {
-        interface.dispatch_message(&Message::new(device_name, Exception::InfoBadData));
-    }
-
-    false
-}
 
 struct ValveStarter<'a> {
     reset: bool,
@@ -95,61 +61,148 @@ impl<'a> Drop for ValveStarter<'_> {
     }
 }
 
-pub fn startup(
-    interface: &mut Interface,
-    high_pressure_manometer: Arc<RwLock<Manometer>>,
-    low_pressure_manometer: Arc<RwLock<Manometer>>,
-    temperatures: Arc<RwLock<Temperature>>,
-    mv01_actuator: &mut Actuator,
-    mv02_actuator: &mut Actuator,
+#[derive(Default)]
+pub struct StartupData {
+    pub h2_plate_temperature: Option<f32>,
+    pub high_pressure: Option<f32>,
+    pub low_pressure: Option<f32>,
+}
+
+pub struct BoatStarter {
+    error_sender: Sender<Message>,
+    current_data: Arc<RwLock<StartupData>>,
+
+    fuel_cell_a: Arc<RwLock<FuelCell>>,
+    fuel_cell_b: Arc<RwLock<FuelCell>>,
+    fca_relay: Arc<Mutex<Contactor>>,
+    fcb_relay: Arc<Mutex<Contactor>>,
+
+    mv01_actuator: Arc<Mutex<Actuator>>,
+    mv02_actuator: Arc<Mutex<Actuator>>,
+
+    source_contactor: Arc<Mutex<Contactor>>,
+    charge_contactor: Arc<Mutex<Contactor>>,
+    dms: Arc<Mutex<Button>>,
+
+    handle: Option<JoinHandle<()>>,
+}
+
+fn start(
+    current_data: Arc<RwLock<StartupData>>,
+
+    fuel_cell_a: Arc<RwLock<FuelCell>>,
+    fuel_cell_b: Arc<RwLock<FuelCell>>,
+    fca_relay: Arc<Mutex<Contactor>>,
+    fcb_relay: Arc<Mutex<Contactor>>,
+
+    mv01_actuator: Arc<Mutex<Actuator>>,
+    mv02_actuator: Arc<Mutex<Actuator>>,
+
+    source_contactor: Arc<Mutex<Contactor>>,
+    charge_contactor: Arc<Mutex<Contactor>>,
+    dms: Arc<Mutex<Button>>,
 ) -> bool {
-    let mut interface_data = InterfaceData::new();
-    let mut can_continue = false;
-
-    // 1. high pressure manometer
-    let value = check_pressure(high_pressure_manometer);
-    interface_data.high_pressure = value;
-    can_continue = check_value_under(interface, Name::HighPressureManometer, value, 300.0);
-    interface.render(&interface_data);
-
-    if !can_continue {
+    // 1. check dms
+    if dms.lock().unwrap().read() {
         return false;
     }
 
-    // 2. temperature h2 plate
-    let value = (*temperatures)
-        .write()
-        .unwrap()
-        .read_sensor(crate::devices::temperature::TemperatureSensorName::H2Plate)
-        .ok();
-    interface_data.h2_plate_temperature = value;
-    can_continue = check_value_under(interface, Name::Temperatures, value, 64.0);
-    interface.render(&interface_data);
-
-    if !can_continue {
+    // 2. check temperature
+    if let Some(temperature) = current_data.read().unwrap().h2_plate_temperature {
+        if temperature > 64.0 {
+            return false;
+        }
+    } else {
         return false;
     }
 
-    // 3. valves
-    let valve_starter = ValveStarter::start(mv01_actuator, mv02_actuator);
-    can_continue = valve_starter.is_some();
-
-    if !can_continue {
-        interface.dispatch_message(&Message::new(Name::Pt01Actuator, Exception::AlertStuck));
-        interface.render(&interface_data);
+    // 3. check high pressure
+    if let Some(pressure) = current_data.read().unwrap().high_pressure {
+        if pressure > 300.0 {
+            return false;
+        }
+    } else {
         return false;
     }
 
-    // 4. low pressure manometer
-    let value = check_pressure(low_pressure_manometer);
-    interface_data.low_pressure = value;
-    can_continue = check_value_under(interface, Name::LowPressureManometer, value, 0.7);
-    interface.render(&interface_data);
-
-    if !can_continue {
+    // 4. do valve procedures
+    let valve_starter = ValveStarter::start(
+        &mut mv01_actuator.lock().unwrap(),
+        &mut mv02_actuator.lock().unwrap(),
+    );
+    if !valve_starter.is_some() {
         return false;
     }
 
+    // 5. TODO: open the source isolation contactor (prevent current from flowing through)
+    // 6. TODO: proceed to fuel cell startup (crate a struct similar to `ValveStarter` for this).
+    //    Instructions can be found in the fuel cell's datasheet ONLY ONE AT A TIME! Use fca/b_relay
+    //    to control power input to the fuel cell controllers as described in the datasheet.
+    // 7. TODO: open charge contactor, wait 1 s, then vlose source isolation contactor, wait 30 s,
+    //    then close charge contactor, wait 1 s
+
+    // 5. everything ok, keep as-is (i.e. don't reset upon exiting the function)
     valve_starter.unwrap().ok();
-    can_continue
+
+    true
+}
+
+impl BoatStarter {
+    pub fn new(
+        error_sender: Sender<Message>,
+        current_data: Arc<RwLock<StartupData>>,
+
+        fuel_cell_a: Arc<RwLock<FuelCell>>,
+        fuel_cell_b: Arc<RwLock<FuelCell>>,
+        fca_relay: Arc<Mutex<Contactor>>,
+        fcb_relay: Arc<Mutex<Contactor>>,
+
+        mv01_actuator: Arc<Mutex<Actuator>>,
+        mv02_actuator: Arc<Mutex<Actuator>>,
+
+        source_contactor: Arc<Mutex<Contactor>>,
+        charge_contactor: Arc<Mutex<Contactor>>,
+        dms: Arc<Mutex<Button>>,
+    ) -> Self {
+        Self {
+            error_sender,
+            current_data,
+            fuel_cell_a,
+            fuel_cell_b,
+            fca_relay,
+            fcb_relay,
+            mv01_actuator,
+            mv02_actuator,
+            source_contactor,
+            charge_contactor,
+            dms,
+            handle: None,
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.handle = Some(thread::spawn(|| {
+            // 1. check dms
+            if start(
+                self.current_data.clone(),
+                self.fuel_cell_a.clone(),
+                self.fuel_cell_b.clone(),
+                self.fca_relay.clone(),
+                self.fcb_relay.clone(),
+                self.mv01_actuator.clone(),
+                self.mv02_actuator.clone(),
+                self.source_contactor.clone(),
+                self.charge_contactor.clone(),
+                self.dms.clone(),
+            ) {
+                self.error_sender
+                    .clone()
+                    .send(Message::new(Name::System, Exception::InfoStartupSuccess));
+            } else {
+                self.error_sender
+                    .clone()
+                    .send(Message::new(Name::System, Exception::InfoStartupFailed));
+            }
+        }));
+    }
 }

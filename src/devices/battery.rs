@@ -84,8 +84,8 @@ impl Sensor for BatteryGauge {
             .unwrap();
 
         Self {
-            bus: config.0,
-            config: config.1,
+            bus: config.0.clone(),
+            config: config.1.clone(),
         }
     }
 

@@ -96,3 +96,19 @@ serial.port = "/dev/ttyACM0"
 serial.baudrate = 0
 send_interval = 1
 token_path = "$HOME/boat_token.txt"
+
+[fca_relay]
+pin = 0
+normally_open = true
+
+[fcb_relay]
+pin = 0
+normally_open = true
+
+[source_isolation_contactor]
+pin = 0
+normally_open = true
+
+[level2_charge_contactor]
+pin = 0
+normally_open = true

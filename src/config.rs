@@ -8,6 +8,12 @@ const fn default_true() -> bool {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct ContactorConfig {
+    pub pin: u8,
+    pub normally_open: bool,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct SerialConfig {
     pub port: String,
     pub baudrate: u32,
@@ -51,7 +57,7 @@ pub struct TemperatureConfig {
     pub max: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct BatteryGaugeConfig {
     pub i2c_address: u8,
     pub warning_level: f32,
@@ -120,6 +126,11 @@ pub struct Config {
     pub dms: ButtonConfig,
 
     pub telemetry: TelemetryConfig,
+
+    pub fca_relay: ContactorConfig,
+    pub fcb_relay: ContactorConfig,
+    pub source_isolation_contactor: ContactorConfig,
+    pub level2_charge_contactor: ContactorConfig,
 }
 
 pub fn load_config(file_path: &str) -> Config {

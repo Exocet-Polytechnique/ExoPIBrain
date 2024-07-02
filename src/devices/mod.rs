@@ -4,6 +4,7 @@ pub mod actuator;
 pub mod battery;
 pub mod button;
 pub mod common;
+pub mod contactor;
 pub mod fuel_cell;
 pub mod gps;
 pub mod imu;
@@ -79,27 +80,27 @@ pub enum Exception {
     InfoConnected = 0xA1,
     InfoNotConnected = 0xA2,
     InfoBadData = 0xA3,
+    InfoStartupFailed = 0xB0,
+    InfoStartupSuccess = 0xB1,
+    InfoShutdownFailed = 0xB2,
+    InfoShutdownSuccess = 0xB3,
     Info = 0xC0,
-
-    /// Procedure messages
-    StartupComplete = 0xC1,
-    ShutdownComplete = 0xC2,
 }
 
 impl From<rppal::i2c::Error> for Exception {
-    fn from(value: rppal::i2c::Error) -> Self {
+    fn from(_value: rppal::i2c::Error) -> Self {
         Self::InfoNotConnected
     }
 }
 
 impl From<rppal::uart::Error> for Exception {
-    fn from(value: rppal::uart::Error) -> Self {
+    fn from(_value: rppal::uart::Error) -> Self {
         Self::InfoNotConnected
     }
 }
 
 impl From<rppal::spi::Error> for Exception {
-    fn from(value: rppal::spi::Error) -> Self {
+    fn from(_value: rppal::spi::Error) -> Self {
         Self::InfoNotConnected
     }
 }

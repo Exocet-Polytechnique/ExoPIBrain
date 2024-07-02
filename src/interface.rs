@@ -203,7 +203,7 @@ impl Interface {
                         .title(" 󱍗 TEMPERATURES ")
                 );
 
-                let messages_widget = Paragraph::new(match self.current_message {
+                let messages_widget = Paragraph::new(match self.current_message.clone() {
                     Some(message) => message.0.to_string(),
                     None => "No message".to_string(),
                 })
