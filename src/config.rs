@@ -54,7 +54,7 @@ pub struct TemperatureConfig {
 
     pub warn: f32,
     pub alert: f32,
-    pub max: f32,
+    pub critical: f32,
 }
 
 #[derive(Deserialize, Debug, Clone)]

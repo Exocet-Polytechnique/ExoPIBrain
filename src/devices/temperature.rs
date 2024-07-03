@@ -88,7 +88,7 @@ impl Sensor for Temperature {
                 (
                     x.name,
                     TemperatureSensor {
-                        max: x.max,
+                        max: x.critical,
                         alert: x.alert,
                         warning: x.warn,
                         path: PathBuf::from(format!(
