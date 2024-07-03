@@ -7,6 +7,7 @@ use super::{
     Exception,
 };
 
+#[derive(Clone, Copy)]
 pub enum FuelCellName {
     A,
     B,
@@ -69,6 +70,7 @@ impl FuelCell {
                     "FCT2" => temperature2 = get_value_without_unit(value),
                     "FC_W" => data.power = get_value_without_unit(value),
                     "Energy" => data.energy = get_value_without_unit(value),
+                    &_ => (),
                 }
             }
         }
@@ -78,8 +80,8 @@ impl FuelCell {
         Ok(data)
     }
 
-    fn start(&mut self) -> Result<(), Exception> {
-        self.serial_device.writeln("start".to_string());
+    pub fn start(&mut self) -> Result<(), Exception> {
+        self.serial_device.writeln("start".to_string())?;
 
         let mut temperature_ok = false;
         let mut pressure_ok = false;
@@ -107,8 +109,8 @@ impl FuelCell {
         Ok(())
     }
 
-    fn shutdown(&mut self) -> Result<(), Exception> {
-        self.serial_device.writeln("end".to_string());
+    pub fn shutdown(&mut self) -> Result<(), Exception> {
+        self.serial_device.writeln("end".to_string())?;
 
         let mut system_off = false;
 
@@ -129,12 +131,6 @@ impl FuelCell {
         }
 
         self.is_started = true;
-
-        Ok(())
-    }
-
-    fn purge(&mut self) -> Result<(), Exception> {
-        self.serial_device.writeln("p".to_string())?;
 
         Ok(())
     }
@@ -173,8 +169,8 @@ impl Sensor for FuelCell {
         let fuel_cell_data = self.read_raw_data();
 
         let sensor_data = match self.name {
-            A => SensorData::FuelCellA(fuel_cell_data.ok()),
-            B => SensorData::FuelCellB(fuel_cell_data.ok()),
+            FuelCellName::A => SensorData::FuelCellA(fuel_cell_data.ok()),
+            FuelCellName::B => SensorData::FuelCellB(fuel_cell_data.ok()),
         };
 
         if let Ok(data) = fuel_cell_data {

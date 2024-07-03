@@ -62,8 +62,6 @@ pub struct Boat {
 
     low_pressure_thread: SensorThread<Manometer>,
     high_pressure_thread: SensorThread<Manometer>,
-    mv01_actuator: Arc<Mutex<Actuator>>,
-    mv02_actuator: Arc<Mutex<Actuator>>,
 
     start_button: Button,
     stop_button: Button,
@@ -71,11 +69,6 @@ pub struct Boat {
 
     fuel_cell_a: SensorThread<FuelCell>,
     fuel_cell_b: SensorThread<FuelCell>,
-
-    fca_relay: Arc<Mutex<Contactor>>,
-    fcb_relay: Arc<Mutex<Contactor>>,
-    source_isolation_contactor: Arc<Mutex<Contactor>>,
-    level2_charge_contactor: Arc<Mutex<Contactor>>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -221,8 +214,6 @@ impl Boat {
                 ),
                 crate::devices::Name::HighPressureManometer,
             ),
-            mv01_actuator,
-            mv02_actuator,
 
             start_button: Button::new(&gpio, &config.start_button),
             stop_button: Button::new(&gpio, &config.stop_button),
@@ -230,11 +221,6 @@ impl Boat {
 
             fuel_cell_a,
             fuel_cell_b,
-
-            fca_relay,
-            fcb_relay,
-            source_isolation_contactor,
-            level2_charge_contactor,
         }
     }
 
@@ -298,7 +284,7 @@ impl Boat {
         }
     }
 
-    fn run(&mut self) -> () {
+    pub fn run(&mut self) -> () {
         loop {
             match self.state {
                 State::Idle => {
@@ -356,7 +342,7 @@ impl Boat {
             self.update_data();
 
             if self.last_telemetry_time.elapsed().as_secs_f32() >= self.telemetry_send_interval {
-                self.telemetry.send(&self.telemetry_data);
+                let _ = self.telemetry.send(&self.telemetry_data);
                 self.last_telemetry_time = Instant::now();
             }
 

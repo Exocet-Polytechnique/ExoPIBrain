@@ -72,15 +72,6 @@ warn_level = 40
 alert_level = 20
 critical_level = 10
 
-[accelerometer]
-i2c_address = 0x53
-
-[gyroscope]
-i2c_address = 0x68
-
-[compass]
-i2c_address = 0x0C
-
 [gps]
 serial.port = "/dev/serial0"
 serial.baudrate = 9600

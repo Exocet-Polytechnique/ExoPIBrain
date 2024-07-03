@@ -66,21 +66,6 @@ pub struct BatteryGaugeConfig {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct AccelerometerConfig {
-    i2c_address: u8,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct GyroscopeConfig {
-    i2c_address: u8,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CompassConfig {
-    i2c_address: u8,
-}
-
-#[derive(Deserialize, Debug)]
 pub struct GpsConfig {
     pub serial: SerialConfig,
 }
@@ -114,10 +99,6 @@ pub struct Config {
     pub temperatures: Vec<TemperatureConfig>,
 
     pub battery_gauge: BatteryGaugeConfig,
-
-    pub accelerometer: AccelerometerConfig,
-    pub gyroscope: GyroscopeConfig,
-    pub compass: CompassConfig,
 
     pub gps: GpsConfig,
 

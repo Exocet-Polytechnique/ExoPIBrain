@@ -56,7 +56,7 @@ fn check_temperature(sensor: &TemperatureSensor, value: f32) -> Option<Exception
 
 impl Temperature {
     pub fn read_sensor(&self, name: TemperatureSensorName) -> Result<f32, Exception> {
-        let sensor_path = self.sensors[&name].path;
+        let sensor_path = &self.sensors[&name].path;
 
         if !sensor_path.is_file() {
             return Err(Exception::InfoNotConnected);

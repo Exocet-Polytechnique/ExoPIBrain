@@ -11,6 +11,7 @@ use crate::config::ManometerConfig;
 const MAX_ADC_VALUE: f32 = 0x3F as f32;
 const ADC_BIAS: f32 = 1.038;
 
+#[derive(Clone, Copy)]
 pub enum ManometerName {
     HighPressure,
     LowPressure,
@@ -87,7 +88,7 @@ impl Sensor for Manometer {
 
     fn new(config: &Self::Config) -> Self {
         Manometer {
-            spi_device: config.0,
+            spi_device: config.0.clone(),
             channel: config.1.channel,
             max_bar: config.1.max_bar,
             name: config.2,

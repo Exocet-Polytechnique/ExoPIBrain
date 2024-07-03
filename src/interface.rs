@@ -8,12 +8,6 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 
 use crate::devices::common::message::Message;
 
-enum State {
-    Startup,
-    Shutdown,
-    Running,
-}
-
 pub struct InterfaceData {
     pub speed: Option<f32>, // km/h
 
@@ -36,10 +30,8 @@ pub struct InterfaceData {
 }
 
 pub struct Interface {
-    state: State,
     terminal: Terminal<CrosstermBackend<Stdout>>,
     current_message: Option<(Message, Instant)>,
-    // error_rx
 }
 
 impl Interface {
@@ -50,7 +42,6 @@ impl Interface {
         terminal.clear().unwrap();
 
         Interface {
-            state: State::Startup,
             terminal,
             current_message: None,
         }
@@ -66,7 +57,7 @@ impl Interface {
     pub fn dispatch_message(&mut self, new_message: Message) {
         let mut replace = false;
 
-        if let Some(current_message) = self.current_message {
+        if let Some(current_message) = &self.current_message {
             let message_duration = current_message.1.elapsed();
             if let Some(timeout_duration) = current_message.0.get_timeout_duration() {
                 if timeout_duration < message_duration {

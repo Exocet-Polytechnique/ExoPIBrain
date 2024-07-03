@@ -61,6 +61,47 @@ impl<'a> Drop for ValveStarter<'_> {
     }
 }
 
+struct FuelCellStarter {
+    fuel_cell: Arc<RwLock<FuelCell>>,
+    relay: Arc<Mutex<Contactor>>,
+
+    reset: bool,
+}
+
+impl FuelCellStarter {
+    pub fn start(
+        fuel_cell: Arc<RwLock<FuelCell>>,
+        relay: Arc<Mutex<Contactor>>,
+    ) -> Option<FuelCellStarter> {
+        relay.lock().unwrap().close_circuit();
+        sleep(Duration::from_secs_f32(5.0));
+
+        if fuel_cell.write().unwrap().start().is_err() {
+            relay.lock().unwrap().open_circuit();
+            return None;
+        }
+
+        Some(FuelCellStarter {
+            fuel_cell,
+            relay,
+            reset: true,
+        })
+    }
+
+    pub fn ok(&mut self) {
+        self.reset = false;
+    }
+}
+
+impl Drop for FuelCellStarter {
+    fn drop(&mut self) {
+        if self.reset {
+            let _ = self.fuel_cell.write().unwrap().shutdown();
+            self.relay.lock().unwrap().open_circuit();
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct StartupData {
     pub h2_plate_temperature: Option<f32>,
@@ -126,23 +167,41 @@ fn start(
     }
 
     // 4. do valve procedures
-    let valve_starter = ValveStarter::start(
-        &mut mv01_actuator.lock().unwrap(),
-        &mut mv02_actuator.lock().unwrap(),
-    );
+    let mut mv01_actuator_binding = mv01_actuator.lock().unwrap();
+    let mut mv02_actuator_binding = mv02_actuator.lock().unwrap();
+
+    let valve_starter = ValveStarter::start(&mut mv01_actuator_binding, &mut mv02_actuator_binding);
     if !valve_starter.is_some() {
         return false;
     }
 
-    // 5. TODO: open the source isolation contactor (prevent current from flowing through)
-    // 6. TODO: proceed to fuel cell startup (crate a struct similar to `ValveStarter` for this).
-    //    Instructions can be found in the fuel cell's datasheet ONLY ONE AT A TIME! Use fca/b_relay
-    //    to control power input to the fuel cell controllers as described in the datasheet.
-    // 7. TODO: open charge contactor, wait 1 s, then vlose source isolation contactor, wait 30 s,
-    //    then close charge contactor, wait 1 s
+    // 5. Open the source isolation contactor for safety
+    source_contactor.lock().unwrap().open_circuit();
+    sleep(Duration::from_secs_f32(1.0));
 
-    // 5. everything ok, keep as-is (i.e. don't reset upon exiting the function)
+    // 6. Startup fuel cells
+    let fca_starter = FuelCellStarter::start(fuel_cell_a, fca_relay);
+    if !fca_starter.is_some() {
+        return false;
+    }
+
+    let fcb_starter = FuelCellStarter::start(fuel_cell_b, fcb_relay);
+    if !fcb_starter.is_some() {
+        return false;
+    }
+
+    // 7. DC-DC precharge
+    charge_contactor.lock().unwrap().open_circuit();
+    sleep(Duration::from_secs_f32(1.0));
+    source_contactor.lock().unwrap().close_circuit();
+    sleep(Duration::from_secs_f32(40.0));
+    charge_contactor.lock().unwrap().close_circuit();
+    sleep(Duration::from_secs_f32(1.0));
+
+    // 8. everything ok, keep as-is (i.e. don't reset upon exiting the function)
     valve_starter.unwrap().ok();
+    fca_starter.unwrap().ok();
+    fcb_starter.unwrap().ok();
 
     true
 }
@@ -181,27 +240,37 @@ impl BoatStarter {
     }
 
     pub fn start(&mut self) {
-        self.handle = Some(thread::spawn(|| {
+        let current_data = self.current_data.clone();
+        let fuel_cell_a = self.fuel_cell_a.clone();
+        let fuel_cell_b = self.fuel_cell_b.clone();
+        let fca_relay = self.fca_relay.clone();
+        let fcb_relay = self.fcb_relay.clone();
+        let mv01_actuator = self.mv01_actuator.clone();
+        let mv02_actuator = self.mv02_actuator.clone();
+        let source_contactor = self.source_contactor.clone();
+        let charge_contactor = self.charge_contactor.clone();
+        let dms = self.dms.clone();
+
+        let error_sender = self.error_sender.clone();
+
+        self.handle = Some(thread::spawn(move || {
             // 1. check dms
             if start(
-                self.current_data.clone(),
-                self.fuel_cell_a.clone(),
-                self.fuel_cell_b.clone(),
-                self.fca_relay.clone(),
-                self.fcb_relay.clone(),
-                self.mv01_actuator.clone(),
-                self.mv02_actuator.clone(),
-                self.source_contactor.clone(),
-                self.charge_contactor.clone(),
-                self.dms.clone(),
+                current_data,
+                fuel_cell_a,
+                fuel_cell_b,
+                fca_relay,
+                fcb_relay,
+                mv01_actuator,
+                mv02_actuator,
+                source_contactor,
+                charge_contactor,
+                dms,
             ) {
-                self.error_sender
-                    .clone()
-                    .send(Message::new(Name::System, Exception::InfoStartupSuccess));
+                let _ =
+                    error_sender.send(Message::new(Name::System, Exception::InfoStartupSuccess));
             } else {
-                self.error_sender
-                    .clone()
-                    .send(Message::new(Name::System, Exception::InfoStartupFailed));
+                let _ = error_sender.send(Message::new(Name::System, Exception::InfoStartupFailed));
             }
         }));
     }
