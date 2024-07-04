@@ -12,6 +12,7 @@ pub struct SerialDevice {
 
 impl SerialDevice {
     pub fn initialize(config: &SerialConfig) -> SerialDevice {
+        println!("Initializing SerialDevice with config: {:?}", config);
         let device = Mutex::new(
             Uart::with_path(Path::new(&config.port), config.baudrate, Parity::None, 8, 1).unwrap(),
         );
