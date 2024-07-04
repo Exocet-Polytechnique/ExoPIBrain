@@ -29,13 +29,13 @@ alert_pressure = 0.68
 critical_pressure = 0.71
 
 [valve1]
-control_pin = 8
-error_pin = 9
+control_pin = 19
+error_pin = 20
 normally_open = false
 
 [valve2]
-control_pin = 0
-error_pin = 0
+control_pin = 26
+error_pin = 21
 normally_open = true
 
 [[temperatures]]
@@ -77,29 +77,29 @@ serial.port = "/dev/serial0"
 serial.baudrate = 9600
 
 [start_button]
-pin = 0
+pin = 17
 
 [stop_button]
-pin = 0
+pin = 27
 
 [telemetry]
 serial.port = "/dev/ttyACM0"
-serial.baudrate = 0
+serial.baudrate = 9600
 send_interval = 1
 token_path = "$HOME/boat_token.txt"
 
 [fca_relay]
-pin = 0
+pin = 13
 normally_open = true
 
 [fcb_relay]
-pin = 0
+pin = 16
 normally_open = true
 
 [source_isolation_contactor]
-pin = 0
+pin = 6
 normally_open = true
 
 [level2_charge_contactor]
-pin = 0
+pin = 12
 normally_open = true
