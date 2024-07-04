@@ -68,7 +68,7 @@ critical = 60
 
 [battery_gauge]
 i2c_address = 0x64
-warn_level = 40
+warning_level = 40
 alert_level = 20
 critical_level = 10
 
