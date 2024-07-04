@@ -103,3 +103,7 @@ normally_open = true
 [level2_charge_contactor]
 pin = 12
 normally_open = true
+
+[dms]
+pin = 26
+normally_open = true
