@@ -107,6 +107,43 @@ impl Boat {
 
         let gpio = Gpio::new().unwrap();
 
+        let dms = Arc::new(Mutex::new(Button::new(&gpio, &config.dms)));
+        let startup_data = Arc::new(RwLock::new(StartupData::default()));
+        let mv01_actuator = Arc::new(Mutex::new(Actuator::initialize(&gpio, &config.valve1)));
+        let mv02_actuator = Arc::new(Mutex::new(Actuator::initialize(&gpio, &config.valve2)));
+
+            // 1. check dms
+        if dms.lock().unwrap().read() {
+            return false;
+        }
+
+        // 2. check temperature
+        if let Some(temperature) = current_data.read().unwrap().h2_plate_temperature {
+            if temperature > 64.0 {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        // 3. check high pressure
+        if let Some(pressure) = current_data.read().unwrap().high_pressure {
+            if pressure > 300.0 {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        // 4. do valve procedures
+        let mut mv01_actuator_binding = mv01_actuator.lock().unwrap();
+        let mut mv02_actuator_binding = mv02_actuator.lock().unwrap();
+
+        let valve_starter = ValveStarter::start(&mut mv01_actuator_binding, &mut mv02_actuator_binding);
+        if !valve_starter.is_some() {
+            return false;
+        }
+
         let mut fuel_cell_a = SensorThread::new(
             messaging.clone(),
             &(config.fuel_cell_a, FuelCellName::A),
@@ -129,12 +166,6 @@ impl Boat {
             &config.level2_charge_contactor,
         )));
 
-        let dms = Arc::new(Mutex::new(Button::new(&gpio, &config.dms)));
-
-        let mv01_actuator = Arc::new(Mutex::new(Actuator::initialize(&gpio, &config.valve1)));
-        let mv02_actuator = Arc::new(Mutex::new(Actuator::initialize(&gpio, &config.valve2)));
-
-        let startup_data = Arc::new(RwLock::new(StartupData::default()));
         let starter = BoatStarter::new(
             error_sender.clone(),
             startup_data.clone(),

@@ -41,30 +41,30 @@ normally_open = true
 [[temperatures]]
 name = "H2Plate"
 address = 0x00000dc67e14
-warn = 64
-alert = 72
-critical = 80
+warn = 45
+alert = 48
+critical = 54
 
 [[temperatures]]
 name = "Batteries"
 address = 0x00000e841698
-warn = 48
-alert = 54
-critical = 60
+warn = 45
+alert = 48
+critical = 54
 
 [[temperatures]]
 name = "FuelCellControllers"
 address = 0x00000dc75129
-warn = 64
-alert = 72
-critical = 80
+warn = 45
+alert = 48
+critical = 54
 
 [[temperatures]]
 name = "H2Tanks"
 address = 0x00000dc6d911
-warn = 48
-alert = 54
-critical = 60
+warn = 45
+alert = 48
+critical = 54
 
 [battery_gauge]
 i2c_address = 0x64

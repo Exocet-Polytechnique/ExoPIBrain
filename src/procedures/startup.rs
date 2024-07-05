@@ -143,37 +143,37 @@ fn start(
     charge_contactor: Arc<Mutex<Contactor>>,
     dms: Arc<Mutex<Button>>,
 ) -> bool {
-    // 1. check dms
-    if dms.lock().unwrap().read() {
-        return false;
-    }
+    // // 1. check dms
+    // if dms.lock().unwrap().read() {
+    //     return false;
+    // }
 
-    // 2. check temperature
-    if let Some(temperature) = current_data.read().unwrap().h2_plate_temperature {
-        if temperature > 64.0 {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    // // 2. check temperature
+    // if let Some(temperature) = current_data.read().unwrap().h2_plate_temperature {
+    //     if temperature > 64.0 {
+    //         return false;
+    //     }
+    // } else {
+    //     return false;
+    // }
 
-    // 3. check high pressure
-    if let Some(pressure) = current_data.read().unwrap().high_pressure {
-        if pressure > 300.0 {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    // // 3. check high pressure
+    // if let Some(pressure) = current_data.read().unwrap().high_pressure {
+    //     if pressure > 300.0 {
+    //         return false;
+    //     }
+    // } else {
+    //     return false;
+    // }
 
-    // 4. do valve procedures
-    let mut mv01_actuator_binding = mv01_actuator.lock().unwrap();
-    let mut mv02_actuator_binding = mv02_actuator.lock().unwrap();
+    // // 4. do valve procedures
+    // let mut mv01_actuator_binding = mv01_actuator.lock().unwrap();
+    // let mut mv02_actuator_binding = mv02_actuator.lock().unwrap();
 
-    let valve_starter = ValveStarter::start(&mut mv01_actuator_binding, &mut mv02_actuator_binding);
-    if !valve_starter.is_some() {
-        return false;
-    }
+    // let valve_starter = ValveStarter::start(&mut mv01_actuator_binding, &mut mv02_actuator_binding);
+    // if !valve_starter.is_some() {
+    //     return false;
+    // }
 
     // 5. Open the source isolation contactor for safety
     source_contactor.lock().unwrap().open_circuit();
